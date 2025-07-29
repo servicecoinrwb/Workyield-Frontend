@@ -43,6 +43,8 @@ async function loadContractData() {
   if (owner.toLowerCase() === userAddress.toLowerCase()) {
     document.getElementById('adminPanel').classList.remove('hidden');
   }
+
+  renderWorkOrders();
 }
 
 window.buyTokens = async function () {
@@ -68,6 +70,7 @@ window.mintWorkOrder = async function () {
   const desc = document.getElementById('mintDescription').value;
   await contract.mintFromWorkOrder(ethers.utils.parseUnits(grossYield), desc);
   alert('Work order minted');
+  renderWorkOrders();
 }
 
 window.fundWorkOrder = async function () {
@@ -75,6 +78,7 @@ window.fundWorkOrder = async function () {
   const amt = ethers.utils.parseUnits(document.getElementById('fundAmount').value);
   await contract.fundFromWorkOrderPayment(id, amt);
   alert('Work order funded');
+  renderWorkOrders();
 }
 
 window.withdrawFees = async function () {
@@ -87,4 +91,30 @@ window.exportPDF = function () {
   const doc = new jsPDF();
   doc.text('Work Orders - PDF Export Placeholder', 10, 10);
   doc.save('work_orders.pdf');
+}
+
+async function renderWorkOrders() {
+  const nextId = await contract.nextWorkOrderId();
+  const table = document.getElementById('workOrderTable');
+  let html = `<table class='text-sm'><thead><tr>
+    <th>ID</th><th>Gross Yield</th><th>Reserve</th><th>Issued</th>
+    <th>Active</th><th>Paid</th><th>Description</th><th>Created</th>
+  </tr></thead><tbody>`;
+
+  for (let i = 1; i < nextId; i++) {
+    const wo = await contract.workOrders(i);
+    html += `<tr>
+      <td>${wo.id}</td>
+      <td>${ethers.utils.formatUnits(wo.grossYield)}</td>
+      <td>${ethers.utils.formatUnits(wo.reserveAmount)}</td>
+      <td>${ethers.utils.formatUnits(wo.tokensIssued)}</td>
+      <td>${wo.isActive}</td>
+      <td>${wo.isPaid}</td>
+      <td>${wo.description}</td>
+      <td>${new Date(wo.createdAt * 1000).toLocaleDateString()}</td>
+    </tr>`;
+  }
+
+  html += '</tbody></table>';
+  table.innerHTML = html;
 }
