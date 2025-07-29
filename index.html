@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WorkYield Token Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-black text-white font-sans">
+  <div class="container mx-auto p-4">
+    <header class="flex justify-between items-center mb-6">
+      <h1 class="text-3xl font-bold text-orange-400">WorkYield Token V2</h1>
+      <button id="connectButton" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded">Connect Wallet</button>
+    </header>
+
+    <section id="tokenInfo" class="mb-6">
+      <h2 class="text-xl mb-2 font-semibold">Token Overview</h2>
+      <p>Total Supply: <span id="totalSupply">...</span></p>
+      <p>Available WYT: <span id="availableTokens">...</span></p>
+      <p>Contract pUSD Balance: <span id="paymentBalance">...</span></p>
+    </section>
+
+    <section id="buyRedeem" class="mb-6">
+      <h2 class="text-xl mb-2 font-semibold">Buy / Redeem WYT</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <h3 class="text-lg mb-1">Buy WYT</h3>
+          <input type="number" id="buyAmount" placeholder="Amount" class="w-full p-2 text-black rounded">
+          <button onclick="buyTokens()" class="mt-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded">Buy</button>
+        </div>
+        <div>
+          <h3 class="text-lg mb-1">Redeem WYT</h3>
+          <input type="number" id="redeemAmount" placeholder="Amount" class="w-full p-2 text-black rounded">
+          <button onclick="redeemTokens()" class="mt-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded">Redeem</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="adminPanel" class="mb-6 hidden">
+      <h2 class="text-xl mb-2 font-semibold">Admin Panel</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <h3 class="text-lg mb-1">Mint Work Order</h3>
+          <input id="mintAmount" type="number" placeholder="Gross Yield" class="w-full p-2 text-black rounded mb-1">
+          <input id="mintDescription" type="text" placeholder="Description" class="w-full p-2 text-black rounded">
+          <button onclick="mintWorkOrder()" class="mt-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Mint</button>
+        </div>
+        <div>
+          <h3 class="text-lg mb-1">Fund Work Order</h3>
+          <input id="fundId" type="number" placeholder="Work Order ID" class="w-full p-2 text-black rounded mb-1">
+          <input id="fundAmount" type="number" placeholder="Amount" class="w-full p-2 text-black rounded">
+          <button onclick="fundWorkOrder()" class="mt-2 bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded">Fund</button>
+        </div>
+        <div>
+          <h3 class="text-lg mb-1">Withdraw Fees</h3>
+          <button onclick="withdrawFees()" class="bg-orange-500 hover:bg-orange-600 px-4 py-2 rounded w-full">Withdraw</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="workOrders" class="mb-6">
+      <h2 class="text-xl mb-2 font-semibold">Work Orders</h2>
+      <button onclick="exportPDF()" class="mb-2 bg-gray-700 hover:bg-gray-800 px-4 py-2 rounded">Export PDF</button>
+      <div id="workOrderTable" class="overflow-x-auto"></div>
+    </section>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
