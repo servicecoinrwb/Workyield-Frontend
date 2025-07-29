@@ -1,21 +1,3 @@
-Of course. The `script.js` file you've sent is an older version pointing to a previous smart contract.
-
-Let's get you fully updated. The code below is the final version, which connects to your latest smart contract (`0x5a9d...`) and includes all the user experience improvements we've discussed (like the new swap interface and fee display).
-
------
-
-### \#\# Final and Correct `script.js`
-
-Please follow these instructions exactly to ensure everything is up to date.
-
-1.  Go to your project folder and **delete the entire content** of your current `script.js` file so it is completely empty.
-2.  Copy the **entire code block** below.
-3.  Paste it into your empty `script.js` file and **save** it.
-4.  Go to your browser and perform a **Hard Refresh** (**Ctrl+Shift+R** or **Cmd+Shift+R**). This is a very important step.
-
-<!-- end list -->
-
-```javascript
 // script.js - Final version with latest contract and all improvements
 
 // --- CONFIGURATION ---
@@ -30,7 +12,7 @@ const tokenABI = [
   "function decimals() view returns (uint8)"
 ];
 
-// Main contract ABI for the newly deployed contract
+// Main contract ABI
 const contractABI = [{"inputs":[{"internalType":"address","name":"initialOwner","type":"address"},{"internalType":"address","name":"paymentTokenAddress","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"OrderFunded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newFeePercentage","type":"uint256"}],"name":"RedemptionFeeSet","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"ReserveFunded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"holder","type":"address"},{"indexed":false,"internalType":"uint256","name":"wytAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"pUSDAmount","type":"uint256"}],"name":"TokensRedeemed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"yieldAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"tokensIssued","type":"uint256"}],"name":"WorkOrderMinted","type":"event"},{"inputs":[],"name":"RESERVE_PERCENTAGE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"availableTokens","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"pUSDAmount","type":"uint256"}],"name":"buyTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"workOrderId","type":"uint256"}],"name":"cancelWorkOrder","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"collectedFees","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"contractPaymentTokenBalance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"workOrderId","type":"uint256"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"fundFromWorkOrderPayment","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"string","name":"description","type":"string"}],"name":"mintFromWorkOrder","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"nextWorkOrderId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"paymentToken","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"wytAmount","type":"uint256"}],"name":"redeemTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"redemptionFeePercentage","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"newFeePercentage","type":"uint256"}],"name":"setRedemptionFee","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalReserveFund","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"withdrawFees","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"workOrders","outputs":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"uint256","name":"reserveAmount","type":"uint256"},{"internalType":"uint256","name":"tokensIssued","type":"uint256"},{"internalType":"bool","name":"isActive","type":"bool"},{"internalType":"bool","name":"isPaid","type":"bool"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"createdAt","type":"uint256"}],"stateMutability":"view","type":"function"}];
 
 // --- APPLICATION STATE & ELEMENTS ---
@@ -94,14 +76,14 @@ const App = {
     addEventListeners() {
         this.elements.connectButton?.addEventListener('click', () => this.connectWallet());
         
-        // Listen to the main swap button
+        // Listeners for the new swap UI
         this.elements.swapButton?.addEventListener('click', () => this.executeSwap());
-
-        // Listen for input changes to update calculations
+        this.elements.buyTab?.addEventListener('click', () => this.switchTab('buy'));
+        this.elements.redeemTab?.addEventListener('click', () => this.switchTab('redeem'));
         this.elements.buyAmountInput?.addEventListener('input', () => this.updateReceiveAmount());
         this.elements.redeemAmountInput?.addEventListener('input', () => this.updateReceiveAmount());
 
-        // Admin Panel Listeners...
+        // Admin Panel Listeners
         this.elements.mintButton?.addEventListener('click', () => this.mintWorkOrder());
         this.elements.fundButton?.addEventListener('click', () => this.fundWorkOrder());
         this.elements.withdrawFeesButton?.addEventListener('click', () => this.withdrawFees());
@@ -140,7 +122,8 @@ const App = {
             this.elements.connectButton.disabled = true;
             
             this.showNotification('Wallet connected successfully!', 'success');
-            this.loadContractData();
+            await this.loadContractData();
+            this.switchTab('buy'); // Default to buy tab on connect
         } catch (err) {
             console.error(err);
             this.showNotification('Wallet connection failed.', 'error');
@@ -196,17 +179,15 @@ const App = {
   
     // --- USER & ADMIN ACTIONS ---
     async executeSwap() {
-        const isBuy = this.elements.buyPanel.style.display !== 'none';
+        const isBuy = !this.elements.buyPanel.classList.contains('hidden');
         if (isBuy) {
             await this.handleTransaction(this.elements.swapButton, async () => {
                 const amount = this.elements.buyAmountInput.value;
                 if (!amount || parseFloat(amount) <= 0) throw new Error("Please enter a valid amount.");
 
                 const parsedAmount = ethers.utils.parseUnits(amount, this.paymentTokenDecimals);
-                const tokenAddress = await this.contract.paymentToken();
-                const paymentToken = new ethers.Contract(tokenAddress, tokenABI, this.signer);
-
-                const approveTx = await paymentToken.approve(contractAddress, parsedAmount);
+                
+                const approveTx = await this.getPaymentTokenContract().approve(contractAddress, parsedAmount);
                 this.showNotification('Approving spend... please wait.', 'info');
                 await approveTx.wait();
 
@@ -234,19 +215,19 @@ const App = {
         const isBuy = tab === 'buy';
         this.elements.buyTab.classList.toggle('active', isBuy);
         this.elements.redeemTab.classList.toggle('active', !isBuy);
-        this.elements.buyPanel.style.display = isBuy ? 'block' : 'none';
-        this.elements.redeemPanel.style.display = isBuy ? 'none' : 'block';
+        this.elements.buyPanel.classList.toggle('hidden', !isBuy);
+        this.elements.redeemPanel.classList.toggle('hidden', isBuy);
         this.updateReceiveAmount();
     },
 
     updateReceiveAmount() {
-        const isBuy = this.elements.buyPanel.style.display !== 'none';
+        const isBuy = !this.elements.buyPanel.classList.contains('hidden');
         const priceText = this.elements.wytPrice.textContent.replace(/,/g, '');
         const price = parseFloat(priceText);
         if (isNaN(price)) return;
 
         let receiveAmount = 0;
-        let buttonText = 'Swap';
+        let buttonText = 'Enter an amount';
         let disabled = true;
 
         if (isBuy) {
@@ -255,8 +236,6 @@ const App = {
                 receiveAmount = amount / price;
                 buttonText = 'Buy WYT';
                 disabled = false;
-            } else {
-                buttonText = 'Enter an amount';
             }
         } else { // isRedeem
             const amount = parseFloat(this.elements.redeemAmountInput.value);
@@ -264,16 +243,10 @@ const App = {
                 receiveAmount = amount * price;
                 buttonText = 'Redeem WYT';
                 disabled = false;
-            } else {
-                buttonText = 'Enter an amount';
             }
         }
 
-        this.elements.receiveAmount.textContent = receiveAmount.toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 4
-        });
-
+        this.elements.receiveAmount.textContent = this.formatTokenValue(ethers.utils.parseUnits(receiveAmount.toString(), isBuy ? this.wytDecimals : this.paymentTokenDecimals), isBuy ? this.wytDecimals : this.paymentTokenDecimals);
         this.elements.swapButton.textContent = buttonText;
         this.elements.swapButton.disabled = disabled;
     },
@@ -283,12 +256,9 @@ const App = {
             const grossYield = this.elements.mintAmountInput.value;
             const desc = this.elements.mintDescriptionInput.value;
             if (!grossYield || !desc) throw new Error("Gross yield and description are required.");
-            
             const parsedGrossYield = ethers.utils.parseUnits(grossYield, this.paymentTokenDecimals);
-            
             const tx = await this.contract.mintFromWorkOrder(parsedGrossYield, desc);
             await tx.wait();
-            this.renderWorkOrders();
             return 'Work order minted!';
         });
     },
@@ -298,9 +268,16 @@ const App = {
             const id = this.elements.fundIdInput.value;
             const amount = this.elements.fundAmountInput.value;
             if (!id || !amount) throw new Error("Work Order ID and amount are required.");
-            const tx = await this.contract.fundFromWorkOrderPayment(id, ethers.utils.parseUnits(amount, this.paymentTokenDecimals));
+            
+            const parsedAmount = ethers.utils.parseUnits(amount, this.paymentTokenDecimals);
+
+            const approveTx = await this.getPaymentTokenContract().approve(contractAddress, parsedAmount);
+            this.showNotification('Approving spend... please wait.', 'info');
+            await approveTx.wait();
+
+            this.showNotification('Approval successful! Now funding...', 'info');
+            const tx = await this.contract.fundFromWorkOrderPayment(id, parsedAmount);
             await tx.wait();
-            this.renderWorkOrders();
             return 'Work order funded!';
         });
     },
@@ -331,12 +308,16 @@ const App = {
             if (isNaN(id) || id <= 0) throw new Error("Please enter a valid Work Order ID.");
             const tx = await this.contract.cancelWorkOrder(id);
             await tx.wait();
-            this.renderWorkOrders();
             return 'Work order cancelled!';
         });
     },
   
     // --- RENDERING & UTILITIES ---
+    async getPaymentTokenContract() {
+        const paymentTokenAddress = await this.contract.paymentToken();
+        return new ethers.Contract(paymentTokenAddress, tokenABI, this.signer);
+    },
+    
     async renderWorkOrders() {
         this.elements.workOrderTable.innerHTML = '<table><tbody><tr><td>Loading work orders...</td></tr></tbody></table>';
         try {
@@ -417,7 +398,7 @@ const App = {
         try {
             const successMessage = await transactionCallback();
             this.showNotification(successMessage, 'success');
-            this.loadContractData();
+            await this.loadContractData();
         } catch (error) {
             const errorMessage = error.reason || error.message || "An unknown error occurred.";
             console.error("Transaction failed:", error);
@@ -451,7 +432,7 @@ const App = {
     },
 
     formatTokenValue(value, decimals) {
-        if (!value) return '0.0';
+        if (!value || decimals === undefined) return '0.00';
         const formatted = ethers.utils.formatUnits(value, decimals);
         return parseFloat(formatted).toLocaleString('en-US', {
             minimumFractionDigits: 2,
@@ -501,4 +482,3 @@ document.head.appendChild(styleSheet);
 
 // --- START THE APP ---
 window.addEventListener('DOMContentLoaded', () => App.init());
-```
