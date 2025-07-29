@@ -87,9 +87,12 @@
           <button id="cancelButton" class="mt-2 bg-pink-600 w-full">Cancel Order</button>
         </div>
         <div class="flex flex-col justify-end">
-          <label class="block mb-2 font-semibold">Withdraw Fees</label>
-          <button id="withdrawFeesButton" class="bg-orange-500 w-full">Withdraw All Fees</button>
-        </div>
+    <div>
+        <label class="block mb-2 font-semibold">Available Fees to Withdraw</label>
+        <p class="text-2xl font-semibold"><span id="collectedFees">0.00</span> pUSD</p>
+    </div>
+    <button id="withdrawFeesButton" class="w-full mt-2 btn btn-primary">Withdraw All Fees</button>
+</div>
       </div>
     </section>
 
