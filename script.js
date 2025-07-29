@@ -242,52 +242,53 @@ const App = {
   
   // --- RENDERING & UTILITIES ---
   async renderWorkOrders() {
-    this.elements.workOrderTable.innerHTML = '<table><tbody><tr><td>Loading work orders...</td></tr></tbody></table>';
-    try {
-      const nextId = await this.contract.nextWorkOrderId();
-      if (nextId.eq(1)) {
-        this.elements.workOrderTable.innerHTML = '<p>No work orders found.</p>';
-        return;
-      }
-      
-      // Fetch all work orders in parallel for better performance
-      const promises = [];
-      for (let i = 1; i < nextId; i++) {
-        promises.push(this.contract.workOrders(i));
-      }
-      const workOrders = await Promise.all(promises);
-
-      const tableHtml = `
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th><th>Gross Yield</th><th>Reserve</th><th>Issued</th>
-              <th>Active</th><th>Paid</th><th>Description</th><th>Created</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${workOrders.map(wo => `
-              <tr>
-                <td>${wo.id}</td>
-                <td>${this.formatTokenValue(wo.grossYield, this.wytDecimals)}</td>
-                <td>${this.formatTokenValue(wo.reserveAmount, this.wytDecimals)}</td>
-                <td>${this.formatTokenValue(wo.tokensIssued, this.wytDecimals)}</td>
-                <td>${wo.isActive ? '✅' : '❌'}</td>
-                <td>${wo.isPaid ? '✅' : '❌'}</td>
-                <td>${wo.description}</td>
-                <td>${new Date(wo.createdAt * 1000).toLocaleDateString()}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      `;
-      this.elements.workOrderTable.innerHTML = tableHtml;
-    } catch (err) {
-      console.error("Could not render work orders", err);
-      this.elements.workOrderTable.innerHTML = '<p class="text-red-500">Error loading work orders.</p>';
+  this.elements.workOrderTable.innerHTML = '<table><tbody><tr><td>Loading work orders...</td></tr></tbody></table>';
+  try {
+    const nextId = await this.contract.nextWorkOrderId();
+    if (nextId.eq(1)) {
+      this.elements.workOrderTable.innerHTML = '<p>No work orders found.</p>';
+      return;
     }
-  },
+    
+    // Fetch all work orders in parallel for better performance
+    const promises = [];
+    for (let i = 1; i < nextId; i++) {
+      promises.push(this.contract.workOrders(i));
+    }
+    const workOrders = await Promise.all(promises);
 
+    const tableHtml = `
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th><th>Gross Yield</th><th>Reserve</th><th>Issued</th>
+            <th>Active</th><th>Paid</th><th>Description</th><th>Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${workOrders.map(wo => `
+            <tr>
+              <td>${wo.id}</td>
+              {/* --- FIX: Use correct decimals for each value --- */}
+              <td>${this.formatTokenValue(wo.grossYield, this.paymentTokenDecimals)}</td>
+              <td>${this.formatTokenValue(wo.reserveAmount, this.paymentTokenDecimals)}</td>
+              <td>${this.formatTokenValue(wo.tokensIssued, this.wytDecimals)}</td>
+              
+              <td>${wo.isActive ? '✅' : '❌'}</td>
+              <td>${wo.isPaid ? '✅' : '❌'}</td>
+              <td>${wo.description}</td>
+              <td>${new Date(wo.createdAt * 1000).toLocaleDateString()}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+    this.elements.workOrderTable.innerHTML = tableHtml;
+  } catch (err) {
+    console.error("Could not render work orders", err);
+    this.elements.workOrderTable.innerHTML = '<p class="text-red-500">Error loading work orders.</p>';
+  }
+},
   exportPDF() {
     try {
       const { jsPDF } = window.jspdf;
