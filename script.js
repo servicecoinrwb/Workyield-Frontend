@@ -1,7 +1,7 @@
-// script.js - DOM-safe and wallet-ready version
+// script.js - Updated with full admin functions
 
 const contractAddress = '0x97500Ac1B27931b0a36fe4713B6Af455F5308545';
-const contractABI = [/* your ABI goes here (already provided separately) */];
+const contractABI = [/* your ABI goes here */];
 
 let provider, signer, contract, userAddress;
 
@@ -83,6 +83,25 @@ window.fundWorkOrder = async function () {
 window.withdrawFees = async function () {
   await contract.withdrawFees();
   alert('Fees withdrawn');
+}
+
+window.setRedemptionFee = async function () {
+  const newFee = parseInt(document.getElementById('feeInput').value);
+  if (newFee >= 0 && newFee <= 20) {
+    await contract.setRedemptionFee(newFee);
+    alert('Redemption fee updated');
+  } else {
+    alert('Fee must be between 0 and 20');
+  }
+}
+
+window.cancelWorkOrder = async function () {
+  const id = parseInt(document.getElementById('cancelId').value);
+  if (id > 0) {
+    await contract.cancelWorkOrder(id);
+    alert('Work order cancelled');
+    renderWorkOrders();
+  }
 }
 
 window.exportPDF = function () {
