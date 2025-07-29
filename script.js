@@ -1,12 +1,7 @@
-// script.js
-
-import { createConfig, configureChains, mainnet, WagmiConfig } from '@wagmi/core';
-import { publicProvider } from '@wagmi/core/providers/public';
-import { getDefaultWallets } from '@reown/appkit-adapter-wagmi';
-import { ethers } from 'ethers';
+// script.js - Browser-Compatible Version for GitHub Pages
 
 const contractAddress = '0x97500Ac1B27931b0a36fe4713B6Af455F5308545';
-const contractABI = [/* your ABI array here, use placeholder or load from JSON */];
+const contractABI = [/* your ABI goes here (already provided separately) */];
 
 let provider, signer, contract, userAddress;
 
@@ -18,13 +13,14 @@ async function connectWallet() {
       signer = provider.getSigner();
       userAddress = accounts[0];
       contract = new ethers.Contract(contractAddress, contractABI, signer);
+
       document.getElementById('connectButton').textContent = 'Connected';
       loadContractData();
     } catch (err) {
       alert('Wallet connection failed');
     }
   } else {
-    alert('MetaMask not found');
+    alert('Please install MetaMask.');
   }
 }
 
@@ -49,11 +45,11 @@ async function loadContractData() {
 
 window.buyTokens = async function () {
   const amount = document.getElementById('buyAmount').value;
-  const token = await contract.paymentToken();
-  const paymentContract = new ethers.Contract(token, contractABI, signer);
   const parsedAmount = ethers.utils.parseUnits(amount);
+  const tokenAddress = await contract.paymentToken();
+  const paymentToken = new ethers.Contract(tokenAddress, contractABI, signer);
 
-  await paymentContract.approve(contractAddress, parsedAmount);
+  await paymentToken.approve(contractAddress, parsedAmount);
   await contract.buyTokens(parsedAmount);
   alert('WYT purchased');
 }
