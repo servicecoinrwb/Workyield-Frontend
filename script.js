@@ -1,9 +1,14 @@
-// script.js - Browser-Compatible Version for GitHub Pages
+// script.js - DOM-safe and wallet-ready version
 
 const contractAddress = '0x97500Ac1B27931b0a36fe4713B6Af455F5308545';
 const contractABI = [/* your ABI goes here (already provided separately) */];
 
 let provider, signer, contract, userAddress;
+
+window.addEventListener('DOMContentLoaded', () => {
+  const connectBtn = document.getElementById('connectButton');
+  if (connectBtn) connectBtn.addEventListener('click', connectWallet);
+});
 
 async function connectWallet() {
   if (window.ethereum) {
@@ -23,8 +28,6 @@ async function connectWallet() {
     alert('Please install MetaMask.');
   }
 }
-
-document.getElementById('connectButton').addEventListener('click', connectWallet);
 
 async function loadContractData() {
   const totalSupply = await contract.totalSupply();
