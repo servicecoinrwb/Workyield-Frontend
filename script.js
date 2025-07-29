@@ -1,4 +1,22 @@
-// script.js - Final corrected version with latest contract and all improvements
+Of course. The `script.js` file you've sent is an older version pointing to a previous smart contract.
+
+Let's get you fully updated. The code below is the final version, which connects to your latest smart contract (`0x5a9d...`) and includes all the user experience improvements we've discussed (like the new swap interface and fee display).
+
+-----
+
+### \#\# Final and Correct `script.js`
+
+Please follow these instructions exactly to ensure everything is up to date.
+
+1.  Go to your project folder and **delete the entire content** of your current `script.js` file so it is completely empty.
+2.  Copy the **entire code block** below.
+3.  Paste it into your empty `script.js` file and **save** it.
+4.  Go to your browser and perform a **Hard Refresh** (**Ctrl+Shift+R** or **Cmd+Shift+R**). This is a very important step.
+
+<!-- end list -->
+
+```javascript
+// script.js - Final version with latest contract and all improvements
 
 // --- CONFIGURATION ---
 const contractAddress = '0x5a9d7DF133a1426f78D17Ac2EE41DE2F8ECb1eF6';
@@ -33,50 +51,57 @@ const App = {
     },
 
     cacheDOMElements() {
-    this.elements = {
-        connectButton: document.getElementById('connectButton'),
-        totalSupply: document.getElementById('totalSupply'),
-        availableTokens: document.getElementById('availableTokens'),
-        paymentBalance: document.getElementById('paymentBalance'),
-        adminPanel: document.getElementById('adminPanel'),
-        workOrderTable: document.getElementById('workOrderTable'),
-        userBalance: document.getElementById('userBalance'),
-        wytPrice: document.getElementById('wytPrice'),
-        
-        // New Swap UI Elements
-        buyTab: document.getElementById('buyTab'),
-        redeemTab: document.getElementById('redeemTab'),
-        buyPanel: document.getElementById('buyPanel'),
-        redeemPanel: document.getElementById('redeemPanel'),
-        pUSDBalance: document.getElementById('pUSDBalance'),
-        wytUserBalance: document.getElementById('wytUserBalance'),
-        receiveAmount: document.getElementById('receiveAmount'),
-        swapButton: document.getElementById('swapButton'),
+        this.elements = {
+            connectButton: document.getElementById('connectButton'),
+            totalSupply: document.getElementById('totalSupply'),
+            availableTokens: document.getElementById('availableTokens'),
+            paymentBalance: document.getElementById('paymentBalance'),
+            adminPanel: document.getElementById('adminPanel'),
+            workOrderTable: document.getElementById('workOrderTable'),
+            userBalance: document.getElementById('userBalance'),
+            wytPrice: document.getElementById('wytPrice'),
+            
+            // New Swap UI Elements
+            buyTab: document.getElementById('buyTab'),
+            redeemTab: document.getElementById('redeemTab'),
+            buyPanel: document.getElementById('buyPanel'),
+            redeemPanel: document.getElementById('redeemPanel'),
+            pUSDBalance: document.getElementById('pUSDBalance'),
+            wytUserBalance: document.getElementById('wytUserBalance'),
+            receiveAmount: document.getElementById('receiveAmount'),
+            swapButton: document.getElementById('swapButton'),
 
-        buyAmountInput: document.getElementById('buyAmount'),
-        redeemAmountInput: document.getElementById('redeemAmount'),
-        
-        // Admin Panel Elements
-        collectedFees: document.getElementById('collectedFees'), // Add this line
-        mintAmountInput: document.getElementById('mintAmount'),
-        mintDescriptionInput: document.getElementById('mintDescription'),
-        mintButton: document.getElementById('mintButton'),
-        fundIdInput: document.getElementById('fundId'),
-        fundAmountInput: document.getElementById('fundAmount'),
-        fundButton: document.getElementById('fundButton'),
-        withdrawFeesButton: document.getElementById('withdrawFeesButton'),
-        feeInput: document.getElementById('feeInput'),
-        setFeeButton: document.getElementById('setFeeButton'),
-        cancelIdInput: document.getElementById('cancelId'),
-        cancelButton: document.getElementById('cancelButton'),
-        exportPdfButton: document.getElementById('exportPdfButton')
-    };
-},
+            buyAmountInput: document.getElementById('buyAmount'),
+            redeemAmountInput: document.getElementById('redeemAmount'),
+            
+            // Admin Panel Elements
+            collectedFees: document.getElementById('collectedFees'),
+            mintAmountInput: document.getElementById('mintAmount'),
+            mintDescriptionInput: document.getElementById('mintDescription'),
+            mintButton: document.getElementById('mintButton'),
+            fundIdInput: document.getElementById('fundId'),
+            fundAmountInput: document.getElementById('fundAmount'),
+            fundButton: document.getElementById('fundButton'),
+            withdrawFeesButton: document.getElementById('withdrawFeesButton'),
+            feeInput: document.getElementById('feeInput'),
+            setFeeButton: document.getElementById('setFeeButton'),
+            cancelIdInput: document.getElementById('cancelId'),
+            cancelButton: document.getElementById('cancelButton'),
+            exportPdfButton: document.getElementById('exportPdfButton')
+        };
+    },
   
     addEventListeners() {
         this.elements.connectButton?.addEventListener('click', () => this.connectWallet());
-        this.elements.buyButton?.addEventListener('click', () => this.buyTokens());
-        this.elements.redeemButton?.addEventListener('click', () => this.redeemTokens());
+        
+        // Listen to the main swap button
+        this.elements.swapButton?.addEventListener('click', () => this.executeSwap());
+
+        // Listen for input changes to update calculations
+        this.elements.buyAmountInput?.addEventListener('input', () => this.updateReceiveAmount());
+        this.elements.redeemAmountInput?.addEventListener('input', () => this.updateReceiveAmount());
+
+        // Admin Panel Listeners...
         this.elements.mintButton?.addEventListener('click', () => this.mintWorkOrder());
         this.elements.fundButton?.addEventListener('click', () => this.fundWorkOrder());
         this.elements.withdrawFeesButton?.addEventListener('click', () => this.withdrawFees());
@@ -123,87 +148,136 @@ const App = {
     },
 
     async loadContractData() {
-    try {
-        this.wytDecimals = await this.contract.decimals();
-        const paymentTokenAddress = await this.contract.paymentToken();
-        const paymentTokenContract = new ethers.Contract(paymentTokenAddress, tokenABI, this.provider);
-        this.paymentTokenDecimals = await paymentTokenContract.decimals();
-        
-        console.log(`WYT Decimals: ${this.wytDecimals}, Payment Token Decimals: ${this.paymentTokenDecimals}`);
+        try {
+            this.wytDecimals = await this.contract.decimals();
+            const paymentTokenAddress = await this.contract.paymentToken();
+            const paymentTokenContract = new ethers.Contract(paymentTokenAddress, tokenABI, this.provider);
+            this.paymentTokenDecimals = await paymentTokenContract.decimals();
+            
+            console.log(`WYT Decimals: ${this.wytDecimals}, Payment Token Decimals: ${this.paymentTokenDecimals}`);
 
-        const [totalSupply, available, paymentBalance, owner, userWytBalance, userPusdBalance, collectedFees] = await Promise.all([
-            this.contract.totalSupply(),
-            this.contract.availableTokens(),
-            this.contract.contractPaymentTokenBalance(),
-            this.contract.owner(),
-            this.contract.balanceOf(this.userAddress),
-            paymentTokenContract.balanceOf(this.userAddress),
-            this.contract.collectedFees() // Fetch the collected fees
-        ]);
-        
-        // Display all the data
-        this.elements.totalSupply.textContent = this.formatTokenValue(totalSupply, this.wytDecimals);
-        this.elements.availableTokens.textContent = this.formatTokenValue(available, this.wytDecimals);
-        this.elements.paymentBalance.textContent = this.formatTokenValue(paymentBalance, this.paymentTokenDecimals);
-        this.elements.userBalance.textContent = this.formatTokenValue(userWytBalance, this.wytDecimals);
-        this.elements.collectedFees.textContent = this.formatTokenValue(collectedFees, this.paymentTokenDecimals); // Display the fees
-        
-        // Populate new swap UI balances
-        this.elements.wytUserBalance.textContent = this.formatTokenValue(userWytBalance, this.wytDecimals);
-        this.elements.pUSDBalance.textContent = this.formatTokenValue(userPusdBalance, this.paymentTokenDecimals);
+            const [totalSupply, available, paymentBalance, owner, userWytBalance, userPusdBalance, collectedFees] = await Promise.all([
+                this.contract.totalSupply(),
+                this.contract.availableTokens(),
+                this.contract.contractPaymentTokenBalance(),
+                this.contract.owner(),
+                this.contract.balanceOf(this.userAddress),
+                paymentTokenContract.balanceOf(this.userAddress),
+                this.contract.collectedFees()
+            ]);
+            
+            this.elements.totalSupply.textContent = this.formatTokenValue(totalSupply, this.wytDecimals);
+            this.elements.availableTokens.textContent = this.formatTokenValue(available, this.wytDecimals);
+            this.elements.paymentBalance.textContent = this.formatTokenValue(paymentBalance, this.paymentTokenDecimals);
+            this.elements.userBalance.textContent = this.formatTokenValue(userWytBalance, this.wytDecimals);
+            this.elements.collectedFees.textContent = this.formatTokenValue(collectedFees, this.paymentTokenDecimals);
+            
+            this.elements.wytUserBalance.textContent = this.formatTokenValue(userWytBalance, this.wytDecimals);
+            this.elements.pUSDBalance.textContent = this.formatTokenValue(userPusdBalance, this.paymentTokenDecimals);
 
-        if (!totalSupply.isZero()) {
-            const price = paymentBalance.mul(ethers.utils.parseUnits("1", this.wytDecimals)).div(totalSupply);
-            this.elements.wytPrice.textContent = this.formatTokenValue(price, this.paymentTokenDecimals);
-        } else {
-            this.elements.wytPrice.textContent = '0.00';
+            if (!totalSupply.isZero()) {
+                const price = paymentBalance.mul(ethers.utils.parseUnits("1", this.wytDecimals)).div(totalSupply);
+                this.elements.wytPrice.textContent = this.formatTokenValue(price, this.paymentTokenDecimals);
+            } else {
+                this.elements.wytPrice.textContent = '0.00';
+            }
+            
+            if (owner.toLowerCase() === this.userAddress.toLowerCase()) {
+                this.elements.adminPanel.classList.remove('hidden');
+            }
+            
+            this.renderWorkOrders();
+            this.updateReceiveAmount();
+        } catch (error) {
+            console.error("Error loading contract data:", error);
+            this.showNotification('Failed to load contract data.', 'error');
         }
-        
-        if (owner.toLowerCase() === this.userAddress.toLowerCase()) {
-            this.elements.adminPanel.classList.remove('hidden');
-        }
-        
-        this.renderWorkOrders();
-        this.updateReceiveAmount();
-    } catch (error) {
-        console.error("Error loading contract data:", error);
-        this.showNotification('Failed to load contract data.', 'error');
-    }
-},
+    },
   
     // --- USER & ADMIN ACTIONS ---
-    async buyTokens() {
-        await this.handleTransaction(this.elements.buyButton, async () => {
-            const amount = this.elements.buyAmountInput.value;
-            if (!amount || parseFloat(amount) <= 0) throw new Error("Please enter a valid amount.");
+    async executeSwap() {
+        const isBuy = this.elements.buyPanel.style.display !== 'none';
+        if (isBuy) {
+            await this.handleTransaction(this.elements.swapButton, async () => {
+                const amount = this.elements.buyAmountInput.value;
+                if (!amount || parseFloat(amount) <= 0) throw new Error("Please enter a valid amount.");
 
-            const parsedAmount = ethers.utils.parseUnits(amount, this.paymentTokenDecimals);
-            const tokenAddress = await this.contract.paymentToken();
-            const paymentToken = new ethers.Contract(tokenAddress, tokenABI, this.signer);
+                const parsedAmount = ethers.utils.parseUnits(amount, this.paymentTokenDecimals);
+                const tokenAddress = await this.contract.paymentToken();
+                const paymentToken = new ethers.Contract(tokenAddress, tokenABI, this.signer);
 
-            const approveTx = await paymentToken.approve(contractAddress, parsedAmount);
-            this.showNotification('Approving spend... please wait.', 'info');
-            await approveTx.wait();
+                const approveTx = await paymentToken.approve(contractAddress, parsedAmount);
+                this.showNotification('Approving spend... please wait.', 'info');
+                await approveTx.wait();
 
-            this.showNotification('Approval successful! Now buying...', 'info');
-            const buyTx = await this.contract.buyTokens(parsedAmount);
-            await buyTx.wait();
-            
-            return 'WYT purchased successfully!';
-        });
+                this.showNotification('Approval successful! Now buying...', 'info');
+                const buyTx = await this.contract.buyTokens(parsedAmount);
+                await buyTx.wait();
+                
+                this.elements.buyAmountInput.value = '';
+                return 'WYT purchased successfully!';
+            });
+        } else { // It's a redeem action
+            await this.handleTransaction(this.elements.swapButton, async () => {
+                const amount = this.elements.redeemAmountInput.value;
+                if (!amount || parseFloat(amount) <= 0) throw new Error("Please enter a valid amount.");
+                const parsedAmount = ethers.utils.parseUnits(amount, this.wytDecimals);
+                const tx = await this.contract.redeemTokens(parsedAmount);
+                await tx.wait();
+                this.elements.redeemAmountInput.value = '';
+                return 'WYT redeemed successfully!';
+            });
+        }
     },
 
-    async redeemTokens() {
-        await this.handleTransaction(this.elements.redeemButton, async () => {
-            const amount = this.elements.redeemAmountInput.value;
-            if (!amount || parseFloat(amount) <= 0) throw new Error("Please enter a valid amount.");
-            const parsedAmount = ethers.utils.parseUnits(amount, this.wytDecimals);
-            const tx = await this.contract.redeemTokens(parsedAmount);
-            await tx.wait();
-            return 'WYT redeemed successfully!';
-        });
+    switchTab(tab) {
+        const isBuy = tab === 'buy';
+        this.elements.buyTab.classList.toggle('active', isBuy);
+        this.elements.redeemTab.classList.toggle('active', !isBuy);
+        this.elements.buyPanel.style.display = isBuy ? 'block' : 'none';
+        this.elements.redeemPanel.style.display = isBuy ? 'none' : 'block';
+        this.updateReceiveAmount();
     },
-  
+
+    updateReceiveAmount() {
+        const isBuy = this.elements.buyPanel.style.display !== 'none';
+        const priceText = this.elements.wytPrice.textContent.replace(/,/g, '');
+        const price = parseFloat(priceText);
+        if (isNaN(price)) return;
+
+        let receiveAmount = 0;
+        let buttonText = 'Swap';
+        let disabled = true;
+
+        if (isBuy) {
+            const amount = parseFloat(this.elements.buyAmountInput.value);
+            if (!isNaN(amount) && amount > 0 && price > 0) {
+                receiveAmount = amount / price;
+                buttonText = 'Buy WYT';
+                disabled = false;
+            } else {
+                buttonText = 'Enter an amount';
+            }
+        } else { // isRedeem
+            const amount = parseFloat(this.elements.redeemAmountInput.value);
+            if (!isNaN(amount) && amount > 0) {
+                receiveAmount = amount * price;
+                buttonText = 'Redeem WYT';
+                disabled = false;
+            } else {
+                buttonText = 'Enter an amount';
+            }
+        }
+
+        this.elements.receiveAmount.textContent = receiveAmount.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 4
+        });
+
+        this.elements.swapButton.textContent = buttonText;
+        this.elements.swapButton.disabled = disabled;
+    },
+    
     async mintWorkOrder() {
         await this.handleTransaction(this.elements.mintButton, async () => {
             const grossYield = this.elements.mintAmountInput.value;
@@ -427,3 +501,4 @@ document.head.appendChild(styleSheet);
 
 // --- START THE APP ---
 window.addEventListener('DOMContentLoaded', () => App.init());
+```
