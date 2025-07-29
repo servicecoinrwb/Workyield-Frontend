@@ -174,17 +174,23 @@ const App = {
     });
   },
   
-  async mintWorkOrder() {
-    await this.handleTransaction(this.elements.mintButton, async () => {
-      const grossYield = this.elements.mintAmountInput.value;
-      const desc = this.elements.mintDescriptionInput.value;
-      if (!grossYield || !desc) throw new Error("Gross yield and description are required.");
-      const tx = await this.contract.mintFromWorkOrder(ethers.utils.parseUnits(grossYield, this.wytDecimals), desc);
-      await tx.wait();
-      this.renderWorkOrders();
-      return 'Work order minted!';
-    });
-  },
+  // Replace your existing mintWorkOrder function with this one
+
+async mintWorkOrder() {
+  await this.handleTransaction(this.elements.mintButton, async () => {
+    const grossYield = this.elements.mintAmountInput.value;
+    const desc = this.elements.mintDescriptionInput.value;
+    if (!grossYield || !desc) throw new Error("Gross yield and description are required.");
+
+    // --- FIX: Use paymentTokenDecimals for the Gross Yield ---
+    const parsedGrossYield = ethers.utils.parseUnits(grossYield, this.paymentTokenDecimals);
+    
+    const tx = await this.contract.mintFromWorkOrder(parsedGrossYield, desc);
+    await tx.wait();
+    this.renderWorkOrders();
+    return 'Work order minted!';
+  });
+},
 
   async fundWorkOrder() {
     await this.handleTransaction(this.elements.fundButton, async () => {
