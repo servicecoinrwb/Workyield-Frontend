@@ -18,23 +18,28 @@
       <button id="connectButton" class="bg-orange-500 text-white px-5 py-2">Connect Wallet</button>
     </header>
 
-    <section id="tokenInfo" class="mb-8">
-      <h2>Token Overview</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-          <div class="bg-secondary p-4 rounded-lg">
-              <p class="text-sm text-secondary">Total Supply</p>
-              <p id="totalSupply" class="text-2xl font-semibold">...</p>
-          </div>
-          <div class="bg-secondary p-4 rounded-lg">
-              <p class="text-sm text-secondary">Available WYT</p>
-              <p id="availableTokens" class="text-2xl font-semibold">...</p>
-          </div>
-          <div class="bg-secondary p-4 rounded-lg">
-              <p class="text-sm text-secondary">Contract pUSD Balance</p>
-              <p id="paymentBalance" class="text-2xl font-semibold">...</p>
-          </div>
-      </div>
-    </section>
+   <section id="tokenInfo" class="mb-8">
+  <h2>Token Overview</h2>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+    <div class="bg-secondary p-4 rounded-lg">
+      <p class="text-sm text-secondary">Total Supply</p>
+      <p id="totalSupply" class="text-2xl font-semibold">...</p>
+    </div>
+    <div class="bg-secondary p-4 rounded-lg">
+      <p class="text-sm text-secondary">Available WYT</p>
+      <p id="availableTokens" class="text-2xl font-semibold">...</p>
+    </div>
+    <div class="bg-secondary p-4 rounded-lg">
+      <p class="text-sm text-secondary">Contract pUSD Balance</p>
+      <p id="paymentBalance" class="text-2xl font-semibold">...</p>
+    </div>
+
+    <div class="bg-secondary p-4 rounded-lg">
+      <p class="text-sm text-secondary">Your WYT Balance</p>
+      <p id="userBalance" class="text-2xl font-semibold">...</p>
+    </div>
+  </div>
+</section>
 
     <section id="buyRedeem" class="mb-8">
       <h2>Buy / Redeem WYT</h2>
