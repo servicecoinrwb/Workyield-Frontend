@@ -1,52 +1,128 @@
+/*
+ * Modern Look for WorkYield Dashboard
+ * Date: 2025-07-29
+ */
+
+/* Import the 'Inter' font for a clean, modern typeface */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* Define the color palette and other theme variables */
+:root {
+  --bg-primary: #111827;      /* A deep, dark blue-gray */
+  --bg-secondary: #1f2937;    /* A slightly lighter container background */
+  --accent: #f97316;          /* The primary orange accent color */
+  --accent-hover: #fb923c;    /* A lighter orange for hovers */
+  --text-primary: #f3f4f6;    /* Off-white for main text */
+  --text-secondary: #9ca3af;   /* A dimmer gray for labels and secondary text */
+  --border-color: #374151;    /* Subtle border color */
+  --success: #10b981;         /* Green for success actions */
+  --danger: #ef4444;          /* Red for destructive actions */
+  --radius: 0.5rem;           /* Standard border radius */
+}
+
+/* General body styles */
 body {
   font-family: 'Inter', sans-serif;
-  background-color: #0f0f0f;
-  color: #ffffff;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3 {
-  color: #f97316; /* orange-500 */
+/* Heading styles with better hierarchy and spacing */
+h1 {
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+h2 {
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1.5rem !important; /* Overrides Tailwind's mb-2 */
+}
+h3 {
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
-input, button {
-  transition: all 0.2s ease;
+/* Input field styles */
+input[type="number"],
+input[type="text"] {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  color: var(--text-primary);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
 }
 
 input:focus {
   outline: none;
-  border: 2px solid #f97316;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2); /* Soft focus glow */
+}
+
+/* Button styles */
+button {
+  border-radius: var(--radius);
+  font-weight: 600;
+  padding: 0.65rem 1.25rem;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.2s ease, filter 0.2s ease;
+}
+
+button:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-2px); /* A more pronounced hover effect */
+}
+button:active:not(:disabled) {
+  transform: translateY(-1px);
 }
 
 button:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
-#connectButton {
-  background-color: #f97316;
-  font-weight: 600;
-}
+/* Specific button colors to override Tailwind defaults */
+.bg-orange-500, #connectButton { background-color: var(--accent); color: white; }
+.bg-green-600 { background-color: var(--success); color: white; }
+.bg-red-600, .bg-pink-600 { background-color: var(--danger); color: white; }
 
-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-}
-
+/* Modern, borderless table design */
 table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius);
+  overflow: hidden; /* Clip content to the rounded corners */
 }
 
 th, td {
-  padding: 0.5rem;
-  border: 1px solid #333;
+  padding: 1rem 1.25rem;
   text-align: left;
+  border-bottom: 1px solid var(--border-color); /* Horizontal lines only */
+}
+
+tbody tr:last-child td {
+  border-bottom: none; /* Remove border from the last row */
 }
 
 thead {
-  background-color: #1f2937; /* gray-800 */
+  background-color: rgba(0, 0, 0, 0.15);
 }
 
-tbody tr:nth-child(odd) {
-  background-color: #111827; /* gray-900 */
+th {
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  font-weight: 600;
 }
