@@ -1,4 +1,4 @@
-// script.js - Modernized and corrected for dynamic token decimals.
+// script.js - Final corrected version
 
 // --- CONFIGURATION ---
 const contractAddress = '0x97500Ac1B27931b0a36fe4713B6Af455F5308545';
@@ -14,7 +14,6 @@ const tokenABI = [
 
 // Main contract ABI (Now populated with the full, correct ABI)
 const contractABI = [{"inputs":[{"internalType":"address","name":"initialOwner","type":"address"},{"internalType":"address","name":"paymentTokenAddress","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"allowance","type":"uint256"},{"internalType":"uint256","name":"needed","type":"uint256"}],"name":"ERC20InsufficientAllowance","type":"error"},{"inputs":[{"internalType":"address","name":"sender","type":"address"},{"internalType":"uint256","name":"balance","type":"uint256"},{"internalType":"uint256","name":"needed","type":"uint256"}],"name":"ERC20InsufficientBalance","type":"error"},{"inputs":[{"internalType":"address","name":"approver","type":"address"}],"name":"ERC20InvalidApprover","type":"error"},{"inputs":[{"internalType":"address","name":"receiver","type":"address"}],"name":"ERC20InvalidReceiver","type":"error"},{"inputs":[{"internalType":"address","name":"sender","type":"address"}],"name":"ERC20InvalidSender","type":"error"},{"inputs":[{"internalType":"address","name":"spender","type":"address"}],"name":"ERC20InvalidSpender","type":"error"},{"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"OwnableInvalidOwner","type":"error"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"OwnableUnauthorizedAccount","type":"error"},{"inputs":[],"name":"ReentrancyGuardReentrantCall","type":"error"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newFeePercentage","type":"uint256"}],"name":"RedemptionFeeSet","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"ReserveFunded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"holder","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"feeCollected","type":"uint256"}],"name":"TokensRedeemed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"yieldAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"tokensIssued","type":"uint256"}],"name":"WorkOrderMinted","type":"event"},{"inputs":[],"name":"RESERVE_PERCENTAGE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"availableTokens","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"buyTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"workOrderId","type":"uint256"}],"name":"cancelWorkOrder","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"collectedFees","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"contractPaymentTokenBalance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"workOrderId","type":"uint256"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"fundFromWorkOrderPayment","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"string","name":"description","type":"string"}],"name":"mintFromWorkOrder","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"nextWorkOrderId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"paymentToken","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"redeemTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"redemptionFeePercentage","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"newFeePercentage","type":"uint256"}],"name":"setRedemptionFee","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalReserveFund","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"withdrawFees","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"workOrders","outputs":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"uint256","name":"reserveAmount","type":"uint256"},{"internalType":"uint256","name":"tokensIssued","type":"uint256"},{"internalType":"bool","name":"isActive","type":"bool"},{"internalType":"bool","name":"isPaid","type":"bool"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"createdAt","type":"uint256"}],"stateMutability":"view","type":"function"}];
-
 
 // --- APPLICATION STATE & ELEMENTS ---
 const App = {
@@ -73,13 +72,11 @@ const App = {
     this.elements.cancelButton?.addEventListener('click', () => this.cancelWorkOrder());
     this.elements.exportPdfButton?.addEventListener('click', () => this.exportPDF());
 
-    // Listen for account changes
     if (window.ethereum) {
       window.ethereum.on('accountsChanged', (accounts) => {
         if (accounts.length > 0) {
           this.connectWallet();
         } else {
-          // Handle disconnection
           this.userAddress = null;
           this.elements.connectButton.textContent = 'Connect Wallet';
           this.elements.connectButton.disabled = false;
@@ -115,10 +112,7 @@ const App = {
 
   async loadContractData() {
     try {
-      // Get decimals for WYT token first
       this.wytDecimals = await this.contract.decimals();
-
-      // Get payment token address and its decimals
       const paymentTokenAddress = await this.contract.paymentToken();
       const paymentTokenContract = new ethers.Contract(paymentTokenAddress, tokenABI, this.provider);
       this.paymentTokenDecimals = await paymentTokenContract.decimals();
@@ -132,7 +126,6 @@ const App = {
         this.contract.owner()
       ]);
       
-      // Use correct decimals for formatting
       this.elements.totalSupply.textContent = this.formatTokenValue(totalSupply, this.wytDecimals);
       this.elements.availableTokens.textContent = this.formatTokenValue(available, this.wytDecimals);
       this.elements.paymentBalance.textContent = this.formatTokenValue(paymentBalance, this.paymentTokenDecimals);
@@ -154,7 +147,6 @@ const App = {
       const amount = this.elements.buyAmountInput.value;
       if (!amount || parseFloat(amount) <= 0) throw new Error("Please enter a valid amount.");
 
-      // Use correct decimals for the payment token
       const parsedAmount = ethers.utils.parseUnits(amount, this.paymentTokenDecimals);
       const tokenAddress = await this.contract.paymentToken();
       const paymentToken = new ethers.Contract(tokenAddress, tokenABI, this.signer);
@@ -175,7 +167,6 @@ const App = {
     await this.handleTransaction(this.elements.redeemButton, async () => {
         const amount = this.elements.redeemAmountInput.value;
         if (!amount || parseFloat(amount) <= 0) throw new Error("Please enter a valid amount.");
-        // Use correct decimals for the WYT token
         const parsedAmount = ethers.utils.parseUnits(amount, this.wytDecimals);
         const tx = await this.contract.redeemTokens(parsedAmount);
         await tx.wait();
@@ -188,7 +179,6 @@ const App = {
       const grossYield = this.elements.mintAmountInput.value;
       const desc = this.elements.mintDescriptionInput.value;
       if (!grossYield || !desc) throw new Error("Gross yield and description are required.");
-      // Use correct decimals for the WYT token
       const tx = await this.contract.mintFromWorkOrder(ethers.utils.parseUnits(grossYield, this.wytDecimals), desc);
       await tx.wait();
       this.renderWorkOrders();
@@ -201,7 +191,6 @@ const App = {
         const id = this.elements.fundIdInput.value;
         const amount = this.elements.fundAmountInput.value;
         if (!id || !amount) throw new Error("Work Order ID and amount are required.");
-        // Use correct decimals for the payment token
         const tx = await this.contract.fundFromWorkOrderPayment(id, ethers.utils.parseUnits(amount, this.paymentTokenDecimals));
         await tx.wait();
         this.renderWorkOrders();
@@ -242,53 +231,51 @@ const App = {
   
   // --- RENDERING & UTILITIES ---
   async renderWorkOrders() {
-  this.elements.workOrderTable.innerHTML = '<table><tbody><tr><td>Loading work orders...</td></tr></tbody></table>';
-  try {
-    const nextId = await this.contract.nextWorkOrderId();
-    if (nextId.eq(1)) {
-      this.elements.workOrderTable.innerHTML = '<p>No work orders found.</p>';
-      return;
-    }
-    
-    // Fetch all work orders in parallel for better performance
-    const promises = [];
-    for (let i = 1; i < nextId; i++) {
-      promises.push(this.contract.workOrders(i));
-    }
-    const workOrders = await Promise.all(promises);
+    this.elements.workOrderTable.innerHTML = '<table><tbody><tr><td>Loading work orders...</td></tr></tbody></table>';
+    try {
+      const nextId = await this.contract.nextWorkOrderId();
+      if (nextId.eq(1)) {
+        this.elements.workOrderTable.innerHTML = '<p>No work orders found.</p>';
+        return;
+      }
+      
+      const promises = [];
+      for (let i = 1; i < nextId; i++) {
+        promises.push(this.contract.workOrders(i));
+      }
+      const workOrders = await Promise.all(promises);
 
-    const tableHtml = `
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th><th>Gross Yield</th><th>Reserve</th><th>Issued</th>
-            <th>Active</th><th>Paid</th><th>Description</th><th>Created</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${workOrders.map(wo => `
+      const tableHtml = `
+        <table>
+          <thead>
             <tr>
-              <td>${wo.id}</td>
-              {/* --- FIX: Use correct decimals for each value --- */}
-              <td>${this.formatTokenValue(wo.grossYield, this.paymentTokenDecimals)}</td>
-              <td>${this.formatTokenValue(wo.reserveAmount, this.paymentTokenDecimals)}</td>
-              <td>${this.formatTokenValue(wo.tokensIssued, this.wytDecimals)}</td>
-              
-              <td>${wo.isActive ? '✅' : '❌'}</td>
-              <td>${wo.isPaid ? '✅' : '❌'}</td>
-              <td>${wo.description}</td>
-              <td>${new Date(wo.createdAt * 1000).toLocaleDateString()}</td>
+              <th>ID</th><th>Gross Yield</th><th>Reserve</th><th>Issued</th>
+              <th>Active</th><th>Paid</th><th>Description</th><th>Created</th>
             </tr>
-          `).join('')}
-        </tbody>
-      </table>
-    `;
-    this.elements.workOrderTable.innerHTML = tableHtml;
-  } catch (err) {
-    console.error("Could not render work orders", err);
-    this.elements.workOrderTable.innerHTML = '<p class="text-red-500">Error loading work orders.</p>';
-  }
-},
+          </thead>
+          <tbody>
+            ${workOrders.map(wo => `
+              <tr>
+                <td>${wo.id}</td>
+                <td>${this.formatTokenValue(wo.grossYield, this.paymentTokenDecimals)}</td>
+                <td>${this.formatTokenValue(wo.reserveAmount, this.paymentTokenDecimals)}</td>
+                <td>${this.formatTokenValue(wo.tokensIssued, this.wytDecimals)}</td>
+                <td>${wo.isActive ? '✅' : '❌'}</td>
+                <td>${wo.isPaid ? '✅' : '❌'}</td>
+                <td>${wo.description}</td>
+                <td>${new Date(wo.createdAt * 1000).toLocaleDateString()}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+      this.elements.workOrderTable.innerHTML = tableHtml;
+    } catch (err) {
+      console.error("Could not render work orders", err);
+      this.elements.workOrderTable.innerHTML = '<p class="text-red-500">Error loading work orders.</p>';
+    }
+  },
+
   exportPDF() {
     try {
       const { jsPDF } = window.jspdf;
