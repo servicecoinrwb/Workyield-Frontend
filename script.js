@@ -33,33 +33,45 @@ const App = {
     },
 
     cacheDOMElements() {
-        this.elements = {
-            connectButton: document.getElementById('connectButton'),
-            totalSupply: document.getElementById('totalSupply'),
-            availableTokens: document.getElementById('availableTokens'),
-            paymentBalance: document.getElementById('paymentBalance'),
-            adminPanel: document.getElementById('adminPanel'),
-            workOrderTable: document.getElementById('workOrderTable'),
-            userBalance: document.getElementById('userBalance'),
-            wytPrice: document.getElementById('wytPrice'),
-            buyAmountInput: document.getElementById('buyAmount'),
-            buyButton: document.getElementById('buyButton'),
-            redeemAmountInput: document.getElementById('redeemAmount'),
-            redeemButton: document.getElementById('redeemButton'),
-            mintAmountInput: document.getElementById('mintAmount'),
-            mintDescriptionInput: document.getElementById('mintDescription'),
-            mintButton: document.getElementById('mintButton'),
-            fundIdInput: document.getElementById('fundId'),
-            fundAmountInput: document.getElementById('fundAmount'),
-            fundButton: document.getElementById('fundButton'),
-            withdrawFeesButton: document.getElementById('withdrawFeesButton'),
-            feeInput: document.getElementById('feeInput'),
-            setFeeButton: document.getElementById('setFeeButton'),
-            cancelIdInput: document.getElementById('cancelId'),
-            cancelButton: document.getElementById('cancelButton'),
-            exportPdfButton: document.getElementById('exportPdfButton')
-        };
-    },
+    this.elements = {
+        connectButton: document.getElementById('connectButton'),
+        totalSupply: document.getElementById('totalSupply'),
+        availableTokens: document.getElementById('availableTokens'),
+        paymentBalance: document.getElementById('paymentBalance'),
+        adminPanel: document.getElementById('adminPanel'),
+        workOrderTable: document.getElementById('workOrderTable'),
+        userBalance: document.getElementById('userBalance'),
+        wytPrice: document.getElementById('wytPrice'),
+        
+        // New Swap UI Elements
+        buyTab: document.getElementById('buyTab'),
+        redeemTab: document.getElementById('redeemTab'),
+        buyPanel: document.getElementById('buyPanel'),
+        redeemPanel: document.getElementById('redeemPanel'),
+        pUSDBalance: document.getElementById('pUSDBalance'),
+        wytUserBalance: document.getElementById('wytUserBalance'),
+        receiveAmount: document.getElementById('receiveAmount'),
+        swapButton: document.getElementById('swapButton'),
+
+        buyAmountInput: document.getElementById('buyAmount'),
+        redeemAmountInput: document.getElementById('redeemAmount'),
+        
+        // Admin Panel Elements
+        collectedFees: document.getElementById('collectedFees'), // Add this line
+        mintAmountInput: document.getElementById('mintAmount'),
+        mintDescriptionInput: document.getElementById('mintDescription'),
+        mintButton: document.getElementById('mintButton'),
+        fundIdInput: document.getElementById('fundId'),
+        fundAmountInput: document.getElementById('fundAmount'),
+        fundButton: document.getElementById('fundButton'),
+        withdrawFeesButton: document.getElementById('withdrawFeesButton'),
+        feeInput: document.getElementById('feeInput'),
+        setFeeButton: document.getElementById('setFeeButton'),
+        cancelIdInput: document.getElementById('cancelId'),
+        cancelButton: document.getElementById('cancelButton'),
+        exportPdfButton: document.getElementById('exportPdfButton')
+    };
+},
   
     addEventListeners() {
         this.elements.connectButton?.addEventListener('click', () => this.connectWallet());
@@ -111,44 +123,53 @@ const App = {
     },
 
     async loadContractData() {
-        try {
-            this.wytDecimals = await this.contract.decimals();
-            const paymentTokenAddress = await this.contract.paymentToken();
-            const paymentTokenContract = new ethers.Contract(paymentTokenAddress, tokenABI, this.provider);
-            this.paymentTokenDecimals = await paymentTokenContract.decimals();
-            
-            console.log(`WYT Decimals: ${this.wytDecimals}, Payment Token Decimals: ${this.paymentTokenDecimals}`);
+    try {
+        this.wytDecimals = await this.contract.decimals();
+        const paymentTokenAddress = await this.contract.paymentToken();
+        const paymentTokenContract = new ethers.Contract(paymentTokenAddress, tokenABI, this.provider);
+        this.paymentTokenDecimals = await paymentTokenContract.decimals();
+        
+        console.log(`WYT Decimals: ${this.wytDecimals}, Payment Token Decimals: ${this.paymentTokenDecimals}`);
 
-            const [totalSupply, available, paymentBalance, owner, userBalance] = await Promise.all([
-                this.contract.totalSupply(),
-                this.contract.availableTokens(),
-                this.contract.contractPaymentTokenBalance(),
-                this.contract.owner(),
-                this.contract.balanceOf(this.userAddress)
-            ]);
-            
-            this.elements.totalSupply.textContent = this.formatTokenValue(totalSupply, this.wytDecimals);
-            this.elements.availableTokens.textContent = this.formatTokenValue(available, this.wytDecimals);
-            this.elements.paymentBalance.textContent = this.formatTokenValue(paymentBalance, this.paymentTokenDecimals);
-            this.elements.userBalance.textContent = this.formatTokenValue(userBalance, this.wytDecimals);
+        const [totalSupply, available, paymentBalance, owner, userWytBalance, userPusdBalance, collectedFees] = await Promise.all([
+            this.contract.totalSupply(),
+            this.contract.availableTokens(),
+            this.contract.contractPaymentTokenBalance(),
+            this.contract.owner(),
+            this.contract.balanceOf(this.userAddress),
+            paymentTokenContract.balanceOf(this.userAddress),
+            this.contract.collectedFees() // Fetch the collected fees
+        ]);
+        
+        // Display all the data
+        this.elements.totalSupply.textContent = this.formatTokenValue(totalSupply, this.wytDecimals);
+        this.elements.availableTokens.textContent = this.formatTokenValue(available, this.wytDecimals);
+        this.elements.paymentBalance.textContent = this.formatTokenValue(paymentBalance, this.paymentTokenDecimals);
+        this.elements.userBalance.textContent = this.formatTokenValue(userWytBalance, this.wytDecimals);
+        this.elements.collectedFees.textContent = this.formatTokenValue(collectedFees, this.paymentTokenDecimals); // Display the fees
+        
+        // Populate new swap UI balances
+        this.elements.wytUserBalance.textContent = this.formatTokenValue(userWytBalance, this.wytDecimals);
+        this.elements.pUSDBalance.textContent = this.formatTokenValue(userPusdBalance, this.paymentTokenDecimals);
 
-            if (!totalSupply.isZero()) {
-                const price = paymentBalance.mul(ethers.utils.parseUnits("1", this.wytDecimals)).div(totalSupply);
-                this.elements.wytPrice.textContent = this.formatTokenValue(price, this.paymentTokenDecimals);
-            } else {
-                this.elements.wytPrice.textContent = '0.00';
-            }
-            
-            if (owner.toLowerCase() === this.userAddress.toLowerCase()) {
-                this.elements.adminPanel.classList.remove('hidden');
-            }
-            
-            this.renderWorkOrders();
-        } catch (error) {
-            console.error("Error loading contract data:", error);
-            this.showNotification('Failed to load contract data.', 'error');
+        if (!totalSupply.isZero()) {
+            const price = paymentBalance.mul(ethers.utils.parseUnits("1", this.wytDecimals)).div(totalSupply);
+            this.elements.wytPrice.textContent = this.formatTokenValue(price, this.paymentTokenDecimals);
+        } else {
+            this.elements.wytPrice.textContent = '0.00';
         }
-    },
+        
+        if (owner.toLowerCase() === this.userAddress.toLowerCase()) {
+            this.elements.adminPanel.classList.remove('hidden');
+        }
+        
+        this.renderWorkOrders();
+        this.updateReceiveAmount();
+    } catch (error) {
+        console.error("Error loading contract data:", error);
+        this.showNotification('Failed to load contract data.', 'error');
+    }
+},
   
     // --- USER & ADMIN ACTIONS ---
     async buyTokens() {
