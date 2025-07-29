@@ -42,8 +42,6 @@ const App = {
             workOrderTable: document.getElementById('workOrderTable'),
             userBalance: document.getElementById('userBalance'),
             wytPrice: document.getElementById('wytPrice'),
-            
-            // New Swap UI Elements
             buyTab: document.getElementById('buyTab'),
             redeemTab: document.getElementById('redeemTab'),
             buyPanel: document.getElementById('buyPanel'),
@@ -52,11 +50,8 @@ const App = {
             wytUserBalance: document.getElementById('wytUserBalance'),
             receiveAmount: document.getElementById('receiveAmount'),
             swapButton: document.getElementById('swapButton'),
-
             buyAmountInput: document.getElementById('buyAmount'),
             redeemAmountInput: document.getElementById('redeemAmount'),
-            
-            // Admin Panel Elements
             collectedFees: document.getElementById('collectedFees'),
             mintAmountInput: document.getElementById('mintAmount'),
             mintDescriptionInput: document.getElementById('mintDescription'),
@@ -75,15 +70,11 @@ const App = {
   
     addEventListeners() {
         this.elements.connectButton?.addEventListener('click', () => this.connectWallet());
-        
-        // Listeners for the new swap UI
         this.elements.swapButton?.addEventListener('click', () => this.executeSwap());
         this.elements.buyTab?.addEventListener('click', () => this.switchTab('buy'));
         this.elements.redeemTab?.addEventListener('click', () => this.switchTab('redeem'));
         this.elements.buyAmountInput?.addEventListener('input', () => this.updateReceiveAmount());
         this.elements.redeemAmountInput?.addEventListener('input', () => this.updateReceiveAmount());
-
-        // Admin Panel Listeners
         this.elements.mintButton?.addEventListener('click', () => this.mintWorkOrder());
         this.elements.fundButton?.addEventListener('click', () => this.fundWorkOrder());
         this.elements.withdrawFeesButton?.addEventListener('click', () => this.withdrawFees());
@@ -123,7 +114,7 @@ const App = {
             
             this.showNotification('Wallet connected successfully!', 'success');
             await this.loadContractData();
-            this.switchTab('buy'); // Default to buy tab on connect
+            this.switchTab('buy');
         } catch (err) {
             console.error(err);
             this.showNotification('Wallet connection failed.', 'error');
@@ -169,7 +160,7 @@ const App = {
                 this.elements.adminPanel.classList.remove('hidden');
             }
             
-            this.renderWorkOrders();
+            await this.renderWorkOrders();
             this.updateReceiveAmount();
         } catch (error) {
             console.error("Error loading contract data:", error);
@@ -187,7 +178,8 @@ const App = {
 
                 const parsedAmount = ethers.utils.parseUnits(amount, this.paymentTokenDecimals);
                 
-                const approveTx = await this.getPaymentTokenContract().approve(contractAddress, parsedAmount);
+                const paymentToken = await this.getPaymentTokenContract();
+                const approveTx = await paymentToken.approve(contractAddress, parsedAmount);
                 this.showNotification('Approving spend... please wait.', 'info');
                 await approveTx.wait();
 
@@ -198,7 +190,7 @@ const App = {
                 this.elements.buyAmountInput.value = '';
                 return 'WYT purchased successfully!';
             });
-        } else { // It's a redeem action
+        } else {
             await this.handleTransaction(this.elements.swapButton, async () => {
                 const amount = this.elements.redeemAmountInput.value;
                 if (!amount || parseFloat(amount) <= 0) throw new Error("Please enter a valid amount.");
@@ -224,29 +216,34 @@ const App = {
         const isBuy = !this.elements.buyPanel.classList.contains('hidden');
         const priceText = this.elements.wytPrice.textContent.replace(/,/g, '');
         const price = parseFloat(priceText);
-        if (isNaN(price)) return;
+        
+        if (isNaN(price)) {
+            this.elements.swapButton.textContent = 'Price Unavailable';
+            this.elements.swapButton.disabled = true;
+            return;
+        }
 
         let receiveAmount = 0;
         let buttonText = 'Enter an amount';
         let disabled = true;
+        let amountInput = isBuy ? this.elements.buyAmountInput : this.elements.redeemAmountInput;
+        const amount = parseFloat(amountInput.value);
 
-        if (isBuy) {
-            const amount = parseFloat(this.elements.buyAmountInput.value);
-            if (!isNaN(amount) && amount > 0 && price > 0) {
-                receiveAmount = amount / price;
+        if (!isNaN(amount) && amount > 0) {
+            if (isBuy) {
+                if (price > 0) receiveAmount = amount / price;
                 buttonText = 'Buy WYT';
-                disabled = false;
-            }
-        } else { // isRedeem
-            const amount = parseFloat(this.elements.redeemAmountInput.value);
-            if (!isNaN(amount) && amount > 0) {
+            } else {
                 receiveAmount = amount * price;
                 buttonText = 'Redeem WYT';
-                disabled = false;
             }
+            disabled = false;
         }
-
-        this.elements.receiveAmount.textContent = this.formatTokenValue(ethers.utils.parseUnits(receiveAmount.toString(), isBuy ? this.wytDecimals : this.paymentTokenDecimals), isBuy ? this.wytDecimals : this.paymentTokenDecimals);
+        
+        this.elements.receiveAmount.textContent = receiveAmount.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 4
+        });
         this.elements.swapButton.textContent = buttonText;
         this.elements.swapButton.disabled = disabled;
     },
@@ -256,6 +253,7 @@ const App = {
             const grossYield = this.elements.mintAmountInput.value;
             const desc = this.elements.mintDescriptionInput.value;
             if (!grossYield || !desc) throw new Error("Gross yield and description are required.");
+            
             const parsedGrossYield = ethers.utils.parseUnits(grossYield, this.paymentTokenDecimals);
             const tx = await this.contract.mintFromWorkOrder(parsedGrossYield, desc);
             await tx.wait();
@@ -263,27 +261,25 @@ const App = {
         });
     },
 
-   async fundWorkOrder() {
-    await this.handleTransaction(this.elements.fundButton, async () => {
-        const id = this.elements.fundIdInput.value;
-        const amount = this.elements.fundAmountInput.value;
-        if (!id || !amount) throw new Error("Work Order ID and amount are required.");
-        
-        const parsedAmount = ethers.utils.parseUnits(amount, this.paymentTokenDecimals);
+    async fundWorkOrder() {
+        await this.handleTransaction(this.elements.fundButton, async () => {
+            const id = this.elements.fundIdInput.value;
+            const amount = this.elements.fundAmountInput.value;
+            if (!id || !amount) throw new Error("Work Order ID and amount are required.");
+            
+            const parsedAmount = ethers.utils.parseUnits(amount, this.paymentTokenDecimals);
+            const paymentToken = await this.getPaymentTokenContract();
+            const approveTx = await paymentToken.approve(contractAddress, parsedAmount);
 
-        // --- FIX: Automatically handle the approve step ---
-        const paymentToken = await this.getPaymentTokenContract();
-        const approveTx = await paymentToken.approve(contractAddress, parsedAmount);
-        
-        this.showNotification('Approving spend... please wait.', 'info');
-        await approveTx.wait();
+            this.showNotification('Approving spend... please wait.', 'info');
+            await approveTx.wait();
 
-        this.showNotification('Approval successful! Now funding...', 'info');
-        const tx = await this.contract.fundFromWorkOrderPayment(id, parsedAmount);
-        await tx.wait();
-        return 'Work order funded!';
-    });
-},
+            this.showNotification('Approval successful! Now funding...', 'info');
+            const tx = await this.contract.fundFromWorkOrderPayment(id, parsedAmount);
+            await tx.wait();
+            return 'Work order funded!';
+        });
+    },
 
     async withdrawFees() {
         await this.handleTransaction(this.elements.withdrawFeesButton, async () => {
