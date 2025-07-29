@@ -1,4 +1,4 @@
-// script.js - Updated with full admin functions
+// script.js - Updated with full admin functions and debug
 
 const contractAddress = '0x97500Ac1B27931b0a36fe4713B6Af455F5308545';
 const contractABI = [/* your ABI goes here */];
@@ -39,8 +39,11 @@ async function loadContractData() {
   document.getElementById('paymentBalance').textContent = ethers.utils.formatUnits(paymentBalance);
 
   const owner = await contract.owner();
+  console.log('Connected user:', userAddress);
+  console.log('Contract owner:', owner);
+
   if (owner.toLowerCase() === userAddress.toLowerCase()) {
-    document.getElementById('adminPanel').classList.remove('hidden');
+    document.getElementById('adminPanel')?.classList.remove('hidden');
   }
 
   renderWorkOrders();
