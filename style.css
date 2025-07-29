@@ -1,0 +1,52 @@
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #0f0f0f;
+  color: #ffffff;
+}
+
+h1, h2, h3 {
+  color: #f97316; /* orange-500 */
+}
+
+input, button {
+  transition: all 0.2s ease;
+}
+
+input:focus {
+  outline: none;
+  border: 2px solid #f97316;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#connectButton {
+  background-color: #f97316;
+  font-weight: 600;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 0.5rem;
+  border: 1px solid #333;
+  text-align: left;
+}
+
+thead {
+  background-color: #1f2937; /* gray-800 */
+}
+
+tbody tr:nth-child(odd) {
+  background-color: #111827; /* gray-900 */
+}
