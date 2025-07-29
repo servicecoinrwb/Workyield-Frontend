@@ -1,4 +1,4 @@
-// script.js - Modernized for improved UX, performance, and maintainability.
+// script.js - Modernized and corrected for dynamic token decimals.
 
 // --- CONFIGURATION ---
 const contractAddress = '0x97500Ac1B27931b0a36fe4713B6Af455F5308545';
@@ -22,6 +22,8 @@ const App = {
   signer: null,
   contract: null,
   userAddress: null,
+  wytDecimals: 18, // To store WYT decimal value
+  paymentTokenDecimals: 18, // To store Payment Token decimal value
   elements: {},
 
   // --- INITIALIZATION ---
@@ -113,6 +115,16 @@ const App = {
 
   async loadContractData() {
     try {
+      // Get decimals for WYT token first
+      this.wytDecimals = await this.contract.decimals();
+
+      // Get payment token address and its decimals
+      const paymentTokenAddress = await this.contract.paymentToken();
+      const paymentTokenContract = new ethers.Contract(paymentTokenAddress, tokenABI, this.provider);
+      this.paymentTokenDecimals = await paymentTokenContract.decimals();
+      
+      console.log(`WYT Decimals: ${this.wytDecimals}, Payment Token Decimals: ${this.paymentTokenDecimals}`);
+
       const [totalSupply, available, paymentBalance, owner] = await Promise.all([
         this.contract.totalSupply(),
         this.contract.availableTokens(),
@@ -120,9 +132,10 @@ const App = {
         this.contract.owner()
       ]);
       
-      this.elements.totalSupply.textContent = this.formatTokenValue(totalSupply);
-      this.elements.availableTokens.textContent = this.formatTokenValue(available);
-      this.elements.paymentBalance.textContent = this.formatTokenValue(paymentBalance);
+      // Use correct decimals for formatting
+      this.elements.totalSupply.textContent = this.formatTokenValue(totalSupply, this.wytDecimals);
+      this.elements.availableTokens.textContent = this.formatTokenValue(available, this.wytDecimals);
+      this.elements.paymentBalance.textContent = this.formatTokenValue(paymentBalance, this.paymentTokenDecimals);
       
       if (owner.toLowerCase() === this.userAddress.toLowerCase()) {
         this.elements.adminPanel.classList.remove('hidden');
@@ -141,7 +154,8 @@ const App = {
       const amount = this.elements.buyAmountInput.value;
       if (!amount || parseFloat(amount) <= 0) throw new Error("Please enter a valid amount.");
 
-      const parsedAmount = ethers.utils.parseUnits(amount);
+      // Use correct decimals for the payment token
+      const parsedAmount = ethers.utils.parseUnits(amount, this.paymentTokenDecimals);
       const tokenAddress = await this.contract.paymentToken();
       const paymentToken = new ethers.Contract(tokenAddress, tokenABI, this.signer);
 
@@ -161,7 +175,8 @@ const App = {
     await this.handleTransaction(this.elements.redeemButton, async () => {
         const amount = this.elements.redeemAmountInput.value;
         if (!amount || parseFloat(amount) <= 0) throw new Error("Please enter a valid amount.");
-        const parsedAmount = ethers.utils.parseUnits(amount);
+        // Use correct decimals for the WYT token
+        const parsedAmount = ethers.utils.parseUnits(amount, this.wytDecimals);
         const tx = await this.contract.redeemTokens(parsedAmount);
         await tx.wait();
         return 'WYT redeemed successfully!';
@@ -173,7 +188,8 @@ const App = {
       const grossYield = this.elements.mintAmountInput.value;
       const desc = this.elements.mintDescriptionInput.value;
       if (!grossYield || !desc) throw new Error("Gross yield and description are required.");
-      const tx = await this.contract.mintFromWorkOrder(ethers.utils.parseUnits(grossYield), desc);
+      // Use correct decimals for the WYT token
+      const tx = await this.contract.mintFromWorkOrder(ethers.utils.parseUnits(grossYield, this.wytDecimals), desc);
       await tx.wait();
       this.renderWorkOrders();
       return 'Work order minted!';
@@ -185,7 +201,8 @@ const App = {
         const id = this.elements.fundIdInput.value;
         const amount = this.elements.fundAmountInput.value;
         if (!id || !amount) throw new Error("Work Order ID and amount are required.");
-        const tx = await this.contract.fundFromWorkOrderPayment(id, ethers.utils.parseUnits(amount));
+        // Use correct decimals for the payment token
+        const tx = await this.contract.fundFromWorkOrderPayment(id, ethers.utils.parseUnits(amount, this.paymentTokenDecimals));
         await tx.wait();
         this.renderWorkOrders();
         return 'Work order funded!';
@@ -252,9 +269,9 @@ const App = {
             ${workOrders.map(wo => `
               <tr>
                 <td>${wo.id}</td>
-                <td>${this.formatTokenValue(wo.grossYield)}</td>
-                <td>${this.formatTokenValue(wo.reserveAmount)}</td>
-                <td>${this.formatTokenValue(wo.tokensIssued)}</td>
+                <td>${this.formatTokenValue(wo.grossYield, this.wytDecimals)}</td>
+                <td>${this.formatTokenValue(wo.reserveAmount, this.wytDecimals)}</td>
+                <td>${this.formatTokenValue(wo.tokensIssued, this.wytDecimals)}</td>
                 <td>${wo.isActive ? '✅' : '❌'}</td>
                 <td>${wo.isPaid ? '✅' : '❌'}</td>
                 <td>${wo.description}</td>
@@ -338,11 +355,8 @@ const App = {
     }, 4000);
   },
 
-  formatTokenValue(value, decimals = 18) {
+  formatTokenValue(value, decimals) {
     if (!value) return '0.0';
-    // The decimals() function is part of the new ABI, so we can try to use it.
-    // However, since we don't know the decimals of the payment token vs the main token,
-    // we will stick to the default of 18 which is common.
     const formatted = ethers.utils.formatUnits(value, decimals);
     return parseFloat(formatted).toLocaleString('en-US', {
       minimumFractionDigits: 2,
