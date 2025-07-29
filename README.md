@@ -1,122 +1,95 @@
 WorkYield Token V2 Dashboard
 A web-based decentralized application (dApp) for interacting with the WorkYield Token V2 smart contract. This dashboard provides a user-friendly interface for both regular token holders and contract administrators.
 
-Core Concept
-The WorkYield Token (WYT) is a digital asset whose supply and value are linked to productive, real-world projects, represented as "Work Orders" on the blockchain.
+🧠 Core Concept
+The WorkYield Token (WYT) is a digital asset whose supply and value are backed by productive, real-world jobs called Work Orders. This creates a bridge between on-chain assets and off-chain labor.
 
-Work Orders: An administrator can create a "Work Order" to represent a project that is expected to generate future revenue. When a Work Order is created, a corresponding amount of WYT is minted.
+Work Orders: Represent real projects expected to generate revenue. Admins mint WYT against their projected yield.
 
-Stablecoin Backing: The system uses a payment token (like pUSD, a stablecoin) as its primary currency. Users buy WYT with this token, and these funds can be used to finance the Work Orders.
+Stablecoin-Backed: Uses a stable payment token like pUSD to buy WYT, which funds those work orders.
 
-Yield Generation: As the real-world projects (Work Orders) are completed and generate revenue, funds are paid back into the contract, increasing the value backing the WYT tokens and allowing holders to redeem them.
+Yield Redemption: As projects generate income, that yield is used to redeem WYT, backing the token with actual economic value.
 
-This creates a transparent, on-chain system where token value is tied to the successful completion of tangible work.
+This system ties token value directly to successful job completion — building a sustainable, transparent DeFi model.
 
-Features
-The dashboard has two distinct sets of features based on user role.
-
+✨ Features
 👤 User Features
-Connect Wallet: Securely connect to the dApp using a browser wallet like MetaMask.
+Connect Wallet – Secure login using MetaMask or any EVM-compatible wallet.
 
-View Token Data: See real-time on-chain data, including the total supply of WYT, the number of available tokens, and the contract's balance of the payment token.
+Buy WYT – Convert pUSD into WorkYield Tokens.
 
-Buy WYT: Purchase WorkYield Tokens using the designated payment token (pUSD).
+Redeem WYT – Burn WYT for stablecoin yield (less a redemption fee).
 
-Redeem WYT: Exchange WYT back for the underlying payment token, subject to a small fee.
+View Token Stats – See total supply, payment token reserves, and available WYT.
 
-View Work Orders: See a detailed list of all active and past work orders, including their yield, funding status, and description.
+Explore Work Orders – Browse a live table of active and completed jobs.
 
-Export to PDF: Download a PDF report of the work orders table.
+Export to PDF – Download a PDF summary of all work orders.
 
 ⚙️ Admin Features
-The admin panel is automatically revealed if the connected wallet is the owner of the smart contract.
+Automatically shown when the connected wallet is the contract owner.
 
-Mint from Work Order: Create a new work order, minting new WYT tokens against its projected yield.
+Mint Work Order – Register a new job and mint WYT against projected yield.
 
-Fund Work Order: Allocate payment tokens from the contract's balance to a specific work order.
+Fund Work Order – Pay out funds from the contract to finance work orders.
 
-Withdraw Fees: Collect the redemption fees accumulated by the contract.
+Withdraw Fees – Collect accumulated redemption fees from the contract.
 
-Set Redemption Fee: Adjust the percentage fee for redeeming WYT.
+Set Redemption Fee – Adjust the percentage fee on redemptions.
 
-Cancel Work Order: Deactivate an existing work order if it's no longer valid.
+Cancel Work Order – Deactivate a job if it's invalid or refunded.
 
-Technology Stack
-Frontend: HTML5, CSS3, JavaScript (ES6+)
+🛠️ Tech Stack
+Layer	Tools
+Frontend	HTML5, JavaScript (ES6+), Tailwind CSS
+Web3 Integration	ethers.js
+PDF Export	jsPDF
+Smart Contract	Solidity (WYT V2 Contract)
 
-Styling: Tailwind CSS for layout and utility classes, with a custom (style.css) stylesheet for the modern, dark theme.
+🏗️ Architecture Overview
+HTML/CSS UI: index.html provides structure; style.css and Tailwind CSS deliver responsive styling.
 
-Blockchain Interaction: ethers.js is used as the bridge between the frontend application and the Ethereum blockchain.
+Script Engine: script.js uses ethers.js to:
 
-PDF Generation: jsPDF and jsPDF-AutoTable are used to create and download PDF reports.
+Connect to Ethereum-compatible wallets.
 
-Backend: An Ethereum-compatible Smart Contract (written in Solidity) deployed to a network like Ethereum, Polygon, or a testnet.
+Read smart contract state (e.g., availableTokens(), workOrders()).
 
-How It Works (Architecture)
-The application follows a standard dApp architecture:
+Send transactions to mutate state (e.g., buyTokens(), mintFromWorkOrder()).
 
-Interface (index.html, style.css): The browser renders the static HTML and CSS files to create the user interface.
+Admin Detection: Admin panel reveals automatically if wallet matches contract owner().
 
-Client-Side Logic (script.js): This is the core engine of the dApp.
+Live Feedback: Button spinners, toast alerts, and real-time UI updates.
 
-Initialization: On page load, the script prepares the application, caching references to HTML elements and setting up event listeners for all the buttons.
+🚀 Getting Started
+1. Clone the Repository
+bash
+Copy
+Edit
+git clone https://github.com/YOUR_USERNAME/WorkYieldTokenV2-Dashboard.git
+cd WorkYieldTokenV2-Dashboard
+2. Run a Local Server
+You cannot open index.html directly due to wallet provider restrictions. Use a dev server like live-server.
 
-Wallet Connection: When the user clicks "Connect Wallet," the script uses ethers.js to request a connection to the user's wallet.
-
-Data Fetching: After connecting, the script makes read-only view calls to the smart contract to fetch data like totalSupply() and workOrders(). This populates the dashboard with live, on-chain information.
-
-Transactions: When a user performs an action that changes the state of the blockchain (like buying or minting), the script builds a transaction. ethers.js sends this transaction to the user's wallet, which asks the user for confirmation (signing). Once signed, the transaction is sent to the blockchain to be processed.
-
-Feedback: The script provides real-time feedback through non-blocking notifications (toasts) and by setting buttons to a "loading" state while transactions are being processed.
-
-Setup and Installation
-To run this project locally, follow these steps:
-
-Clone the repository:
-
-Bash
-
-git clone <your-repository-url>
-cd <repository-folder>
-Run a local server:
-You cannot open index.html directly in the browser due to security restrictions. You need a simple local server. If you have Node.js installed, you can use live-server.
-
-Bash
-
-# Install live-server globally
+bash
+Copy
+Edit
 npm install -g live-server
-
-# Run the server from your project directory
 live-server
-Your browser will automatically open to the correct local address.
+Your default browser should launch the dApp automatically.
 
-Configuration:
-Before the dApp can function, you must configure it to point to your specific smart contract.
+3. Configuration
+Inside script.js:
 
-Open the script.js file.
+Update this line with your deployed contract:
 
-Update the contractAddress variable with the address of your deployed WorkYieldTokenV2 contract.
+js
+Copy
+Edit
+const contractAddress = '0xYourContractAddress';
+Ensure the contractABI block is complete and matches your contract's ABI.
 
-Ensure the contractABI variable contains the complete and correct JSON ABI from your compiled smart contract.
+📄 License
+MIT © [Your Name or Team Name]
 
-
-Sources
-
-
-
-
-
-
-
-
-
-
-
-Video
-
-Deep Research
-
-Canvas
-
-Image
-
+Let me know if you want it in .md format or want to add badges, screenshots, or deployment instructions (like GitHub Pages or Vercel).
