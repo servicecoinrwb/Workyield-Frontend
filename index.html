@@ -1,109 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Work Yield Token Dashboard</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-  <script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-  <script src="https://unpkg.com/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.js"></script>
-  <link rel="stylesheet" href="style.css">
-  <script src="script.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work Yield Token Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
 </head>
 <body class="min-h-screen">
-  <main class="container mx-auto max-w-7xl p-4 md:p-8">
-    <header class="flex justify-between items-center mb-10">
-      <h1 class="text-3xl font-bold">Work Yield</h1>
-      <button id="connectButton" class="bg-orange-500 text-white px-5 py-2">Connect Wallet</button>
-    </header>
+    <main class="container mx-auto max-w-7xl p-4 md:p-8">
+        <header class="flex justify-between items-center mb-10">
+            <h1 class="text-3xl font-bold">Work Yield</h1>
+            <button id="connectButton" class="btn btn-primary">Connect Wallet</button>
+        </header>
 
-   <section id="tokenInfo" class="mb-8">
-  <h2>Token Overview</h2>
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-    <div class="bg-secondary p-4 rounded-lg">
-      <p class="text-sm text-secondary">Total Supply</p>
-      <p id="totalSupply" class="text-2xl font-semibold">...</p>
-    </div>
-    <div class="bg-secondary p-4 rounded-lg">
-      <p class="text-sm text-secondary">Available WYT</p>
-      <p id="availableTokens" class="text-2xl font-semibold">...</p>
-    </div>
-    <div class="bg-secondary p-4 rounded-lg">
-      <p class="text-sm text-secondary">Contract pUSD Balance</p>
-      <p id="paymentBalance" class="text-2xl font-semibold">...</p>
-    </div>
+        <section id="tokenInfo" class="mb-8">
+            <h2>Token Overview</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+                <div class="bg-secondary p-4 rounded-lg">
+                    <p class="text-sm text-secondary">Total Supply</p>
+                    <p id="totalSupply" class="text-2xl font-semibold">...</p>
+                </div>
+                <div class="bg-secondary p-4 rounded-lg">
+                    <p class="text-sm text-secondary">Available WYT</p>
+                    <p id="availableTokens" class="text-2xl font-semibold">...</p>
+                </div>
+                <div class="bg-secondary p-4 rounded-lg">
+                    <p class="text-sm text-secondary">Contract pUSD Balance</p>
+                    <p id="paymentBalance" class="text-2xl font-semibold">...</p>
+                </div>
+                <div class="bg-secondary p-4 rounded-lg">
+                    <p class="text-sm text-secondary">Your WYT Balance</p>
+                    <p id="userBalance" class="text-2xl font-semibold">...</p>
+                </div>
+            </div>
+            <div class="mt-4 bg-secondary p-4 rounded-lg">
+                <p class="text-sm text-secondary">Current WYT Price</p>
+                <p class="text-2xl font-semibold"><span id="wytPrice">...</span> pUSD</p>
+            </div>
+        </section>
 
-    <div class="bg-secondary p-4 rounded-lg">
-      <p class="text-sm text-secondary">Your WYT Balance</p>
-      <p id="userBalance" class="text-2xl font-semibold">...</p>
-    </div>
-  </div>
-  <div class="mt-4 bg-secondary p-4 rounded-lg">
-      <p class="text-sm text-secondary">Current WYT Price</p>
-      <p class="text-2xl font-semibold"><span id="wytPrice">...</span> pUSD</p>
-  </div>
-</section>
+        <section id="buyRedeem" class="mb-8">
+            <h2>Buy / Redeem WYT</h2>
+            <div class="mt-4 max-w-md mx-auto bg-secondary p-6 rounded-lg">
+                <div class="flex border-b border-gray-700 mb-4">
+                    <button id="buyTab" class="tab-btn active">Buy</button>
+                    <button id="redeemTab" class="tab-btn">Redeem</button>
+                </div>
+                <div id="buyPanel">
+                    <div class="flex justify-between items-center mb-1">
+                        <label for="buyAmount" class="text-sm text-secondary">You pay</label>
+                        <span class="text-xs text-secondary">Balance: <span id="pUSDBalance">...</span></span>
+                    </div>
+                    <div class="flex items-center bg-gray-900 p-3 rounded-md">
+                        <input type="number" id="buyAmount" placeholder="0.0" class="w-full bg-transparent focus:outline-none text-2xl">
+                        <span class="font-semibold text-gray-400">pUSD</span>
+                    </div>
+                </div>
+                <div id="redeemPanel" class="hidden">
+                    <div class="flex justify-between items-center mb-1">
+                        <label for="redeemAmount" class="text-sm text-secondary">You pay</label>
+                        <span class="text-xs text-secondary">Balance: <span id="wytUserBalance">...</span></span>
+                    </div>
+                    <div class="flex items-center bg-gray-900 p-3 rounded-md">
+                        <input type="number" id="redeemAmount" placeholder="0.0" class="w-full bg-transparent focus:outline-none text-2xl">
+                        <span class="font-semibold text-gray-400">WYT</span>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-sm text-secondary">You receive (approx.)</p>
+                    <p id="receiveAmount" class="text-2xl font-semibold text-gray-400">0.00</p>
+                </div>
+                <button id="swapButton" class="w-full mt-6 btn btn-primary">Enter an amount</button>
+            </div>
+        </section>
 
-    <section id="buyRedeem" class="mb-8">
-      <h2>Buy / Redeem WYT</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-        <div>
-          <label for="buyAmount" class="block mb-2 font-semibold">Buy WYT</label>
-          <input type="number" id="buyAmount" placeholder="Amount to buy">
-          <button id="buyButton" class="mt-2 bg-green-600 w-full md:w-auto">Buy</button>
-        </div>
-        <div>
-          <label for="redeemAmount" class="block mb-2 font-semibold">Redeem WYT</label>
-          <input type="number" id="redeemAmount" placeholder="Amount to redeem">
-          <button id="redeemButton" class="mt-2 bg-red-600 w-full md:w-auto">Redeem</button>
-        </div>
-      </div>
-    </section>
+        <section id="adminPanel" class="mb-8 hidden">
+            <h2>Admin Panel</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
+                <div>
+                    <label for="mintAmount" class="block mb-2 font-semibold">Mint Work Order</label>
+                    <input id="mintAmount" type="number" placeholder="Gross Yield" class="mb-2">
+                    <input id="mintDescription" type="text" placeholder="Description">
+                    <button id="mintButton" class="w-full mt-2 btn btn-primary">Mint Order</button>
+                </div>
+                <div>
+                    <label for="fundId" class="block mb-2 font-semibold">Fund Work Order</label>
+                    <input id="fundId" type="number" placeholder="Work Order ID" class="mb-2">
+                    <input id="fundAmount" type="number" placeholder="Amount to fund">
+                    <button id="fundButton" class="w-full mt-2 btn btn-primary">Fund Order</button>
+                </div>
+                <div>
+                    <label for="feeInput" class="block mb-2 font-semibold">Set Redemption Fee</label>
+                    <input id="feeInput" type="number" min="0" max="20" placeholder="Fee % (e.g., 5 for 5%)">
+                    <button id="setFeeButton" class="w-full mt-2 btn btn-primary">Update Fee</button>
+                </div>
+                <div>
+                    <label for="cancelId" class="block mb-2 font-semibold">Cancel Work Order</label>
+                    <input id="cancelId" type="number" placeholder="Work Order ID">
+                    <button id="cancelButton" class="w-full mt-2 btn btn-primary">Cancel Order</button>
+                </div>
+                <div class="flex flex-col justify-end">
+                    <div>
+                        <label class="block mb-2 font-semibold">Available Fees to Withdraw</label>
+                        <p class="text-2xl font-semibold"><span id="collectedFees">0.00</span> pUSD</p>
+                    </div>
+                    <button id="withdrawFeesButton" class="w-full mt-2 btn btn-primary">Withdraw All Fees</button>
+                </div>
+            </div>
+        </section>
 
-    <section id="adminPanel" class="mb-8 hidden">
-      <h2>Admin Panel</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
-        <div>
-          <label for="mintAmount" class="block mb-2 font-semibold">Mint Work Order</label>
-          <input id="mintAmount" type="number" placeholder="Gross Yield" class="mb-2">
-          <input id="mintDescription" type="text" placeholder="Description">
-          <button id="mintButton" class="mt-2 bg-blue-600 w-full">Mint Order</button>
-        </div>
-        <div>
-          <label for="fundId" class="block mb-2 font-semibold">Fund Work Order</label>
-          <input id="fundId" type="number" placeholder="Work Order ID" class="mb-2">
-          <input id="fundAmount" type="number" placeholder="Amount to fund">
-          <button id="fundButton" class="mt-2 bg-yellow-600 w-full">Fund Order</button>
-        </div>
-        <div>
-          <label for="feeInput" class="block mb-2 font-semibold">Set Redemption Fee</label>
-          <input id="feeInput" type="number" min="0" max="20" placeholder="Fee % (e.g., 5 for 5%)">
-          <button id="setFeeButton" class="mt-2 bg-purple-600 w-full">Update Fee</button>
-        </div>
-        <div>
-          <label for="cancelId" class="block mb-2 font-semibold">Cancel Work Order</label>
-          <input id="cancelId" type="number" placeholder="Work Order ID">
-          <button id="cancelButton" class="mt-2 bg-pink-600 w-full">Cancel Order</button>
-        </div>
-        <div class="flex flex-col justify-end">
-    <div>
-        <label class="block mb-2 font-semibold">Available Fees to Withdraw</label>
-        <p class="text-2xl font-semibold"><span id="collectedFees">0.00</span> pUSD</p>
-    </div>
-    <button id="withdrawFeesButton" class="w-full mt-2 btn btn-primary">Withdraw All Fees</button>
-</div>
-      </div>
-    </section>
-
-    <section id="workOrders">
-      <div class="flex justify-between items-center">
-        <h2>Work Orders</h2>
-        <button id="exportPdfButton" class="bg-gray-700">Export PDF</button>
-      </div>
-      <div id="workOrderTable" class="overflow-x-auto mt-4">
-        </div>
-    </section>
-  </main>
+        <section id="workOrders">
+            <div class="flex justify-between items-center">
+                <h2>Work Orders</h2>
+                <button id="exportPdfButton" class="btn">Export PDF</button>
+            </div>
+            <div id="workOrderTable" class="overflow-x-auto mt-4">
+            </div>
+        </section>
+    </main>
 </body>
 </html>
