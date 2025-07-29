@@ -1,4 +1,4 @@
-# WorkYield Token V2 Dashboard
+# Work Yield Dashboard
 
 A web-based decentralized application (dApp) for interacting with the WorkYield Token V2 smart contract. This dashboard provides a user-friendly interface for both regular token holders and contract administrators.
 
