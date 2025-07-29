@@ -263,24 +263,27 @@ const App = {
         });
     },
 
-    async fundWorkOrder() {
-        await this.handleTransaction(this.elements.fundButton, async () => {
-            const id = this.elements.fundIdInput.value;
-            const amount = this.elements.fundAmountInput.value;
-            if (!id || !amount) throw new Error("Work Order ID and amount are required.");
-            
-            const parsedAmount = ethers.utils.parseUnits(amount, this.paymentTokenDecimals);
+   async fundWorkOrder() {
+    await this.handleTransaction(this.elements.fundButton, async () => {
+        const id = this.elements.fundIdInput.value;
+        const amount = this.elements.fundAmountInput.value;
+        if (!id || !amount) throw new Error("Work Order ID and amount are required.");
+        
+        const parsedAmount = ethers.utils.parseUnits(amount, this.paymentTokenDecimals);
 
-            const approveTx = await this.getPaymentTokenContract().approve(contractAddress, parsedAmount);
-            this.showNotification('Approving spend... please wait.', 'info');
-            await approveTx.wait();
+        // --- FIX: Automatically handle the approve step ---
+        const paymentToken = await this.getPaymentTokenContract();
+        const approveTx = await paymentToken.approve(contractAddress, parsedAmount);
+        
+        this.showNotification('Approving spend... please wait.', 'info');
+        await approveTx.wait();
 
-            this.showNotification('Approval successful! Now funding...', 'info');
-            const tx = await this.contract.fundFromWorkOrderPayment(id, parsedAmount);
-            await tx.wait();
-            return 'Work order funded!';
-        });
-    },
+        this.showNotification('Approval successful! Now funding...', 'info');
+        const tx = await this.contract.fundFromWorkOrderPayment(id, parsedAmount);
+        await tx.wait();
+        return 'Work order funded!';
+    });
+},
 
     async withdrawFees() {
         await this.handleTransaction(this.elements.withdrawFeesButton, async () => {
