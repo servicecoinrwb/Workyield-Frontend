@@ -167,3 +167,24 @@ th {
     background-color: var(--accent);
     color: white;
 }
+
+/* Add these styles to the end of style.css */
+
+.footer {
+    text-align: center;
+    padding: 2rem;
+    margin-top: 2rem;
+    border-top: 1px solid var(--border-color);
+    color: var(--text-secondary);
+}
+
+.footer-link {
+    color: var(--text-primary);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s ease-in-out;
+}
+
+.footer-link:hover {
+    color: var(--accent);
+}
