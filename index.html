@@ -18,41 +18,33 @@
             <button id="connectButton" class="btn btn-primary">Connect Wallet</button>
         </header>
 
-       <section id="tokenInfo" class="mb-8">
-    <h2>Token Overview</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-        <div class="bg-secondary p-4 rounded-lg">
-            <p class="text-sm text-secondary">Total Supply</p>
-            <div id="totalSupply" class="text-2xl font-semibold mt-1">
-                <div class="skeleton h-8 w-24"></div>
+        <section id="tokenInfo" class="mb-8">
+            <h2>Token Overview</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+                <div class="bg-secondary p-4 rounded-lg">
+                    <p class="text-sm text-secondary">Total Supply</p>
+                    <div id="totalSupply" class="text-2xl font-semibold mt-1"><div class="skeleton h-8 w-24"></div></div>
+                </div>
+                <div class="bg-secondary p-4 rounded-lg">
+                    <p class="text-sm text-secondary">Available WYT</p>
+                    <div id="availableTokens" class="text-2xl font-semibold mt-1"><div class="skeleton h-8 w-24"></div></div>
+                </div>
+                <div class="bg-secondary p-4 rounded-lg">
+                    <p class="text-sm text-secondary">Contract pUSD Balance</p>
+                    <div id="paymentBalance" class="text-2xl font-semibold mt-1"><div class="skeleton h-8 w-24"></div></div>
+                </div>
+                <div class="bg-secondary p-4 rounded-lg">
+                    <p class="text-sm text-secondary">Your WYT Balance</p>
+                    <div id="userBalance" class="text-2xl font-semibold mt-1"><div class="skeleton h-8 w-24"></div></div>
+                </div>
             </div>
-        </div>
-        <div class="bg-secondary p-4 rounded-lg">
-            <p class="text-sm text-secondary">Available WYT</p>
-            <div id="availableTokens" class="text-2xl font-semibold mt-1">
-                <div class="skeleton h-8 w-24"></div>
+            <div class="mt-4 bg-secondary p-4 rounded-lg">
+                <p class="text-sm text-secondary">Current WYT Price</p>
+                <div class="text-2xl font-semibold mt-1">
+                    <span id="wytPrice"><div class="skeleton h-8 w-28 inline-block"></div></span> pUSD
+                </div>
             </div>
-        </div>
-        <div class="bg-secondary p-4 rounded-lg">
-            <p class="text-sm text-secondary">Contract pUSD Balance</p>
-            <div id="paymentBalance" class="text-2xl font-semibold mt-1">
-                <div class="skeleton h-8 w-24"></div>
-            </div>
-        </div>
-        <div class="bg-secondary p-4 rounded-lg">
-            <p class="text-sm text-secondary">Your WYT Balance</p>
-            <div id="userBalance" class="text-2xl font-semibold mt-1">
-                <div class="skeleton h-8 w-24"></div>
-            </div>
-        </div>
-    </div>
-    <div class="mt-4 bg-secondary p-4 rounded-lg">
-        <p class="text-sm text-secondary">Current WYT Price</p>
-        <div class="text-2xl font-semibold mt-1">
-            <span id="wytPrice"><div class="skeleton h-8 w-28 inline-block"></div></span> pUSD
-        </div>
-    </div>
-</section>
+        </section>
 
         <section id="buyRedeem" class="mb-8">
             <h2>Buy / Redeem WYT</h2>
@@ -93,7 +85,7 @@
             <h2>Burn Your Tokens</h2>
             <div class="mt-4 max-w-md mx-auto bg-secondary p-6 rounded-lg">
                 <p class="text-sm text-secondary mb-4">
-                    Burning tokens is a deflationary action that permanently destroys them, reducing the total supply and increasing the value of all remaining tokens.
+                    Burning tokens permanently destroys them, reducing the total supply and increasing the value of all remaining tokens.
                 </p>
                 <div class="flex justify-between items-center mb-1">
                     <label for="burnAmount" class="text-sm text-secondary">Amount to Burn</label>
@@ -167,8 +159,12 @@
                 <h2>Work Orders</h2>
                 <button id="exportPdfButton" class="btn">Export PDF</button>
             </div>
-            <div id="workOrderTable" class="overflow-x-auto mt-4">
-            </div>
+            <div id="workOrderTable" class="overflow-x-auto mt-4"></div>
+        </section>
+
+        <section id="txHistory" class="mb-8">
+            <h2>Your Transaction History</h2>
+            <div id="txHistoryTable" class="overflow-x-auto mt-4"></div>
         </section>
     </main>
 
@@ -180,7 +176,5 @@
         </p>
     </footer>
 
-</body>
-</html>
 </body>
 </html>
