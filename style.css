@@ -187,3 +187,6 @@ th {
         transform: translateX(100%);
     }
 }
+.text-accent {
+    color: var(--accent);
+}
