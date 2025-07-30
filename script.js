@@ -129,51 +129,53 @@ const App = {
     },
 
     async loadContractData() {
-        try {
-            this.wytDecimals = await this.contract.decimals();
-            const paymentTokenAddress = await this.contract.paymentToken();
-            const paymentTokenContract = new ethers.Contract(paymentTokenAddress, tokenABI, this.provider);
-            this.paymentTokenDecimals = await paymentTokenContract.decimals();
-            
-            console.log(`WYT Decimals: ${this.wytDecimals}, Payment Token Decimals: ${this.paymentTokenDecimals}`);
+    try {
+        this.wytDecimals = await this.contract.decimals();
+        const paymentTokenAddress = await this.contract.paymentToken();
+        const paymentTokenContract = new ethers.Contract(paymentTokenAddress, tokenABI, this.provider);
+        this.paymentTokenDecimals = await paymentTokenContract.decimals();
+        
+        console.log(`WYT Decimals: ${this.wytDecimals}, Payment Token Decimals: ${this.paymentTokenDecimals}`);
 
-            const [totalSupply, available, paymentBalance, owner, userWytBalance, userPusdBalance, collectedFees] = await Promise.all([
-                this.contract.totalSupply(),
-                this.contract.availableTokens(),
-                this.contract.contractPaymentTokenBalance(),
-                this.contract.owner(),
-                this.contract.balanceOf(this.userAddress),
-                paymentTokenContract.balanceOf(this.userAddress),
-                this.contract.collectedFees()
-            ]);
-            
-            this.elements.totalSupply.textContent = this.formatTokenValue(totalSupply, this.wytDecimals);
-            this.elements.availableTokens.textContent = this.formatTokenValue(available, this.wytDecimals);
-            this.elements.paymentBalance.textContent = this.formatTokenValue(paymentBalance, this.paymentTokenDecimals);
-            this.elements.userBalance.textContent = this.formatTokenValue(userWytBalance, this.wytDecimals);
-            this.elements.collectedFees.textContent = this.formatTokenValue(collectedFees, this.paymentTokenDecimals);
-            this.elements.wytUserBalance.textContent = this.formatTokenValue(userWytBalance, this.wytDecimals);
-            this.elements.pUSDBalance.textContent = this.formatTokenValue(userPusdBalance, this.paymentTokenDecimals);
-            this.elements.burnWytBalance.textContent = this.formatTokenValue(userWytBalance, this.wytDecimals);
+        const [totalSupply, available, paymentBalance, owner, userWytBalance, userPusdBalance, collectedFees] = await Promise.all([
+            this.contract.totalSupply(),
+            this.contract.availableTokens(),
+            this.contract.contractPaymentTokenBalance(),
+            this.contract.owner(),
+            this.contract.balanceOf(this.userAddress),
+            paymentTokenContract.balanceOf(this.userAddress),
+            this.contract.collectedFees()
+        ]);
+        
+        // Use .innerHTML to replace the skeleton divs with the formatted values
+        this.elements.totalSupply.innerHTML = this.formatTokenValue(totalSupply, this.wytDecimals);
+        this.elements.availableTokens.innerHTML = this.formatTokenValue(available, this.wytDecimals);
+        this.elements.paymentBalance.innerHTML = this.formatTokenValue(paymentBalance, this.paymentTokenDecimals);
+        this.elements.userBalance.innerHTML = this.formatTokenValue(userWytBalance, this.wytDecimals);
+        this.elements.collectedFees.innerHTML = this.formatTokenValue(collectedFees, this.paymentTokenDecimals);
+        
+        this.elements.wytUserBalance.textContent = this.formatTokenValue(userWytBalance, this.wytDecimals);
+        this.elements.pUSDBalance.textContent = this.formatTokenValue(userPusdBalance, this.paymentTokenDecimals);
+        this.elements.burnWytBalance.textContent = this.formatTokenValue(userWytBalance, this.wytDecimals);
 
-            if (!totalSupply.isZero()) {
-                const price = paymentBalance.mul(ethers.utils.parseUnits("1", this.wytDecimals)).div(totalSupply);
-                this.elements.wytPrice.textContent = this.formatTokenValue(price, this.paymentTokenDecimals);
-            } else {
-                this.elements.wytPrice.textContent = '0.00';
-            }
-            
-            if (owner.toLowerCase() === this.userAddress.toLowerCase()) {
-                this.elements.adminPanel.classList.remove('hidden');
-            }
-            
-            await this.renderWorkOrders();
-            this.updateReceiveAmount();
-        } catch (error) {
-            console.error("Error loading contract data:", error);
-            this.showNotification('Failed to load contract data.', 'error');
+        if (!totalSupply.isZero()) {
+            const price = paymentBalance.mul(ethers.utils.parseUnits("1", this.wytDecimals)).div(totalSupply);
+            this.elements.wytPrice.innerHTML = this.formatTokenValue(price, this.paymentTokenDecimals);
+        } else {
+            this.elements.wytPrice.innerHTML = '0.00';
         }
-    },
+        
+        if (owner.toLowerCase() === this.userAddress.toLowerCase()) {
+            this.elements.adminPanel.classList.remove('hidden');
+        }
+        
+        await this.renderWorkOrders();
+        this.updateReceiveAmount();
+    } catch (error) {
+        console.error("Error loading contract data:", error);
+        this.showNotification('Failed to load contract data.', 'error');
+    }
+},
   
     // --- USER & ADMIN ACTIONS ---
     async getPaymentTokenContract() {
