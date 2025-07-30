@@ -1,13 +1,7 @@
+// script.js - Final version with simplified wallet connection and all features
+
 // --- CONFIGURATION ---
 const contractAddress = '0xccF4eaa301058Ec5561a07Cc38A75F47a2912EA5';
-
-const PLUME_MAINNET = {
-    chainId: '0x1823a', // Hexadecimal for 98866
-    chainName: 'Plume',
-    nativeCurrency: { name: 'PLUME', symbol: 'PLUME', decimals: 18 },
-    rpcUrls: ['https://rpc.plume.org'],
-    blockExplorerUrls: ['https://explorer.plume.org'],
-};
 
 // Standard ERC20 ABI for interacting with the payment token
 const tokenABI = [
@@ -31,7 +25,6 @@ const App = {
     paymentTokenDecimals: 18,
     elements: {},
 
-    // --- INITIALIZATION ---
     init() {
         this.cacheDOMElements();
         this.addEventListeners();
@@ -112,40 +105,11 @@ const App = {
     },
 
     // --- WEB3 INTERACTIONS ---
-    async checkAndSwitchNetwork() {
-        try {
-            const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
-            if (currentChainId === PLUME_MAINNET.chainId) { return; }
-            await window.ethereum.request({
-                method: 'wallet_switchEthereumChain',
-                params: [{ chainId: PLUME_MAINNET.chainId }],
-            });
-        } catch (switchError) {
-            if (switchError.code === 4902) {
-                try {
-                    await window.ethereum.request({
-                        method: 'wallet_addEthereumChain',
-                        params: [PLUME_MAINNET],
-                    });
-                } catch (addError) {
-                    console.error("Failed to add network", addError);
-                    this.showNotification('Could not add Plume network.', 'error');
-                }
-            } else {
-                console.error("Failed to switch network", switchError);
-                this.showNotification('Could not switch to Plume network.', 'error');
-                throw switchError;
-            }
-        }
-    },
-
     async connectWallet() {
         if (!window.ethereum) {
             return this.showNotification('Please install MetaMask.', 'error');
         }
         try {
-            await this.checkAndSwitchNetwork();
-            
             this.provider = new ethers.providers.Web3Provider(window.ethereum);
             const accounts = await this.provider.send("eth_requestAccounts", []);
             this.signer = this.provider.getSigner();
@@ -172,6 +136,8 @@ const App = {
             const paymentTokenContract = new ethers.Contract(paymentTokenAddress, tokenABI, this.provider);
             this.paymentTokenDecimals = await paymentTokenContract.decimals();
             
+            console.log(`WYT Decimals: ${this.wytDecimals}, Payment Token Decimals: ${this.paymentTokenDecimals}`);
+
             const [totalSupply, available, paymentBalance, owner, userWytBalance, userPusdBalance, collectedFees] = await Promise.all([
                 this.contract.totalSupply(),
                 this.contract.availableTokens(),
@@ -224,6 +190,7 @@ const App = {
                 const amount = this.elements.buyAmountInput.value;
                 if (!amount || parseFloat(amount) <= 0) throw new Error("Please enter a valid amount.");
                 const parsedAmount = ethers.utils.parseUnits(amount, this.paymentTokenDecimals);
+                
                 const paymentToken = await this.getPaymentTokenContract();
                 const approveTx = await paymentToken.approve(contractAddress, parsedAmount);
                 this.showNotification('Approving spend... please wait.', 'info');
@@ -447,7 +414,6 @@ const App = {
             const redeemFilter = this.contract.filters.TokensRedeemed(this.userAddress);
             const burnFilter = this.contract.filters.Transfer(this.userAddress, "0x0000000000000000000000000000000000000000");
 
-
             const buyEvents = await this.contract.queryFilter(buyFilter, 0, 'latest');
             const redeemEvents = await this.contract.queryFilter(redeemFilter, 0, 'latest');
             const burnEvents = await this.contract.queryFilter(burnFilter, 0, 'latest');
@@ -455,33 +421,13 @@ const App = {
             let allEvents = [];
 
             buyEvents.forEach(event => {
-                allEvents.push({
-                    type: 'Buy',
-                    wytAmount: event.args.value,
-                    pUSDAmount: null,
-                    blockNumber: event.blockNumber,
-                    txHash: event.transactionHash
-                });
+                allEvents.push({ type: 'Buy', wytAmount: event.args.value, pUSDAmount: null, blockNumber: event.blockNumber, txHash: event.transactionHash });
             });
-
             redeemEvents.forEach(event => {
-                allEvents.push({
-                    type: 'Redeem',
-                    wytAmount: event.args.wytAmount,
-                    pUSDAmount: event.args.pUSDAmount,
-                    blockNumber: event.blockNumber,
-                    txHash: event.transactionHash
-                });
+                allEvents.push({ type: 'Redeem', wytAmount: event.args.wytAmount, pUSDAmount: event.args.pUSDAmount, blockNumber: event.blockNumber, txHash: event.transactionHash });
             });
-
             burnEvents.forEach(event => {
-                allEvents.push({
-                    type: 'Burn',
-                    wytAmount: event.args.value,
-                    pUSDAmount: ethers.BigNumber.from(0),
-                    blockNumber: event.blockNumber,
-                    txHash: event.transactionHash
-                });
+                allEvents.push({ type: 'Burn', wytAmount: event.args.value, pUSDAmount: ethers.BigNumber.from(0), blockNumber: event.blockNumber, txHash: event.transactionHash });
             });
 
             allEvents.sort((a, b) => b.blockNumber - a.blockNumber);
@@ -537,18 +483,15 @@ const App = {
                 this.showNotification('No work order data to export.', 'error');
                 return;
             }
-
             doc.text('WorkYield Token V2 - Work Orders', 14, 16);
             doc.setFontSize(10);
             doc.text(`Exported on: ${new Date().toLocaleString()}`, 14, 22);
-
             doc.autoTable({
                 html: tableElement,
                 startY: 28,
                 theme: 'grid',
-                headStyles: { fillColor: [249, 115, 22] }, // Orange header
+                headStyles: { fillColor: [249, 115, 22] },
             });
-
             doc.save(`work-orders-${new Date().toISOString().slice(0,10)}.pdf`);
             this.showNotification('PDF exported successfully!', 'success');
         } catch (err) {
@@ -646,4 +589,3 @@ document.head.appendChild(styleSheet);
 
 // --- START THE APP ---
 window.addEventListener('DOMContentLoaded', () => App.init());
-```
