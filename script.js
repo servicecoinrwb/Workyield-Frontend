@@ -1,24 +1,3 @@
-Thank you for the details. I have now updated the `script.js` file with the correct configuration for the **Plume Mainnet** and removed the old testnet information.
-
-This is the final, complete version of the script.
-
------
-
-### \#\# Final Instructions
-
-1.  **Delete**: Go to your project folder and **delete** your current `script.js` file.
-2.  **Create New**: Create a new, empty file and name it `script.js`.
-3.  **Copy & Paste**: Copy the **entire code block** below and paste it into the new file.
-4.  **Save** the file.
-5.  **Hard Refresh**: In your browser, perform a **Hard Refresh** (**Ctrl+Shift+R** or **Cmd+Shift+R**).
-
------
-
-### ✅ Final `script.js` (Configured for Mainnet)
-
-```javascript
-// script.js - Final version configured for Plume Mainnet
-
 // --- CONFIGURATION ---
 const contractAddress = '0xccF4eaa301058Ec5561a07Cc38A75F47a2912EA5';
 
