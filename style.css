@@ -1,6 +1,5 @@
 /*
  * Modern Look for WorkYield Dashboard
- * Date: 2025-07-29
  */
 
 /* Import the 'Inter' font for a clean, modern typeface */
@@ -11,11 +10,9 @@
   --bg-primary: #111827;      /* A deep, dark blue-gray */
   --bg-secondary: #1f2937;    /* A slightly lighter container background */
   --accent: #f97316;          /* The primary orange accent color */
-  --accent-hover: #fb923c;    /* A lighter orange for hovers */
   --text-primary: #f3f4f6;    /* Off-white for main text */
   --text-secondary: #9ca3af;   /* A dimmer gray for labels and secondary text */
   --border-color: #374151;    /* Subtle border color */
-  --success: #10b981;         /* Green for success actions */
   --danger: #ef4444;          /* Red for destructive actions */
   --radius: 0.5rem;           /* Standard border radius */
 }
@@ -29,7 +26,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Heading styles with better hierarchy and spacing */
+/* Heading styles */
 h1 {
   font-weight: 700;
   letter-spacing: -0.025em;
@@ -42,11 +39,7 @@ h2 {
   letter-spacing: 0.05em;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--border-color);
-  margin-bottom: 1.5rem !important; /* Overrides Tailwind's mb-2 */
-}
-h3 {
-  font-weight: 600;
-  color: var(--text-primary);
+  margin-bottom: 1.5rem !important;
 }
 
 /* Input field styles */
@@ -64,55 +57,27 @@ input[type="text"] {
 input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2); /* Soft focus glow */
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
 }
 
-/* Button styles */
-button {
-  border-radius: var(--radius);
-  font-weight: 600;
-  padding: 0.65rem 1.25rem;
-  border: none;
-  cursor: pointer;
-  transition: transform 0.15s ease, background-color 0.2s ease, filter 0.2s ease;
-}
-
-button:hover:not(:disabled) {
-  filter: brightness(1.1);
-  transform: translateY(-2px); /* A more pronounced hover effect */
-}
-button:active:not(:disabled) {
-  transform: translateY(-1px);
-}
-
-button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-/* Specific button colors to override Tailwind defaults */
-.bg-orange-500, #connectButton { background-color: var(--accent); color: white; }
-.bg-green-600 { background-color: var(--success); color: white; }
-.bg-red-600, .bg-pink-600 { background-color: var(--danger); color: white; }
-
-/* Modern, borderless table design */
+/* Table design */
 table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
   background-color: var(--bg-secondary);
   border-radius: var(--radius);
-  overflow: hidden; /* Clip content to the rounded corners */
+  overflow: hidden;
 }
 
 th, td {
   padding: 1rem 1.25rem;
   text-align: left;
-  border-bottom: 1px solid var(--border-color); /* Horizontal lines only */
+  border-bottom: 1px solid var(--border-color);
 }
 
 tbody tr:last-child td {
-  border-bottom: none; /* Remove border from the last row */
+  border-bottom: none;
 }
 
 thead {
@@ -125,6 +90,21 @@ th {
   font-size: 0.75rem;
   letter-spacing: 0.05em;
   font-weight: 600;
+}
+
+/* Tab Styles */
+.tab-btn {
+    padding: 0.5rem 1rem;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    transition: all 0.2s ease-in-out;
+}
+
+.tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
 }
 
 /* General Button Styles */
@@ -147,14 +127,16 @@ th {
     transform: none;
 }
 
-/* Primary Button Color */
 .btn-primary {
     background-color: var(--accent);
     color: white;
 }
 
-/* Add these styles to the end of style.css */
+.bg-red-600 {
+    background-color: var(--danger) !important;
+}
 
+/* Footer Styles */
 .footer {
     text-align: center;
     padding: 2rem;
@@ -174,6 +156,7 @@ th {
     color: var(--accent);
 }
 
+/* Skeleton Loader Styles */
 .skeleton {
     background-color: var(--border-color);
     border-radius: var(--radius);
