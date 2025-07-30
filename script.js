@@ -1,7 +1,15 @@
-// script.js - Final version with simplified wallet connection and all features
+// script.js - Final version with all features and correct configuration
 
 // --- CONFIGURATION ---
 const contractAddress = '0xccF4eaa301058Ec5561a07Cc38A75F47a2912EA5';
+
+const PLUME_MAINNET = {
+    chainId: '0x1823a', // Hexadecimal for 98866
+    chainName: 'Plume',
+    nativeCurrency: { name: 'PLUME', symbol: 'PLUME', decimals: 18 },
+    rpcUrls: ['https://rpc.plume.org'],
+    blockExplorerUrls: ['https://explorer.plume.org'],
+};
 
 // Standard ERC20 ABI for interacting with the payment token
 const tokenABI = [
@@ -25,6 +33,7 @@ const App = {
     paymentTokenDecimals: 18,
     elements: {},
 
+    // --- INITIALIZATION ---
     init() {
         this.cacheDOMElements();
         this.addEventListeners();
@@ -105,11 +114,37 @@ const App = {
     },
 
     // --- WEB3 INTERACTIONS ---
+    async checkAndSwitchNetwork() {
+        try {
+            const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
+            if (currentChainId === PLUME_MAINNET.chainId) { return; }
+            await window.ethereum.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: PLUME_MAINNET.chainId }],
+            });
+        } catch (switchError) {
+            if (switchError.code === 4902) {
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [PLUME_MAINNET],
+                    });
+                } catch (addError) {
+                    throw new Error("Failed to add the Plume network to your wallet.");
+                }
+            } else {
+                throw new Error("Failed to switch to the Plume network.");
+            }
+        }
+    },
+
     async connectWallet() {
         if (!window.ethereum) {
             return this.showNotification('Please install MetaMask.', 'error');
         }
         try {
+            await this.checkAndSwitchNetwork();
+            
             this.provider = new ethers.providers.Web3Provider(window.ethereum);
             const accounts = await this.provider.send("eth_requestAccounts", []);
             this.signer = this.provider.getSigner();
@@ -125,7 +160,7 @@ const App = {
             this.switchTab('buy');
         } catch (err) {
             console.error(err);
-            this.showNotification('Wallet connection failed.', 'error');
+            this.showNotification(err.message || 'Wallet connection failed.', 'error');
         }
     },
 
@@ -136,8 +171,6 @@ const App = {
             const paymentTokenContract = new ethers.Contract(paymentTokenAddress, tokenABI, this.provider);
             this.paymentTokenDecimals = await paymentTokenContract.decimals();
             
-            console.log(`WYT Decimals: ${this.wytDecimals}, Payment Token Decimals: ${this.paymentTokenDecimals}`);
-
             const [totalSupply, available, paymentBalance, owner, userWytBalance, userPusdBalance, collectedFees] = await Promise.all([
                 this.contract.totalSupply(),
                 this.contract.availableTokens(),
@@ -190,7 +223,6 @@ const App = {
                 const amount = this.elements.buyAmountInput.value;
                 if (!amount || parseFloat(amount) <= 0) throw new Error("Please enter a valid amount.");
                 const parsedAmount = ethers.utils.parseUnits(amount, this.paymentTokenDecimals);
-                
                 const paymentToken = await this.getPaymentTokenContract();
                 const approveTx = await paymentToken.approve(contractAddress, parsedAmount);
                 this.showNotification('Approving spend... please wait.', 'info');
