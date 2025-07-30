@@ -1,15 +1,7 @@
-// script.js - Final version with all features including network switching
+// script.js - Final version with simplified wallet connection
 
 // --- CONFIGURATION ---
 const contractAddress = '0x5a9d7DF133a1426f78D17Ac2EE41DE2F8ECb1eF6';
-
-const PLUME_TESTNET = {
-    chainId: '0x9b85195', // Hexadecimal version of 162749301
-    chainName: 'Plume Testnet',
-    nativeCurrency: { name: 'Plume', symbol: 'PLUME', decimals: 18 },
-    rpcUrls: ['https://testnet-rpc.plumenetwork.xyz/http'],
-    blockExplorerUrls: ['https://explorer.plume.org'],
-};
 
 // Standard ERC20 ABI for interacting with the payment token
 const tokenABI = [
@@ -105,45 +97,12 @@ const App = {
     },
 
     // --- WEB3 INTERACTIONS ---
-    async checkAndSwitchNetwork() {
-        try {
-            const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
-            if (currentChainId === PLUME_TESTNET.chainId) {
-                console.log("Already connected to the correct network.");
-                return;
-            }
-            await window.ethereum.request({
-                method: 'wallet_switchEthereumChain',
-                params: [{ chainId: PLUME_TESTNET.chainId }],
-            });
-            this.showNotification('Network switched successfully!', 'success');
-        } catch (switchError) {
-            if (switchError.code === 4902) {
-                try {
-                    await window.ethereum.request({
-                        method: 'wallet_addEthereumChain',
-                        params: [PLUME_TESTNET],
-                    });
-                    this.showNotification('Plume network added successfully!', 'success');
-                } catch (addError) {
-                    console.error("Failed to add the network", addError);
-                    this.showNotification('Could not add the Plume network.', 'error');
-                }
-            } else {
-                console.error("Failed to switch network", switchError);
-                this.showNotification('Could not switch to the Plume network.', 'error');
-                throw switchError;
-            }
-        }
-    },
-
     async connectWallet() {
         if (!window.ethereum) {
             return this.showNotification('Please install MetaMask.', 'error');
         }
         try {
-            await this.checkAndSwitchNetwork();
-            
+            // Reverted to simple connection logic as requested
             this.provider = new ethers.providers.Web3Provider(window.ethereum);
             const accounts = await this.provider.send("eth_requestAccounts", []);
             this.signer = this.provider.getSigner();
