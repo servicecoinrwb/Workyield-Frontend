@@ -80,39 +80,46 @@
         </section>
 
         <section id="adminPanel" class="mb-8 hidden">
-            <h2>Admin Panel</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
-                <div>
-                    <label for="mintAmount" class="block mb-2 font-semibold">Mint Work Order</label>
-                    <input id="mintAmount" type="number" placeholder="Gross Yield" class="mb-2">
-                    <input id="mintDescription" type="text" placeholder="Description">
-                    <button id="mintButton" class="w-full mt-2 btn btn-primary">Mint Order</button>
-                </div>
-                <div>
-                    <label for="fundId" class="block mb-2 font-semibold">Fund Work Order</label>
-                    <input id="fundId" type="number" placeholder="Work Order ID" class="mb-2">
-                    <input id="fundAmount" type="number" placeholder="Amount to fund">
-                    <button id="fundButton" class="w-full mt-2 btn btn-primary">Fund Order</button>
-                </div>
-                <div>
-                    <label for="feeInput" class="block mb-2 font-semibold">Set Redemption Fee</label>
-                    <input id="feeInput" type="number" min="0" max="20" placeholder="Fee % (e.g., 5 for 5%)">
-                    <button id="setFeeButton" class="w-full mt-2 btn btn-primary">Update Fee</button>
-                </div>
-                <div>
-                    <label for="cancelId" class="block mb-2 font-semibold">Cancel Work Order</label>
-                    <input id="cancelId" type="number" placeholder="Work Order ID">
-                    <button id="cancelButton" class="w-full mt-2 btn btn-primary">Cancel Order</button>
-                </div>
-                <div class="flex flex-col justify-end">
-                    <div>
-                        <label class="block mb-2 font-semibold">Available Fees to Withdraw</label>
-                        <p class="text-2xl font-semibold"><span id="collectedFees">0.00</span> pUSD</p>
-                    </div>
-                    <button id="withdrawFeesButton" class="w-full mt-2 btn btn-primary">Withdraw All Fees</button>
-                </div>
+    <h2>Admin Panel</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+        
+        <div>
+            <label for="mintAmount" class="block mb-2 font-semibold">Mint Work Order</label>
+            <input id="mintAmount" type="number" placeholder="Gross Yield" class="mb-2">
+            <input id="mintDescription" type="text" placeholder="Description">
+            <button id="mintButton" class="w-full mt-2 btn btn-primary">Mint Order</button>
+        </div>
+
+        <div>
+            <label for="fundId" class="block mb-2 font-semibold">Fund Work Order</label>
+            <input id="fundId" type="number" placeholder="Work Order ID" class="mb-2">
+            <input id="fundAmount" type="number" placeholder="Amount to fund">
+            <button id="fundButton" class="w-full mt-2 btn btn-primary">Fund Order</button>
+        </div>
+
+        <div class="space-y-6">
+            <div>
+                <label for="feeInput" class="block mb-2 font-semibold">Set Redemption Fee</label>
+                <input id="feeInput" type="number" min="0" max="20" placeholder="Fee % (e.g., 5 for 5%)">
+                <button id="setFeeButton" class="w-full mt-2 btn btn-primary">Update Fee</button>
             </div>
-        </section>
+            <div>
+                <label for="cancelId" class="block mb-2 font-semibold">Cancel Work Order</label>
+                <input id="cancelId" type="number" placeholder="Work Order ID">
+                <button id="cancelButton" class="w-full mt-2 btn btn-primary">Cancel Order</button>
+            </div>
+        </div>
+
+        <div class="flex flex-col justify-between">
+            <div>
+                <label class="block mb-2 font-semibold">Available Fees to Withdraw</label>
+                <p class="text-2xl font-semibold"><span id="collectedFees">0.00</span> pUSD</p>
+            </div>
+            <button id="withdrawFeesButton" class="w-full mt-2 btn btn-primary">Withdraw All Fees</button>
+        </div>
+
+    </div>
+</section>
 
         <section id="workOrders">
             <div class="flex justify-between items-center">
