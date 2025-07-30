@@ -1,7 +1,19 @@
-// script.js - Final version with side-by-side Buy/Redeem UI
+// script.js - Final version with all features including network switching
 
 // --- CONFIGURATION ---
 const contractAddress = '0x5a9d7DF133a1426f78D17Ac2EE41DE2F8ECb1eF6';
+
+const PLUME_TESTNET = {
+    chainId: '0x9b85195', // Hexadecimal version of 162749301
+    chainName: 'Plume Testnet',
+    nativeCurrency: {
+        name: 'Plume',
+        symbol: 'PLUME',
+        decimals: 18,
+    },
+    rpcUrls: ['https://testnet-rpc.plumenetwork.xyz/http'],
+    blockExplorerUrls: ['https://explorer.plume.org'],
+};
 
 // Standard ERC20 ABI for interacting with the payment token
 const tokenABI = [
@@ -42,18 +54,16 @@ const App = {
             workOrderTable: document.getElementById('workOrderTable'),
             userBalance: document.getElementById('userBalance'),
             wytPrice: document.getElementById('wytPrice'),
-            
-            // Side-by-Side UI Elements
+            buyTab: document.getElementById('buyTab'),
+            redeemTab: document.getElementById('redeemTab'),
+            buyPanel: document.getElementById('buyPanel'),
+            redeemPanel: document.getElementById('redeemPanel'),
             pUSDBalance: document.getElementById('pUSDBalance'),
             wytUserBalance: document.getElementById('wytUserBalance'),
-            buyReceiveAmount: document.getElementById('buyReceiveAmount'),
-            redeemReceiveAmount: document.getElementById('redeemReceiveAmount'),
+            receiveAmount: document.getElementById('receiveAmount'),
+            swapButton: document.getElementById('swapButton'),
             buyAmountInput: document.getElementById('buyAmount'),
-            buyButton: document.getElementById('buyButton'),
             redeemAmountInput: document.getElementById('redeemAmount'),
-            redeemButton: document.getElementById('redeemButton'),
-            
-            // Admin Panel Elements
             collectedFees: document.getElementById('collectedFees'),
             mintAmountInput: document.getElementById('mintAmount'),
             mintDescriptionInput: document.getElementById('mintDescription'),
@@ -72,14 +82,11 @@ const App = {
   
     addEventListeners() {
         this.elements.connectButton?.addEventListener('click', () => this.connectWallet());
-        
-        // Listeners for side-by-side UI
-        this.elements.buyButton?.addEventListener('click', () => this.buyTokens());
-        this.elements.redeemButton?.addEventListener('click', () => this.redeemTokens());
-        this.elements.buyAmountInput?.addEventListener('input', () => this.updateBuyReceiveAmount());
-        this.elements.redeemAmountInput?.addEventListener('input', () => this.updateRedeemReceiveAmount());
-
-        // Admin Panel Listeners
+        this.elements.swapButton?.addEventListener('click', () => this.executeSwap());
+        this.elements.buyTab?.addEventListener('click', () => this.switchTab('buy'));
+        this.elements.redeemTab?.addEventListener('click', () => this.switchTab('redeem'));
+        this.elements.buyAmountInput?.addEventListener('input', () => this.updateReceiveAmount());
+        this.elements.redeemAmountInput?.addEventListener('input', () => this.updateReceiveAmount());
         this.elements.mintButton?.addEventListener('click', () => this.mintWorkOrder());
         this.elements.fundButton?.addEventListener('click', () => this.fundWorkOrder());
         this.elements.withdrawFeesButton?.addEventListener('click', () => this.withdrawFees());
@@ -102,12 +109,46 @@ const App = {
     },
 
     // --- WEB3 INTERACTIONS ---
+    async checkAndSwitchNetwork() {
+        try {
+            const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
+            if (currentChainId === PLUME_TESTNET.chainId) {
+                console.log("Already connected to the correct network.");
+                return;
+            }
+
+            await window.ethereum.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: PLUME_TESTNET.chainId }],
+            });
+            this.showNotification('Network switched successfully!', 'success');
+        } catch (switchError) {
+            if (switchError.code === 4902) {
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [PLUME_TESTNET],
+                    });
+                    this.showNotification('Plume network added successfully!', 'success');
+                } catch (addError) {
+                    console.error("Failed to add the network", addError);
+                    this.showNotification('Could not add the Plume network.', 'error');
+                }
+            } else {
+                console.error("Failed to switch network", switchError);
+                this.showNotification('Could not switch to the Plume network.', 'error');
+                throw switchError; // Re-throw error to stop connectWallet
+            }
+        }
+    },
+
     async connectWallet() {
         if (!window.ethereum) {
             return this.showNotification('Please install MetaMask.', 'error');
         }
         try {
             await this.checkAndSwitchNetwork();
+            
             this.provider = new ethers.providers.Web3Provider(window.ethereum);
             const accounts = await this.provider.send("eth_requestAccounts", []);
             this.signer = this.provider.getSigner();
@@ -120,6 +161,7 @@ const App = {
             
             this.showNotification('Wallet connected successfully!', 'success');
             await this.loadContractData();
+            this.switchTab('buy');
         } catch (err) {
             console.error(err);
             this.showNotification('Wallet connection failed.', 'error');
@@ -166,8 +208,7 @@ const App = {
             }
             
             await this.renderWorkOrders();
-            this.updateBuyReceiveAmount();
-            this.updateRedeemReceiveAmount();
+            this.updateReceiveAmount();
         } catch (error) {
             console.error("Error loading contract data:", error);
             this.showNotification('Failed to load contract data.', 'error');
@@ -175,68 +216,196 @@ const App = {
     },
   
     // --- USER & ADMIN ACTIONS ---
-    async buyTokens() {
-        await this.handleTransaction(this.elements.buyButton, async () => {
-            const amount = this.elements.buyAmountInput.value;
-            if (!amount || parseFloat(amount) <= 0) throw new Error("Please enter a valid amount.");
-            const parsedAmount = ethers.utils.parseUnits(amount, this.paymentTokenDecimals);
+    async executeSwap() {
+        const isBuy = !this.elements.buyPanel.classList.contains('hidden');
+        if (isBuy) {
+            await this.handleTransaction(this.elements.swapButton, async () => {
+                const amount = this.elements.buyAmountInput.value;
+                if (!amount || parseFloat(amount) <= 0) throw new Error("Please enter a valid amount.");
+                const parsedAmount = ethers.utils.parseUnits(amount, this.paymentTokenDecimals);
+                
+                const paymentToken = await this.getPaymentTokenContract();
+                const approveTx = await paymentToken.approve(contractAddress, parsedAmount);
+                this.showNotification('Approving spend... please wait.', 'info');
+                await approveTx.wait();
+
+                this.showNotification('Approval successful! Now buying...', 'info');
+                const buyTx = await this.contract.buyTokens(parsedAmount);
+                await buyTx.wait();
+                
+                this.elements.buyAmountInput.value = '';
+                return 'WYT purchased successfully!';
+            });
+        } else {
+            await this.handleTransaction(this.elements.swapButton, async () => {
+                const amount = this.elements.redeemAmountInput.value;
+                if (!amount || parseFloat(amount) <= 0) throw new Error("Please enter a valid amount.");
+                const parsedAmount = ethers.utils.parseUnits(amount, this.wytDecimals);
+                const tx = await this.contract.redeemTokens(parsedAmount);
+                await tx.wait();
+                this.elements.redeemAmountInput.value = '';
+                return 'WYT redeemed successfully!';
+            });
+        }
+    },
+
+    switchTab(tab) {
+        const isBuy = tab === 'buy';
+        this.elements.buyTab.classList.toggle('active', isBuy);
+        this.elements.redeemTab.classList.toggle('active', !isBuy);
+        this.elements.buyPanel.classList.toggle('hidden', !isBuy);
+        this.elements.redeemPanel.classList.toggle('hidden', isBuy);
+        this.updateReceiveAmount();
+    },
+
+    updateReceiveAmount() {
+        const isBuy = !this.elements.buyPanel.classList.contains('hidden');
+        const priceText = this.elements.wytPrice.textContent.replace(/,/g, '');
+        const price = parseFloat(priceText);
+        
+        if (isNaN(price)) {
+            this.elements.swapButton.textContent = 'Price Unavailable';
+            this.elements.swapButton.disabled = true;
+            return;
+        }
+
+        let receiveAmount = 0;
+        let buttonText = 'Enter an amount';
+        let disabled = true;
+        let amountInput = isBuy ? this.elements.buyAmountInput : this.elements.redeemAmountInput;
+        const amount = parseFloat(amountInput.value);
+
+        if (!isNaN(amount) && amount > 0) {
+            if (isBuy) {
+                if (price > 0) receiveAmount = amount / price;
+                buttonText = 'Buy WYT';
+            } else {
+                receiveAmount = amount * price;
+                buttonText = 'Redeem WYT';
+            }
+            disabled = false;
+        }
+        
+        this.elements.receiveAmount.textContent = receiveAmount.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 4
+        });
+        this.elements.swapButton.textContent = buttonText;
+        this.elements.swapButton.disabled = disabled;
+    },
+    
+    async mintWorkOrder() {
+        await this.handleTransaction(this.elements.mintButton, async () => {
+            const grossYield = this.elements.mintAmountInput.value;
+            const desc = this.elements.mintDescriptionInput.value;
+            if (!grossYield || !desc) throw new Error("Gross yield and description are required.");
+            const parsedGrossYield = ethers.utils.parseUnits(grossYield, this.paymentTokenDecimals);
+            const tx = await this.contract.mintFromWorkOrder(parsedGrossYield, desc);
+            await tx.wait();
+            return 'Work order minted!';
+        });
+    },
+
+    async fundWorkOrder() {
+        await this.handleTransaction(this.elements.fundButton, async () => {
+            const id = this.elements.fundIdInput.value;
+            const amount = this.elements.fundAmountInput.value;
+            if (!id || !amount) throw new Error("Work Order ID and amount are required.");
             
+            const parsedAmount = ethers.utils.parseUnits(amount, this.paymentTokenDecimals);
             const paymentToken = await this.getPaymentTokenContract();
             const approveTx = await paymentToken.approve(contractAddress, parsedAmount);
+
             this.showNotification('Approving spend... please wait.', 'info');
             await approveTx.wait();
 
-            this.showNotification('Approval successful! Now buying...', 'info');
-            const buyTx = await this.contract.buyTokens(parsedAmount);
-            await buyTx.wait();
-            
-            this.elements.buyAmountInput.value = '';
-            return 'WYT purchased successfully!';
-        });
-    },
-
-    async redeemTokens() {
-        await this.handleTransaction(this.elements.redeemButton, async () => {
-            const amount = this.elements.redeemAmountInput.value;
-            if (!amount || parseFloat(amount) <= 0) throw new Error("Please enter a valid amount.");
-            const parsedAmount = ethers.utils.parseUnits(amount, this.wytDecimals);
-            const tx = await this.contract.redeemTokens(parsedAmount);
+            this.showNotification('Approval successful! Now funding...', 'info');
+            const tx = await this.contract.fundFromWorkOrderPayment(id, parsedAmount);
             await tx.wait();
-            this.elements.redeemAmountInput.value = '';
-            return 'WYT redeemed successfully!';
+            return 'Work order funded!';
         });
     },
 
-    updateBuyReceiveAmount() {
-        const priceText = this.elements.wytPrice.textContent.replace(/,/g, '');
-        const price = parseFloat(priceText);
-        if (isNaN(price)) return;
-        
-        let receiveAmount = 0;
-        const amount = parseFloat(this.elements.buyAmountInput.value);
-        if (!isNaN(amount) && amount > 0 && price > 0) {
-            receiveAmount = amount / price;
-        }
-        this.elements.buyReceiveAmount.textContent = receiveAmount.toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 4
+    async withdrawFees() {
+        await this.handleTransaction(this.elements.withdrawFeesButton, async () => {
+            const tx = await this.contract.withdrawFees();
+            await tx.wait();
+            return 'Fees withdrawn successfully!';
         });
     },
 
-    updateRedeemReceiveAmount() {
-        const priceText = this.elements.wytPrice.textContent.replace(/,/g, '');
-        const price = parseFloat(priceText);
-        if (isNaN(price)) return;
-
-        let receiveAmount = 0;
-        const amount = parseFloat(this.elements.redeemAmountInput.value);
-        if (!isNaN(amount) && amount > 0) {
-            receiveAmount = amount * price;
-        }
-        this.elements.redeemReceiveAmount.textContent = receiveAmount.toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 4
+    async setRedemptionFee() {
+        await this.handleTransaction(this.elements.setFeeButton, async () => {
+            const newFee = parseInt(this.elements.feeInput.value);
+            if (isNaN(newFee) || newFee < 0 || newFee > 20) {
+                throw new Error("Fee must be a number between 0 and 20.");
+            }
+            const tx = await this.contract.setRedemptionFee(newFee);
+            await tx.wait();
+            return 'Redemption fee updated!';
         });
+    },
+  
+    async cancelWorkOrder() {
+        await this.handleTransaction(this.elements.cancelButton, async () => {
+            const id = parseInt(this.elements.cancelIdInput.value);
+            if (isNaN(id) || id <= 0) throw new Error("Please enter a valid Work Order ID.");
+            const tx = await this.contract.cancelWorkOrder(id);
+            await tx.wait();
+            return 'Work order cancelled!';
+        });
+    },
+  
+    // --- RENDERING & UTILITIES ---
+    async getPaymentTokenContract() {
+        const paymentTokenAddress = await this.contract.paymentToken();
+        return new ethers.Contract(paymentTokenAddress, tokenABI, this.signer);
+    },
+    
+    async renderWorkOrders() {
+        this.elements.workOrderTable.innerHTML = '<table><tbody><tr><td>Loading work orders...</td></tr></tbody></table>';
+        try {
+            const nextId = await this.contract.nextWorkOrderId();
+            if (nextId.eq(1)) {
+                this.elements.workOrderTable.innerHTML = '<p>No work orders found.</p>';
+                return;
+            }
+            
+            const promises = [];
+            for (let i = 1; i < nextId; i++) {
+                promises.push(this.contract.workOrders(i));
+            }
+            const workOrders = await Promise.all(promises);
+
+            const tableHtml = `
+                <table>
+                <thead>
+                    <tr>
+                    <th>ID</th><th>Gross Yield</th><th>Reserve</th><th>Issued</th>
+                    <th>Active</th><th>Paid</th><th>Description</th><th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${workOrders.map(wo => `
+                    <tr>
+                        <td>${wo.id}</td>
+                        <td>${this.formatTokenValue(wo.grossYield, this.paymentTokenDecimals)}</td>
+                        <td>${this.formatTokenValue(wo.reserveAmount, this.paymentTokenDecimals)}</td>
+                        <td>${this.formatTokenValue(wo.tokensIssued, this.wytDecimals)}</td>
+                        <td>${wo.isActive ? '✅' : '❌'}</td>
+                        <td>${wo.isPaid ? '✅' : '❌'}</td>
+                        <td>${wo.description}</td>
+                        <td>${new Date(wo.createdAt * 1000).toLocaleDateString()}</td>
+                    </tr>
+                    `).join('')}
+                </tbody>
+                </table>
+            `;
+            this.elements.workOrderTable.innerHTML = tableHtml;
+        } catch (err) {
+            console.error("Could not render work orders", err);
+            this.elements.workOrderTable.innerHTML = '<p class.textContent = buttonText;
+        this.elements.swapButton.disabled = disabled;
     },
     
     async mintWorkOrder() {
