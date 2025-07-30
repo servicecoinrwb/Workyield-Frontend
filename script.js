@@ -3,7 +3,7 @@
 // --- CONFIGURATION ---
 const contractAddress = '0xccF4eaa301058Ec5561a07Cc38A75F47a2912EA5';
 
-const PLUME_MAINNET = {
+const PLUME_NETWORK = {
     chainId: '0x1823a', // Hexadecimal for 98866
     chainName: 'Plume',
     nativeCurrency: { name: 'PLUME', symbol: 'PLUME', decimals: 18 },
