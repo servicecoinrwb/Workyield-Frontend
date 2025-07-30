@@ -1,4 +1,4 @@
-// script.js - Final version with latest contract and all improvements
+// script.js - Final version with side-by-side Buy/Redeem UI
 
 // --- CONFIGURATION ---
 const contractAddress = '0x5a9d7DF133a1426f78D17Ac2EE41DE2F8ECb1eF6';
@@ -42,16 +42,18 @@ const App = {
             workOrderTable: document.getElementById('workOrderTable'),
             userBalance: document.getElementById('userBalance'),
             wytPrice: document.getElementById('wytPrice'),
-            buyTab: document.getElementById('buyTab'),
-            redeemTab: document.getElementById('redeemTab'),
-            buyPanel: document.getElementById('buyPanel'),
-            redeemPanel: document.getElementById('redeemPanel'),
+            
+            // Side-by-Side UI Elements
             pUSDBalance: document.getElementById('pUSDBalance'),
             wytUserBalance: document.getElementById('wytUserBalance'),
-            receiveAmount: document.getElementById('receiveAmount'),
-            swapButton: document.getElementById('swapButton'),
+            buyReceiveAmount: document.getElementById('buyReceiveAmount'),
+            redeemReceiveAmount: document.getElementById('redeemReceiveAmount'),
             buyAmountInput: document.getElementById('buyAmount'),
+            buyButton: document.getElementById('buyButton'),
             redeemAmountInput: document.getElementById('redeemAmount'),
+            redeemButton: document.getElementById('redeemButton'),
+            
+            // Admin Panel Elements
             collectedFees: document.getElementById('collectedFees'),
             mintAmountInput: document.getElementById('mintAmount'),
             mintDescriptionInput: document.getElementById('mintDescription'),
@@ -70,11 +72,14 @@ const App = {
   
     addEventListeners() {
         this.elements.connectButton?.addEventListener('click', () => this.connectWallet());
-        this.elements.swapButton?.addEventListener('click', () => this.executeSwap());
-        this.elements.buyTab?.addEventListener('click', () => this.switchTab('buy'));
-        this.elements.redeemTab?.addEventListener('click', () => this.switchTab('redeem'));
-        this.elements.buyAmountInput?.addEventListener('input', () => this.updateReceiveAmount());
-        this.elements.redeemAmountInput?.addEventListener('input', () => this.updateReceiveAmount());
+        
+        // Listeners for side-by-side UI
+        this.elements.buyButton?.addEventListener('click', () => this.buyTokens());
+        this.elements.redeemButton?.addEventListener('click', () => this.redeemTokens());
+        this.elements.buyAmountInput?.addEventListener('input', () => this.updateBuyReceiveAmount());
+        this.elements.redeemAmountInput?.addEventListener('input', () => this.updateRedeemReceiveAmount());
+
+        // Admin Panel Listeners
         this.elements.mintButton?.addEventListener('click', () => this.mintWorkOrder());
         this.elements.fundButton?.addEventListener('click', () => this.fundWorkOrder());
         this.elements.withdrawFeesButton?.addEventListener('click', () => this.withdrawFees());
@@ -102,6 +107,7 @@ const App = {
             return this.showNotification('Please install MetaMask.', 'error');
         }
         try {
+            await this.checkAndSwitchNetwork();
             this.provider = new ethers.providers.Web3Provider(window.ethereum);
             const accounts = await this.provider.send("eth_requestAccounts", []);
             this.signer = this.provider.getSigner();
@@ -114,7 +120,6 @@ const App = {
             
             this.showNotification('Wallet connected successfully!', 'success');
             await this.loadContractData();
-            this.switchTab('buy');
         } catch (err) {
             console.error(err);
             this.showNotification('Wallet connection failed.', 'error');
@@ -161,7 +166,8 @@ const App = {
             }
             
             await this.renderWorkOrders();
-            this.updateReceiveAmount();
+            this.updateBuyReceiveAmount();
+            this.updateRedeemReceiveAmount();
         } catch (error) {
             console.error("Error loading contract data:", error);
             this.showNotification('Failed to load contract data.', 'error');
@@ -169,83 +175,68 @@ const App = {
     },
   
     // --- USER & ADMIN ACTIONS ---
-    async executeSwap() {
-        const isBuy = !this.elements.buyPanel.classList.contains('hidden');
-        if (isBuy) {
-            await this.handleTransaction(this.elements.swapButton, async () => {
-                const amount = this.elements.buyAmountInput.value;
-                if (!amount || parseFloat(amount) <= 0) throw new Error("Please enter a valid amount.");
+    async buyTokens() {
+        await this.handleTransaction(this.elements.buyButton, async () => {
+            const amount = this.elements.buyAmountInput.value;
+            if (!amount || parseFloat(amount) <= 0) throw new Error("Please enter a valid amount.");
+            const parsedAmount = ethers.utils.parseUnits(amount, this.paymentTokenDecimals);
+            
+            const paymentToken = await this.getPaymentTokenContract();
+            const approveTx = await paymentToken.approve(contractAddress, parsedAmount);
+            this.showNotification('Approving spend... please wait.', 'info');
+            await approveTx.wait();
 
-                const parsedAmount = ethers.utils.parseUnits(amount, this.paymentTokenDecimals);
-                
-                const paymentToken = await this.getPaymentTokenContract();
-                const approveTx = await paymentToken.approve(contractAddress, parsedAmount);
-                this.showNotification('Approving spend... please wait.', 'info');
-                await approveTx.wait();
-
-                this.showNotification('Approval successful! Now buying...', 'info');
-                const buyTx = await this.contract.buyTokens(parsedAmount);
-                await buyTx.wait();
-                
-                this.elements.buyAmountInput.value = '';
-                return 'WYT purchased successfully!';
-            });
-        } else {
-            await this.handleTransaction(this.elements.swapButton, async () => {
-                const amount = this.elements.redeemAmountInput.value;
-                if (!amount || parseFloat(amount) <= 0) throw new Error("Please enter a valid amount.");
-                const parsedAmount = ethers.utils.parseUnits(amount, this.wytDecimals);
-                const tx = await this.contract.redeemTokens(parsedAmount);
-                await tx.wait();
-                this.elements.redeemAmountInput.value = '';
-                return 'WYT redeemed successfully!';
-            });
-        }
+            this.showNotification('Approval successful! Now buying...', 'info');
+            const buyTx = await this.contract.buyTokens(parsedAmount);
+            await buyTx.wait();
+            
+            this.elements.buyAmountInput.value = '';
+            return 'WYT purchased successfully!';
+        });
     },
 
-    switchTab(tab) {
-        const isBuy = tab === 'buy';
-        this.elements.buyTab.classList.toggle('active', isBuy);
-        this.elements.redeemTab.classList.toggle('active', !isBuy);
-        this.elements.buyPanel.classList.toggle('hidden', !isBuy);
-        this.elements.redeemPanel.classList.toggle('hidden', isBuy);
-        this.updateReceiveAmount();
+    async redeemTokens() {
+        await this.handleTransaction(this.elements.redeemButton, async () => {
+            const amount = this.elements.redeemAmountInput.value;
+            if (!amount || parseFloat(amount) <= 0) throw new Error("Please enter a valid amount.");
+            const parsedAmount = ethers.utils.parseUnits(amount, this.wytDecimals);
+            const tx = await this.contract.redeemTokens(parsedAmount);
+            await tx.wait();
+            this.elements.redeemAmountInput.value = '';
+            return 'WYT redeemed successfully!';
+        });
     },
 
-    updateReceiveAmount() {
-        const isBuy = !this.elements.buyPanel.classList.contains('hidden');
+    updateBuyReceiveAmount() {
         const priceText = this.elements.wytPrice.textContent.replace(/,/g, '');
         const price = parseFloat(priceText);
+        if (isNaN(price)) return;
         
-        if (isNaN(price)) {
-            this.elements.swapButton.textContent = 'Price Unavailable';
-            this.elements.swapButton.disabled = true;
-            return;
-        }
-
         let receiveAmount = 0;
-        let buttonText = 'Enter an amount';
-        let disabled = true;
-        let amountInput = isBuy ? this.elements.buyAmountInput : this.elements.redeemAmountInput;
-        const amount = parseFloat(amountInput.value);
-
-        if (!isNaN(amount) && amount > 0) {
-            if (isBuy) {
-                if (price > 0) receiveAmount = amount / price;
-                buttonText = 'Buy WYT';
-            } else {
-                receiveAmount = amount * price;
-                buttonText = 'Redeem WYT';
-            }
-            disabled = false;
+        const amount = parseFloat(this.elements.buyAmountInput.value);
+        if (!isNaN(amount) && amount > 0 && price > 0) {
+            receiveAmount = amount / price;
         }
-        
-        this.elements.receiveAmount.textContent = receiveAmount.toLocaleString('en-US', {
+        this.elements.buyReceiveAmount.textContent = receiveAmount.toLocaleString('en-US', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 4
         });
-        this.elements.swapButton.textContent = buttonText;
-        this.elements.swapButton.disabled = disabled;
+    },
+
+    updateRedeemReceiveAmount() {
+        const priceText = this.elements.wytPrice.textContent.replace(/,/g, '');
+        const price = parseFloat(priceText);
+        if (isNaN(price)) return;
+
+        let receiveAmount = 0;
+        const amount = parseFloat(this.elements.redeemAmountInput.value);
+        if (!isNaN(amount) && amount > 0) {
+            receiveAmount = amount * price;
+        }
+        this.elements.redeemReceiveAmount.textContent = receiveAmount.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 4
+        });
     },
     
     async mintWorkOrder() {
@@ -253,7 +244,6 @@ const App = {
             const grossYield = this.elements.mintAmountInput.value;
             const desc = this.elements.mintDescriptionInput.value;
             if (!grossYield || !desc) throw new Error("Gross yield and description are required.");
-            
             const parsedGrossYield = ethers.utils.parseUnits(grossYield, this.paymentTokenDecimals);
             const tx = await this.contract.mintFromWorkOrder(parsedGrossYield, desc);
             await tx.wait();
