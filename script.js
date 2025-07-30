@@ -59,6 +59,9 @@ const App = {
             fundIdInput: document.getElementById('fundId'),
             fundAmountInput: document.getElementById('fundAmount'),
             fundButton: document.getElementById('fundButton'),
+            burnWytBalance: document.getElementById('burnWytBalance'),
+            burnAmountInput: document.getElementById('burnAmount'),
+            burnButton: document.getElementById('burnButton'),
             withdrawFeesButton: document.getElementById('withdrawFeesButton'),
             feeInput: document.getElementById('feeInput'),
             setFeeButton: document.getElementById('setFeeButton'),
@@ -77,6 +80,7 @@ const App = {
         this.elements.redeemAmountInput?.addEventListener('input', () => this.updateReceiveAmount());
         this.elements.mintButton?.addEventListener('click', () => this.mintWorkOrder());
         this.elements.fundButton?.addEventListener('click', () => this.fundWorkOrder());
+        this.elements.burnButton?.addEventListener('click', () => this.burnTokens());
         this.elements.withdrawFeesButton?.addEventListener('click', () => this.withdrawFees());
         this.elements.setFeeButton?.addEventListener('click', () => this.setRedemptionFee());
         this.elements.cancelButton?.addEventListener('click', () => this.cancelWorkOrder());
@@ -146,7 +150,7 @@ const App = {
             this.elements.paymentBalance.textContent = this.formatTokenValue(paymentBalance, this.paymentTokenDecimals);
             this.elements.userBalance.textContent = this.formatTokenValue(userWytBalance, this.wytDecimals);
             this.elements.collectedFees.textContent = this.formatTokenValue(collectedFees, this.paymentTokenDecimals);
-            
+            this.elements.burnWytBalance.textContent = this.formatTokenValue(userWytBalance, this.wytDecimals);
             this.elements.wytUserBalance.textContent = this.formatTokenValue(userWytBalance, this.wytDecimals);
             this.elements.pUSDBalance.textContent = this.formatTokenValue(userPusdBalance, this.paymentTokenDecimals);
 
@@ -304,6 +308,20 @@ const App = {
             return 'Redemption fee updated!';
         });
     },
+
+    async burnTokens() {
+    await this.handleTransaction(this.elements.burnButton, async () => {
+        const amount = this.elements.burnAmountInput.value;
+        if (!amount || parseFloat(amount) <= 0) throw new Error("Please enter a valid amount to burn.");
+        
+        const parsedAmount = ethers.utils.parseUnits(amount, this.wytDecimals);
+        const tx = await this.contract.burn(parsedAmount);
+        await tx.wait();
+        
+        this.elements.burnAmountInput.value = '';
+        return 'Tokens burned successfully!';
+    });
+},
   
     async cancelWorkOrder() {
         await this.handleTransaction(this.elements.cancelButton, async () => {
