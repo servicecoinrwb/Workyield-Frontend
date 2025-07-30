@@ -6,11 +6,7 @@ const contractAddress = '0x5a9d7DF133a1426f78D17Ac2EE41DE2F8ECb1eF6';
 const PLUME_TESTNET = {
     chainId: '0x9b85195', // Hexadecimal version of 162749301
     chainName: 'Plume Testnet',
-    nativeCurrency: {
-        name: 'Plume',
-        symbol: 'PLUME',
-        decimals: 18,
-    },
+    nativeCurrency: { name: 'Plume', symbol: 'PLUME', decimals: 18 },
     rpcUrls: ['https://testnet-rpc.plumenetwork.xyz/http'],
     blockExplorerUrls: ['https://explorer.plume.org'],
 };
@@ -116,7 +112,6 @@ const App = {
                 console.log("Already connected to the correct network.");
                 return;
             }
-
             await window.ethereum.request({
                 method: 'wallet_switchEthereumChain',
                 params: [{ chainId: PLUME_TESTNET.chainId }],
@@ -137,7 +132,7 @@ const App = {
             } else {
                 console.error("Failed to switch network", switchError);
                 this.showNotification('Could not switch to the Plume network.', 'error');
-                throw switchError; // Re-throw error to stop connectWallet
+                throw switchError;
             }
         }
     },
@@ -216,6 +211,11 @@ const App = {
     },
   
     // --- USER & ADMIN ACTIONS ---
+    async getPaymentTokenContract() {
+        const paymentTokenAddress = await this.contract.paymentToken();
+        return new ethers.Contract(paymentTokenAddress, tokenABI, this.signer);
+    },
+
     async executeSwap() {
         const isBuy = !this.elements.buyPanel.classList.contains('hidden');
         if (isBuy) {
@@ -259,7 +259,6 @@ const App = {
     },
 
     updateReceiveAmount() {
-        const isBuy = !this.elements.buyPanel.classList.contains('hidden');
         const priceText = this.elements.wytPrice.textContent.replace(/,/g, '');
         const price = parseFloat(priceText);
         
@@ -269,6 +268,7 @@ const App = {
             return;
         }
 
+        const isBuy = !this.elements.buyPanel.classList.contains('hidden');
         let receiveAmount = 0;
         let buttonText = 'Enter an amount';
         let disabled = true;
@@ -357,125 +357,6 @@ const App = {
     },
   
     // --- RENDERING & UTILITIES ---
-    async getPaymentTokenContract() {
-        const paymentTokenAddress = await this.contract.paymentToken();
-        return new ethers.Contract(paymentTokenAddress, tokenABI, this.signer);
-    },
-    
-    async renderWorkOrders() {
-        this.elements.workOrderTable.innerHTML = '<table><tbody><tr><td>Loading work orders...</td></tr></tbody></table>';
-        try {
-            const nextId = await this.contract.nextWorkOrderId();
-            if (nextId.eq(1)) {
-                this.elements.workOrderTable.innerHTML = '<p>No work orders found.</p>';
-                return;
-            }
-            
-            const promises = [];
-            for (let i = 1; i < nextId; i++) {
-                promises.push(this.contract.workOrders(i));
-            }
-            const workOrders = await Promise.all(promises);
-
-            const tableHtml = `
-                <table>
-                <thead>
-                    <tr>
-                    <th>ID</th><th>Gross Yield</th><th>Reserve</th><th>Issued</th>
-                    <th>Active</th><th>Paid</th><th>Description</th><th>Created</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${workOrders.map(wo => `
-                    <tr>
-                        <td>${wo.id}</td>
-                        <td>${this.formatTokenValue(wo.grossYield, this.paymentTokenDecimals)}</td>
-                        <td>${this.formatTokenValue(wo.reserveAmount, this.paymentTokenDecimals)}</td>
-                        <td>${this.formatTokenValue(wo.tokensIssued, this.wytDecimals)}</td>
-                        <td>${wo.isActive ? '✅' : '❌'}</td>
-                        <td>${wo.isPaid ? '✅' : '❌'}</td>
-                        <td>${wo.description}</td>
-                        <td>${new Date(wo.createdAt * 1000).toLocaleDateString()}</td>
-                    </tr>
-                    `).join('')}
-                </tbody>
-                </table>
-            `;
-            this.elements.workOrderTable.innerHTML = tableHtml;
-        } catch (err) {
-            console.error("Could not render work orders", err);
-            this.elements.workOrderTable.innerHTML = '<p class.textContent = buttonText;
-        this.elements.swapButton.disabled = disabled;
-    },
-    
-    async mintWorkOrder() {
-        await this.handleTransaction(this.elements.mintButton, async () => {
-            const grossYield = this.elements.mintAmountInput.value;
-            const desc = this.elements.mintDescriptionInput.value;
-            if (!grossYield || !desc) throw new Error("Gross yield and description are required.");
-            const parsedGrossYield = ethers.utils.parseUnits(grossYield, this.paymentTokenDecimals);
-            const tx = await this.contract.mintFromWorkOrder(parsedGrossYield, desc);
-            await tx.wait();
-            return 'Work order minted!';
-        });
-    },
-
-    async fundWorkOrder() {
-        await this.handleTransaction(this.elements.fundButton, async () => {
-            const id = this.elements.fundIdInput.value;
-            const amount = this.elements.fundAmountInput.value;
-            if (!id || !amount) throw new Error("Work Order ID and amount are required.");
-            
-            const parsedAmount = ethers.utils.parseUnits(amount, this.paymentTokenDecimals);
-            const paymentToken = await this.getPaymentTokenContract();
-            const approveTx = await paymentToken.approve(contractAddress, parsedAmount);
-
-            this.showNotification('Approving spend... please wait.', 'info');
-            await approveTx.wait();
-
-            this.showNotification('Approval successful! Now funding...', 'info');
-            const tx = await this.contract.fundFromWorkOrderPayment(id, parsedAmount);
-            await tx.wait();
-            return 'Work order funded!';
-        });
-    },
-
-    async withdrawFees() {
-        await this.handleTransaction(this.elements.withdrawFeesButton, async () => {
-            const tx = await this.contract.withdrawFees();
-            await tx.wait();
-            return 'Fees withdrawn successfully!';
-        });
-    },
-
-    async setRedemptionFee() {
-        await this.handleTransaction(this.elements.setFeeButton, async () => {
-            const newFee = parseInt(this.elements.feeInput.value);
-            if (isNaN(newFee) || newFee < 0 || newFee > 20) {
-                throw new Error("Fee must be a number between 0 and 20.");
-            }
-            const tx = await this.contract.setRedemptionFee(newFee);
-            await tx.wait();
-            return 'Redemption fee updated!';
-        });
-    },
-  
-    async cancelWorkOrder() {
-        await this.handleTransaction(this.elements.cancelButton, async () => {
-            const id = parseInt(this.elements.cancelIdInput.value);
-            if (isNaN(id) || id <= 0) throw new Error("Please enter a valid Work Order ID.");
-            const tx = await this.contract.cancelWorkOrder(id);
-            await tx.wait();
-            return 'Work order cancelled!';
-        });
-    },
-  
-    // --- RENDERING & UTILITIES ---
-    async getPaymentTokenContract() {
-        const paymentTokenAddress = await this.contract.paymentToken();
-        return new ethers.Contract(paymentTokenAddress, tokenABI, this.signer);
-    },
-    
     async renderWorkOrders() {
         this.elements.workOrderTable.innerHTML = '<table><tbody><tr><td>Loading work orders...</td></tr></tbody></table>';
         try {
