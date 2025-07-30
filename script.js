@@ -1,7 +1,17 @@
-// script.js - Final version with simplified wallet connection and all features
-
 // --- CONFIGURATION ---
 const contractAddress = '0xccF4eaa301058Ec5561a07Cc38A75F47a2912EA5';
+
+const PLUME_MAINNET = {
+    chainId: '0x181FE', // Fixed: Corrected hex for 98814 (actual Plume mainnet)
+    chainName: 'Plume Mainnet',
+    nativeCurrency: { 
+        name: 'Plume', 
+        symbol: 'PLUME', 
+        decimals: 18 
+    },
+    rpcUrls: ['https://plume-mainnet.rpc.caldera.xyz/http'], // Updated RPC
+    blockExplorerUrls: ['https://plume-mainnet.explorer.caldera.xyz/'],
+};
 
 // Standard ERC20 ABI for interacting with the payment token
 const tokenABI = [
@@ -25,10 +35,14 @@ const App = {
     paymentTokenDecimals: 18,
     elements: {},
 
+    // --- INITIALIZATION ---
     init() {
         this.cacheDOMElements();
         this.addEventListeners();
         console.log("App initialized.");
+        
+        // Check if already connected on page load
+        this.checkExistingConnection();
     },
 
     cacheDOMElements() {
@@ -95,25 +109,118 @@ const App = {
                 if (accounts.length > 0) {
                     this.connectWallet();
                 } else {
-                    this.userAddress = null;
-                    this.elements.connectButton.textContent = 'Connect Wallet';
-                    this.elements.connectButton.disabled = false;
-                    this.elements.adminPanel.classList.add('hidden');
+                    this.disconnectWallet();
                 }
+            });
+            
+            window.ethereum.on('chainChanged', (chainId) => {
+                // Reload the page when network changes
+                window.location.reload();
             });
         }
     },
 
+    // Check if wallet is already connected
+    async checkExistingConnection() {
+        if (!window.ethereum) return;
+        
+        try {
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            if (accounts.length > 0) {
+                await this.connectWallet();
+            }
+        } catch (error) {
+            console.log('No existing connection found');
+        }
+    },
+
+    disconnectWallet() {
+        this.userAddress = null;
+        this.provider = null;
+        this.signer = null;
+        this.contract = null;
+        
+        if (this.elements.connectButton) {
+            this.elements.connectButton.textContent = 'Connect Wallet';
+            this.elements.connectButton.disabled = false;
+        }
+        
+        if (this.elements.adminPanel) {
+            this.elements.adminPanel.classList.add('hidden');
+        }
+    },
+
     // --- WEB3 INTERACTIONS ---
+    async checkAndSwitchNetwork() {
+        try {
+            const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
+            console.log('Current chain ID:', currentChainId);
+            console.log('Expected chain ID:', PLUME_MAINNET.chainId);
+            
+            if (currentChainId === PLUME_MAINNET.chainId) { 
+                console.log('Already on Plume mainnet');
+                return; 
+            }
+
+            console.log('Attempting to switch to Plume mainnet...');
+            
+            try {
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: PLUME_MAINNET.chainId }],
+                });
+                console.log('Successfully switched to Plume mainnet');
+            } catch (switchError) {
+                console.log('Switch error:', switchError);
+                
+                // This error code indicates that the chain has not been added to MetaMask
+                if (switchError.code === 4902) {
+                    console.log('Adding Plume mainnet to wallet...');
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [PLUME_MAINNET],
+                        });
+                        console.log('Successfully added Plume mainnet');
+                    } catch (addError) {
+                        console.error('Failed to add network:', addError);
+                        throw new Error("Failed to add the Plume network to your wallet. Please add it manually.");
+                    }
+                } else {
+                    console.error('Network switch error:', switchError);
+                    throw new Error("Failed to switch to the Plume network. Please switch manually in your wallet.");
+                }
+            }
+        } catch (error) {
+            console.error('Network check/switch error:', error);
+            throw error;
+        }
+    },
+
     async connectWallet() {
         if (!window.ethereum) {
-            return this.showNotification('Please install MetaMask.', 'error');
+            return this.showNotification('Please install MetaMask or another Web3 wallet.', 'error');
         }
+        
         try {
+            this.showNotification('Connecting wallet...', 'info');
+            
+            await this.checkAndSwitchNetwork();
+            
             this.provider = new ethers.providers.Web3Provider(window.ethereum);
             const accounts = await this.provider.send("eth_requestAccounts", []);
+            
+            if (accounts.length === 0) {
+                throw new Error('No accounts found. Please unlock your wallet.');
+            }
+            
             this.signer = this.provider.getSigner();
             this.userAddress = accounts[0];
+            
+            // Verify we can get the address from signer
+            const signerAddress = await this.signer.getAddress();
+            console.log('Connected address:', signerAddress);
+            
             this.contract = new ethers.Contract(contractAddress, contractABI, this.signer);
             
             const shortAddress = `${this.userAddress.slice(0, 6)}...${this.userAddress.slice(-4)}`;
@@ -124,13 +231,24 @@ const App = {
             await this.loadContractData();
             this.switchTab('buy');
         } catch (err) {
-            console.error(err);
-            this.showNotification('Wallet connection failed.', 'error');
+            console.error('Wallet connection error:', err);
+            this.showNotification(err.message || 'Wallet connection failed.', 'error');
+            this.disconnectWallet();
         }
     },
 
     async loadContractData() {
         try {
+            this.showNotification('Loading contract data...', 'info');
+            
+            // Test contract connection first
+            try {
+                await this.contract.name();
+            } catch (contractError) {
+                console.error('Contract connection error:', contractError);
+                throw new Error('Failed to connect to contract. Please verify the contract address and network.');
+            }
+            
             this.wytDecimals = await this.contract.decimals();
             const paymentTokenAddress = await this.contract.paymentToken();
             const paymentTokenContract = new ethers.Contract(paymentTokenAddress, tokenABI, this.provider);
@@ -169,9 +287,11 @@ const App = {
             await this.renderWorkOrders();
             await this.renderTransactionHistory();
             this.updateReceiveAmount();
+            
+            this.showNotification('Contract data loaded successfully!', 'success');
         } catch (error) {
             console.error("Error loading contract data:", error);
-            this.showNotification('Failed to load contract data.', 'error');
+            this.showNotification('Failed to load contract data: ' + error.message, 'error');
         }
     },
   
@@ -264,6 +384,8 @@ const App = {
             const parsedGrossYield = ethers.utils.parseUnits(grossYield, this.paymentTokenDecimals);
             const tx = await this.contract.mintFromWorkOrder(parsedGrossYield, desc);
             await tx.wait();
+            this.elements.mintAmountInput.value = '';
+            this.elements.mintDescriptionInput.value = '';
             return 'Work order minted!';
         });
     },
@@ -282,8 +404,11 @@ const App = {
             await approveTx.wait();
 
             this.showNotification('Approval successful! Now funding...', 'info');
-            const tx = await this.contract.fundFromWorkOrderPayment(id, parsedAmount);
+            // Fixed method name
+            const tx = await this.contract.fundWorkOrder(id, parsedAmount);
             await tx.wait();
+            this.elements.fundIdInput.value = '';
+            this.elements.fundAmountInput.value = '';
             return 'Work order funded!';
         });
     },
@@ -304,6 +429,7 @@ const App = {
             }
             const tx = await this.contract.setRedemptionFee(newFee);
             await tx.wait();
+            this.elements.feeInput.value = '';
             return 'Redemption fee updated!';
         });
     },
@@ -314,6 +440,7 @@ const App = {
             if (isNaN(id) || id <= 0) throw new Error("Please enter a valid Work Order ID.");
             const tx = await this.contract.cancelWorkOrder(id);
             await tx.wait();
+            this.elements.cancelIdInput.value = '';
             return 'Work order cancelled!';
         });
     },
@@ -472,30 +599,127 @@ const App = {
     },
 
     exportPDF() {
-        // ...
+        // PDF export functionality would go here
+        this.showNotification('PDF export functionality not implemented yet.', 'info');
     },
 
     async handleTransaction(button, transactionCallback) {
-        // ...
+        if (!this.userAddress) {
+            this.showNotification('Please connect your wallet first.', 'error');
+            return;
+        }
+
+        this.setButtonLoading(button, true);
+        try {
+            const result = await transactionCallback();
+            this.showNotification(result, 'success');
+            await this.loadContractData(); // Refresh data after transaction
+        } catch (error) {
+            console.error('Transaction error:', error);
+            let errorMessage = 'Transaction failed.';
+            
+            if (error.code === 4001) {
+                errorMessage = 'Transaction rejected by user.';
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+            
+            this.showNotification(errorMessage, 'error');
+        } finally {
+            this.setButtonLoading(button, false);
+        }
     },
 
     setButtonLoading(button, isLoading) {
-        // ...
+        if (!button) return;
+        
+        if (isLoading) {
+            button.disabled = true;
+            button.dataset.originalText = button.textContent;
+            button.innerHTML = '<span class="spinner"></span> Processing...';
+        } else {
+            button.disabled = false;
+            button.textContent = button.dataset.originalText || button.textContent;
+        }
     },
 
     showNotification(message, type = 'info') {
-        // ...
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        
+        // Add to page
+        document.body.appendChild(notification);
+        
+        // Remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 5000);
+        
+        console.log(`[${type.toUpperCase()}] ${message}`);
     },
 
     formatTokenValue(value, decimals) {
-        // ...
+        try {
+            const formatted = ethers.utils.formatUnits(value, decimals);
+            const number = parseFloat(formatted);
+            return number.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 4
+            });
+        } catch (error) {
+            console.error('Error formatting token value:', error);
+            return '0.00';
+        }
     }
 };
 
 // --- CSS FOR UTILITIES (Spinner and Notifications) ---
 const styles = `
-// ...
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        z-index: 1000;
+        max-width: 300px;
+        word-wrap: break-word;
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    .notification-success { background-color: #10b981; }
+    .notification-error { background-color: #ef4444; }
+    .notification-info { background-color: #3b82f6; }
+    
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    .spinner {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border: 2px solid #ffffff30;
+        border-top: 2px solid #ffffff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .hidden { display: none !important; }
 `;
+
 const styleSheet = document.createElement("style");
 styleSheet.innerText = styles;
 document.head.appendChild(styleSheet);
