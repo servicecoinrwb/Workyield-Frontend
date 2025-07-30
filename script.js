@@ -1,7 +1,34 @@
-// script.js - Final version with simplified wallet connection and all features
+Thank you for the details. I have now updated the `script.js` file with the correct configuration for the **Plume Mainnet** and removed the old testnet information.
+
+This is the final, complete version of the script.
+
+-----
+
+### \#\# Final Instructions
+
+1.  **Delete**: Go to your project folder and **delete** your current `script.js` file.
+2.  **Create New**: Create a new, empty file and name it `script.js`.
+3.  **Copy & Paste**: Copy the **entire code block** below and paste it into the new file.
+4.  **Save** the file.
+5.  **Hard Refresh**: In your browser, perform a **Hard Refresh** (**Ctrl+Shift+R** or **Cmd+Shift+R**).
+
+-----
+
+### ✅ Final `script.js` (Configured for Mainnet)
+
+```javascript
+// script.js - Final version configured for Plume Mainnet
 
 // --- CONFIGURATION ---
 const contractAddress = '0xccF4eaa301058Ec5561a07Cc38A75F47a2912EA5';
+
+const PLUME_MAINNET = {
+    chainId: '0x1823a', // Hexadecimal for 98866
+    chainName: 'Plume',
+    nativeCurrency: { name: 'PLUME', symbol: 'PLUME', decimals: 18 },
+    rpcUrls: ['https://rpc.plume.org'],
+    blockExplorerUrls: ['https://explorer.plume.org'],
+};
 
 // Standard ERC20 ABI for interacting with the payment token
 const tokenABI = [
@@ -25,6 +52,7 @@ const App = {
     paymentTokenDecimals: 18,
     elements: {},
 
+    // --- INITIALIZATION ---
     init() {
         this.cacheDOMElements();
         this.addEventListeners();
@@ -39,6 +67,7 @@ const App = {
             paymentBalance: document.getElementById('paymentBalance'),
             adminPanel: document.getElementById('adminPanel'),
             workOrderTable: document.getElementById('workOrderTable'),
+            txHistoryTable: document.getElementById('txHistoryTable'),
             userBalance: document.getElementById('userBalance'),
             wytPrice: document.getElementById('wytPrice'),
             buyTab: document.getElementById('buyTab'),
@@ -104,11 +133,40 @@ const App = {
     },
 
     // --- WEB3 INTERACTIONS ---
+    async checkAndSwitchNetwork() {
+        try {
+            const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
+            if (currentChainId === PLUME_MAINNET.chainId) { return; }
+            await window.ethereum.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: PLUME_MAINNET.chainId }],
+            });
+        } catch (switchError) {
+            if (switchError.code === 4902) {
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [PLUME_MAINNET],
+                    });
+                } catch (addError) {
+                    console.error("Failed to add network", addError);
+                    this.showNotification('Could not add Plume network.', 'error');
+                }
+            } else {
+                console.error("Failed to switch network", switchError);
+                this.showNotification('Could not switch to Plume network.', 'error');
+                throw switchError;
+            }
+        }
+    },
+
     async connectWallet() {
         if (!window.ethereum) {
             return this.showNotification('Please install MetaMask.', 'error');
         }
         try {
+            await this.checkAndSwitchNetwork();
+            
             this.provider = new ethers.providers.Web3Provider(window.ethereum);
             const accounts = await this.provider.send("eth_requestAccounts", []);
             this.signer = this.provider.getSigner();
@@ -129,53 +187,50 @@ const App = {
     },
 
     async loadContractData() {
-    try {
-        this.wytDecimals = await this.contract.decimals();
-        const paymentTokenAddress = await this.contract.paymentToken();
-        const paymentTokenContract = new ethers.Contract(paymentTokenAddress, tokenABI, this.provider);
-        this.paymentTokenDecimals = await paymentTokenContract.decimals();
-        
-        console.log(`WYT Decimals: ${this.wytDecimals}, Payment Token Decimals: ${this.paymentTokenDecimals}`);
+        try {
+            this.wytDecimals = await this.contract.decimals();
+            const paymentTokenAddress = await this.contract.paymentToken();
+            const paymentTokenContract = new ethers.Contract(paymentTokenAddress, tokenABI, this.provider);
+            this.paymentTokenDecimals = await paymentTokenContract.decimals();
+            
+            const [totalSupply, available, paymentBalance, owner, userWytBalance, userPusdBalance, collectedFees] = await Promise.all([
+                this.contract.totalSupply(),
+                this.contract.availableTokens(),
+                this.contract.contractPaymentTokenBalance(),
+                this.contract.owner(),
+                this.contract.balanceOf(this.userAddress),
+                paymentTokenContract.balanceOf(this.userAddress),
+                this.contract.collectedFees()
+            ]);
+            
+            this.elements.totalSupply.innerHTML = this.formatTokenValue(totalSupply, this.wytDecimals);
+            this.elements.availableTokens.innerHTML = this.formatTokenValue(available, this.wytDecimals);
+            this.elements.paymentBalance.innerHTML = this.formatTokenValue(paymentBalance, this.paymentTokenDecimals);
+            this.elements.userBalance.innerHTML = this.formatTokenValue(userWytBalance, this.wytDecimals);
+            this.elements.collectedFees.innerHTML = this.formatTokenValue(collectedFees, this.paymentTokenDecimals);
+            this.elements.wytUserBalance.textContent = this.formatTokenValue(userWytBalance, this.wytDecimals);
+            this.elements.pUSDBalance.textContent = this.formatTokenValue(userPusdBalance, this.paymentTokenDecimals);
+            this.elements.burnWytBalance.textContent = this.formatTokenValue(userWytBalance, this.wytDecimals);
 
-        const [totalSupply, available, paymentBalance, owner, userWytBalance, userPusdBalance, collectedFees] = await Promise.all([
-            this.contract.totalSupply(),
-            this.contract.availableTokens(),
-            this.contract.contractPaymentTokenBalance(),
-            this.contract.owner(),
-            this.contract.balanceOf(this.userAddress),
-            paymentTokenContract.balanceOf(this.userAddress),
-            this.contract.collectedFees()
-        ]);
-        
-        // Use .innerHTML to replace the skeleton divs with the formatted values
-        this.elements.totalSupply.innerHTML = this.formatTokenValue(totalSupply, this.wytDecimals);
-        this.elements.availableTokens.innerHTML = this.formatTokenValue(available, this.wytDecimals);
-        this.elements.paymentBalance.innerHTML = this.formatTokenValue(paymentBalance, this.paymentTokenDecimals);
-        this.elements.userBalance.innerHTML = this.formatTokenValue(userWytBalance, this.wytDecimals);
-        this.elements.collectedFees.innerHTML = this.formatTokenValue(collectedFees, this.paymentTokenDecimals);
-        
-        this.elements.wytUserBalance.textContent = this.formatTokenValue(userWytBalance, this.wytDecimals);
-        this.elements.pUSDBalance.textContent = this.formatTokenValue(userPusdBalance, this.paymentTokenDecimals);
-        this.elements.burnWytBalance.textContent = this.formatTokenValue(userWytBalance, this.wytDecimals);
-
-        if (!totalSupply.isZero()) {
-            const price = paymentBalance.mul(ethers.utils.parseUnits("1", this.wytDecimals)).div(totalSupply);
-            this.elements.wytPrice.innerHTML = this.formatTokenValue(price, this.paymentTokenDecimals);
-        } else {
-            this.elements.wytPrice.innerHTML = '0.00';
+            if (!totalSupply.isZero()) {
+                const price = paymentBalance.mul(ethers.utils.parseUnits("1", this.wytDecimals)).div(totalSupply);
+                this.elements.wytPrice.innerHTML = this.formatTokenValue(price, this.paymentTokenDecimals);
+            } else {
+                this.elements.wytPrice.innerHTML = '0.00';
+            }
+            
+            if (owner.toLowerCase() === this.userAddress.toLowerCase()) {
+                this.elements.adminPanel.classList.remove('hidden');
+            }
+            
+            await this.renderWorkOrders();
+            await this.renderTransactionHistory();
+            this.updateReceiveAmount();
+        } catch (error) {
+            console.error("Error loading contract data:", error);
+            this.showNotification('Failed to load contract data.', 'error');
         }
-        
-        if (owner.toLowerCase() === this.userAddress.toLowerCase()) {
-            this.elements.adminPanel.classList.remove('hidden');
-        }
-        
-        await this.renderWorkOrders();
-        this.updateReceiveAmount();
-    } catch (error) {
-        console.error("Error loading contract data:", error);
-        this.showNotification('Failed to load contract data.', 'error');
-    }
-},
+    },
   
     // --- USER & ADMIN ACTIONS ---
     async getPaymentTokenContract() {
@@ -190,16 +245,13 @@ const App = {
                 const amount = this.elements.buyAmountInput.value;
                 if (!amount || parseFloat(amount) <= 0) throw new Error("Please enter a valid amount.");
                 const parsedAmount = ethers.utils.parseUnits(amount, this.paymentTokenDecimals);
-                
                 const paymentToken = await this.getPaymentTokenContract();
                 const approveTx = await paymentToken.approve(contractAddress, parsedAmount);
                 this.showNotification('Approving spend... please wait.', 'info');
                 await approveTx.wait();
-
                 this.showNotification('Approval successful! Now buying...', 'info');
                 const buyTx = await this.contract.buyTokens(parsedAmount);
                 await buyTx.wait();
-                
                 this.elements.buyAmountInput.value = '';
                 return 'WYT purchased successfully!';
             });
@@ -409,6 +461,94 @@ const App = {
         }
     },
 
+    async renderTransactionHistory() {
+        this.elements.txHistoryTable.innerHTML = '<p>Loading history...</p>';
+        try {
+            const buyFilter = this.contract.filters.Transfer(this.contract.address, this.userAddress);
+            const redeemFilter = this.contract.filters.TokensRedeemed(this.userAddress);
+            const burnFilter = this.contract.filters.Transfer(this.userAddress, "0x0000000000000000000000000000000000000000");
+
+
+            const buyEvents = await this.contract.queryFilter(buyFilter, 0, 'latest');
+            const redeemEvents = await this.contract.queryFilter(redeemFilter, 0, 'latest');
+            const burnEvents = await this.contract.queryFilter(burnFilter, 0, 'latest');
+
+            let allEvents = [];
+
+            buyEvents.forEach(event => {
+                allEvents.push({
+                    type: 'Buy',
+                    wytAmount: event.args.value,
+                    pUSDAmount: null,
+                    blockNumber: event.blockNumber,
+                    txHash: event.transactionHash
+                });
+            });
+
+            redeemEvents.forEach(event => {
+                allEvents.push({
+                    type: 'Redeem',
+                    wytAmount: event.args.wytAmount,
+                    pUSDAmount: event.args.pUSDAmount,
+                    blockNumber: event.blockNumber,
+                    txHash: event.transactionHash
+                });
+            });
+
+            burnEvents.forEach(event => {
+                allEvents.push({
+                    type: 'Burn',
+                    wytAmount: event.args.value,
+                    pUSDAmount: ethers.BigNumber.from(0),
+                    blockNumber: event.blockNumber,
+                    txHash: event.transactionHash
+                });
+            });
+
+            allEvents.sort((a, b) => b.blockNumber - a.blockNumber);
+
+            if (allEvents.length === 0) {
+                this.elements.txHistoryTable.innerHTML = '<p>No transaction history found.</p>';
+                return;
+            }
+
+            const tableHtml = `
+                <table>
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>WYT Amount</th>
+                        <th>pUSD Amount</th>
+                        <th>Transaction</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${allEvents.slice(0, 10).map(event => `
+                    <tr>
+                        <td><span class="font-semibold ${
+                            event.type === 'Buy' ? 'text-green-400' : 
+                            event.type === 'Redeem' ? 'text-red-400' : 'text-gray-400'
+                        }">${event.type}</span></td>
+                        <td>${this.formatTokenValue(event.wytAmount, this.wytDecimals)}</td>
+                        <td>${event.pUSDAmount ? this.formatTokenValue(event.pUSDAmount, this.paymentTokenDecimals) : 'N/A'}</td>
+                        <td>
+                            <a href="${PLUME_MAINNET.blockExplorerUrls[0]}/tx/${event.txHash}" target="_blank" rel="noopener noreferrer" class="footer-link">
+                               View on Explorer
+                            </a>
+                        </td>
+                    </tr>
+                    `).join('')}
+                </tbody>
+                </table>
+            `;
+            this.elements.txHistoryTable.innerHTML = tableHtml;
+
+        } catch (err) {
+            console.error("Could not render transaction history", err);
+            this.elements.txHistoryTable.innerHTML = '<p class="text-red-500">Error loading history.</p>';
+        }
+    },
+
     exportPDF() {
         try {
             const { jsPDF } = window.jspdf;
@@ -527,3 +667,4 @@ document.head.appendChild(styleSheet);
 
 // --- START THE APP ---
 window.addEventListener('DOMContentLoaded', () => App.init());
+```
