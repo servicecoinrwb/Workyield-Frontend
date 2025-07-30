@@ -2,15 +2,15 @@
 const contractAddress = '0xccF4eaa301058Ec5561a07Cc38A75F47a2912EA5';
 
 const PLUME_MAINNET = {
-    chainId: '0x181FE', // Fixed: Corrected hex for 98814 (actual Plume mainnet)
-    chainName: 'Plume Mainnet',
+    chainId: '0x18232', // Correct hex for 98866 (actual Plume mainnet)
+    chainName: 'Plume',
     nativeCurrency: { 
-        name: 'Plume', 
+        name: 'PLUME', 
         symbol: 'PLUME', 
         decimals: 18 
     },
-    rpcUrls: ['https://plume-mainnet.rpc.caldera.xyz/http'], // Updated RPC
-    blockExplorerUrls: ['https://plume-mainnet.explorer.caldera.xyz/'],
+    rpcUrls: ['https://rpc.plume.org'], // Official Plume mainnet RPC
+    blockExplorerUrls: ['https://explorer.plume.org'],
 };
 
 // Standard ERC20 ABI for interacting with the payment token
@@ -184,11 +184,22 @@ const App = {
                         console.log('Successfully added Plume mainnet');
                     } catch (addError) {
                         console.error('Failed to add network:', addError);
-                        throw new Error("Failed to add the Plume network to your wallet. Please add it manually.");
+                        throw new Error("Failed to add the Plume network to your wallet. Please add it manually using these details:\n\nNetwork Name: Plume\nRPC URL: https://rpc.plume.org\nChain ID: 98866\nCurrency Symbol: PLUME\nBlock Explorer: https://explorer.plume.org");
                     }
+                } else if (switchError.code === 4001) {
+                    // User rejected the request
+                    throw new Error("Network switch was rejected. Please manually switch to Plume network in your wallet.");
                 } else {
                     console.error('Network switch error:', switchError);
-                    throw new Error("Failed to switch to the Plume network. Please switch manually in your wallet.");
+                    
+                    // For any other error, provide manual instructions instead of failing
+                    this.showNotification('Please manually switch to Plume network in your wallet.', 'warning');
+                    
+                    // Instead of throwing, let's continue and see if the connection works anyway
+                    const retryChainId = await window.ethereum.request({ method: 'eth_chainId' });
+                    if (retryChainId !== PLUME_MAINNET.chainId) {
+                        throw new Error("Please manually switch to Plume network in your wallet.\n\nNetwork Name: Plume\nRPC URL: https://rpc.plume.org\nChain ID: 98866\nCurrency Symbol: PLUME\nBlock Explorer: https://explorer.plume.org");
+                    }
                 }
             }
         } catch (error) {
@@ -696,6 +707,7 @@ const styles = `
     .notification-success { background-color: #10b981; }
     .notification-error { background-color: #ef4444; }
     .notification-info { background-color: #3b82f6; }
+    .notification-warning { background-color: #f59e0b; }
     
     @keyframes slideIn {
         from { transform: translateX(100%); opacity: 0; }
