@@ -1,50 +1,182 @@
+Of course. We can adjust the layout to place the "Buy / Redeem," "Burn," and "Payout" cards next to each other on larger screens, while having them stack vertically on mobile for a responsive design.
+
+This change only requires an update to your `index.html` file.
+
+-----
+
+### \#\# Updated `index.html`
+
+Please replace the entire content of your `index.html` file with the version below. I've wrapped the three sections in a new container that uses a grid layout.
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Work Yield - Tokenize Your Yield</title>
+    <title>Work Yield Token Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.js"></script>
     <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
 </head>
 <body class="min-h-screen">
-    <nav class="bg-secondary sticky top-0 z-50">
-        <div class="container mx-auto max-w-7xl p-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold">Work Yield</h1>
-           <a href="./app.html" class="btn btn-primary">Launch App</a>
-        </div>
-    </nav>
-
     <main class="container mx-auto max-w-7xl p-4 md:p-8">
-        <section class="text-center my-16 md:my-24">
-            <h2 class="text-5xl md:text-7xl font-bold leading-tight">
-                Invest in Tangible Work. <br/>
-                <span class="text-accent">Earn Real Yield.</span>
-            </h2>
-            <p class="text-secondary text-xl mt-6 max-w-3xl mx-auto">
-                Work Yield is a decentralized protocol that tokenizes the value of real-world projects. Buy, hold, and trade WYT, a token backed by productive work, not speculation.
-            </p>
-            <div class="mt-8">
-               <a href="./app.html" class="btn btn-primary text-lg px-8 py-4">Launch Dashboard</a>
+        <header class="flex justify-between items-center mb-10">
+            <h1 class="text-3xl font-bold">Work Yield</h1>
+            <button id="connectButton" class="btn btn-primary">Connect Wallet</button>
+        </header>
+
+        <section id="tokenInfo" class="mb-8">
+            <h2>Token Overview</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+                <div class="bg-secondary p-4 rounded-lg">
+                    <p class="text-sm text-secondary">Total Supply</p>
+                    <div id="totalSupply" class="text-2xl font-semibold mt-1"><div class="skeleton h-8 w-24"></div></div>
+                </div>
+                <div class="bg-secondary p-4 rounded-lg">
+                    <p class="text-sm text-secondary">Available WYT</p>
+                    <div id="availableTokens" class="text-2xl font-semibold mt-1"><div class="skeleton h-8 w-24"></div></div>
+                </div>
+                <div class="bg-secondary p-4 rounded-lg">
+                    <p class="text-sm text-secondary">Contract pUSD Balance</p>
+                    <div id="paymentBalance" class="text-2xl font-semibold mt-1"><div class="skeleton h-8 w-24"></div></div>
+                </div>
+                <div class="bg-secondary p-4 rounded-lg">
+                    <p class="text-sm text-secondary">Your WYT Balance</p>
+                    <div id="userBalance" class="text-2xl font-semibold mt-1"><div class="skeleton h-8 w-24"></div></div>
+                </div>
+            </div>
+            <div class="mt-4 bg-secondary p-4 rounded-lg">
+                <p class="text-sm text-secondary">Current WYT Price</p>
+                <div class="text-2xl font-semibold mt-1">
+                    <span id="wytPrice"><div class="skeleton h-8 w-28 inline-block"></div></span> pUSD
+                </div>
             </div>
         </section>
 
-        <section class="my-16 md:my-24">
-            <h2 class="text-center">How It Works</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12 text-center">
-                <div class="bg-secondary p-8 rounded-lg">
-                    <h3 class="text-2xl font-bold mb-2">1. Mint Orders</h3>
-                    <p class="text-secondary">Projects are submitted as "Work Orders," and WYT tokens are minted against their projected future revenue.</p>
-                </div>
-                <div class="bg-secondary p-8 rounded-lg">
-                    <h3 class="text-2xl font-bold mb-2">2. Back with Capital</h3>
-                    <p class="text-secondary">Users buy the newly minted WYT with pUSD, providing the capital that funds the work orders.</p>
-                </div>
-                <div class="bg-secondary p-8 rounded-lg">
-                    <h3 class="text-2xl font-bold mb-2">3. Earn Yield</h3>
-                    <p class="text-secondary">As work orders are completed, they pay back revenue to the contract, increasing the pUSD balance and the value of all WYT.</p>
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <div id="buyRedeem">
+                <h2>Buy / Redeem WYT</h2>
+                <div class="mt-4 bg-secondary p-6 rounded-lg h-full flex flex-col">
+                    <div class="flex border-b border-gray-700 mb-4">
+                        <button id="buyTab" class="tab-btn active">Buy</button>
+                        <button id="redeemTab" class="tab-btn">Redeem</button>
+                    </div>
+                    <div id="buyPanel">
+                        <div class="flex justify-between items-center mb-1">
+                            <label for="buyAmount" class="text-sm text-secondary">You pay</label>
+                            <span class="text-xs text-secondary">Balance: <span id="pUSDBalance">...</span></span>
+                        </div>
+                        <div class="flex items-center bg-gray-900 p-3 rounded-md">
+                            <input type="number" id="buyAmount" placeholder="0.0" class="w-full bg-transparent focus:outline-none text-2xl">
+                            <span class="font-semibold text-gray-400">pUSD</span>
+                        </div>
+                    </div>
+                    <div id="redeemPanel" class="hidden">
+                        <div class="flex justify-between items-center mb-1">
+                            <label for="redeemAmount" class="text-sm text-secondary">You pay</label>
+                            <span class="text-xs text-secondary">Balance: <span id="wytUserBalance">...</span></span>
+                        </div>
+                        <div class="flex items-center bg-gray-900 p-3 rounded-md">
+                            <input type="number" id="redeemAmount" placeholder="0.0" class="w-full bg-transparent focus:outline-none text-2xl">
+                            <span class="font-semibold text-gray-400">WYT</span>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-sm text-secondary">You receive (approx.)</p>
+                        <p id="receiveAmount" class="text-2xl font-semibold text-gray-400">0.00</p>
+                    </div>
+                    <button id="swapButton" class="w-full mt-auto btn btn-primary">Enter an amount</button>
                 </div>
             </div>
+
+            <div id="burnTokens">
+                <h2>Burn Your Tokens</h2>
+                <div class="mt-4 bg-secondary p-6 rounded-lg h-full flex flex-col">
+                    <p class="text-sm text-secondary mb-4">
+                        Burning tokens permanently destroys them, reducing the total supply.
+                    </p>
+                    <div class="flex justify-between items-center mb-1">
+                        <label for="burnAmount" class="text-sm text-secondary">Amount to Burn</label>
+                        <span class="text-xs text-secondary">Your Balance: <span id="burnWytBalance">...</span></span>
+                    </div>
+                    <div class="flex items-center bg-gray-900 p-3 rounded-md">
+                        <input type="number" id="burnAmount" placeholder="0.0" class="w-full bg-transparent focus:outline-none text-2xl">
+                        <span class="font-semibold text-gray-400">WYT</span>
+                    </div>
+                    <button id="burnButton" class="w-full mt-auto btn btn-primary bg-red-600">Burn Tokens</button>
+                </div>
+            </div>
+
+            <div id="payouts">
+                <h2>Submit Payout</h2>
+                <div class="mt-4 bg-secondary p-6 rounded-lg h-full flex flex-col">
+                    <p class="text-sm text-secondary mb-4">
+                        Submit a pUSD payment to a work order to mark it as complete.
+                    </p>
+                    <div>
+                        <label for="payoutOrderId" class="block mb-1 font-semibold text-sm text-secondary">Work Order ID</label>
+                        <input id="payoutOrderId" type="number" placeholder="Enter ID" class="mb-2">
+                    </div>
+                    <div>
+                        <label for="payoutAmount" class="block mb-1 font-semibold text-sm text-secondary">Payout Amount (pUSD)</label>
+                        <input id="payoutAmount" type="number" placeholder="0.0">
+                    </div>
+                    <button id="payoutButton" class="w-full mt-auto btn btn-primary">Approve & Submit Payout</button>
+                </div>
+            </div>
+        </section>
+        <section id="adminPanel" class="mb-8 hidden">
+            <h2>Admin Panel</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                <div>
+                    <label for="mintAmount" class="block mb-2 font-semibold">Mint Work Order</label>
+                    <input id="mintAmount" type="number" placeholder="Gross Yield" class="mb-2">
+                    <input id="mintDescription" type="text" placeholder="Description">
+                    <button id="mintButton" class="w-full mt-2 btn btn-primary">Mint Order</button>
+                </div>
+                <div>
+                    <label for="fundId" class="block mb-2 font-semibold">Fund Work Order</label>
+                    <input id="fundId" type="number" placeholder="Work Order ID" class="mb-2">
+                    <input id="fundAmount" type="number" placeholder="Amount to fund">
+                    <button id="fundButton" class="w-full mt-2 btn btn-primary">Fund Order</button>
+                </div>
+                <div class="space-y-6">
+                    <div>
+                        <label for="feeInput" class="block mb-2 font-semibold">Set Redemption Fee</label>
+                        <input id="feeInput" type="number" min="0" max="20" placeholder="Fee % (e.g., 5 for 5%)">
+                        <button id="setFeeButton" class="w-full mt-2 btn btn-primary">Update Fee</button>
+                    </div>
+                    <div>
+                        <label for="cancelId" class="block mb-2 font-semibold">Cancel Work Order</label>
+                        <input id="cancelId" type="number" placeholder="Work Order ID">
+                        <button id="cancelButton" class="w-full mt-2 btn btn-primary">Cancel Order</button>
+                    </div>
+                </div>
+                <div class="flex flex-col justify-between">
+                    <div>
+                        <label class="block mb-2 font-semibold">Available Fees to Withdraw</label>
+                        <p class="text-2xl font-semibold"><span id="collectedFees">0.00</span> pUSD</p>
+                    </div>
+                    <button id="withdrawFeesButton" class="w-full mt-2 btn btn-primary">Withdraw All Fees</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="workOrders">
+            <div class="flex justify-between items-center">
+                <h2>Work Orders</h2>
+                <button id="exportPdfButton" class="btn">Export PDF</button>
+            </div>
+            <div id="workOrderTable" class="overflow-x-auto mt-4"></div>
+        </section>
+
+        <section id="txHistory" class="mb-8">
+            <h2>Your Transaction History</h2>
+            <div id="txHistoryTable" class="overflow-x-auto mt-4"></div>
         </section>
     </main>
 
@@ -55,5 +187,7 @@
             </a>
         </p>
     </footer>
+
 </body>
 </html>
+```
