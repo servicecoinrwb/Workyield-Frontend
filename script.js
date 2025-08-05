@@ -82,7 +82,108 @@ const App = {
     handleWorkOrderTabClick(event) { const tabButton = event.target.closest('.wo-tab-btn'); if (!tabButton) return; this.elements.workOrderResults.querySelectorAll('.wo-tab-btn').forEach(btn => btn.classList.remove('active')); this.elements.workOrderResults.querySelectorAll('.wo-content-panel').forEach(panel => panel.classList.add('hidden')); tabButton.classList.add('active'); const monthKey = tabButton.dataset.month; const contentPanel = document.getElementById(`wo-content-${monthKey}`); if (contentPanel) contentPanel.classList.remove('hidden'); },
     handleWorkOrderSearch(event) { if (event.target.id !== 'workOrderSearchInput') return; const cleanedSearchTerm = event.target.value.trim().toLowerCase(); if (!cleanedSearchTerm) { this.displayWorkOrders(this.allWorkOrders); } else { const filteredOrders = this.allWorkOrders.filter(wo => { const workOrderId = wo.id.toString(); const workOrderDesc = wo.description.toLowerCase(); return workOrderId === cleanedSearchTerm || workOrderDesc.includes(cleanedSearchTerm); }); this.displayWorkOrders(filteredOrders, true); } },
     async renderTransactionHistory() { this.elements.txHistoryTable.innerHTML = '<p>Loading history...</p>'; try { const buyFilter = this.contract.filters.Transfer(this.contract.address, this.userAddress); const redeemFilter = this.contract.filters.TokensRedeemed(this.userAddress); const burnFilter = this.contract.filters.Transfer(this.userAddress, "0x0000000000000000000000000000000000000000"); const [buyEvents, redeemEvents, burnEvents] = await Promise.all([ this.contract.queryFilter(buyFilter, 0, 'latest'), this.contract.queryFilter(redeemFilter, 0, 'latest'), this.contract.queryFilter(burnFilter, 0, 'latest') ]); let allEvents = []; buyEvents.forEach(event => allEvents.push({ type: 'Buy', wytAmount: event.args.value, pUSDAmount: null, blockNumber: event.blockNumber, txHash: event.transactionHash })); redeemEvents.forEach(event => allEvents.push({ type: 'Redeem', wytAmount: event.args.wytAmount, pUSDAmount: event.args.pUSDAmount, blockNumber: event.blockNumber, txHash: event.transactionHash })); burnEvents.forEach(event => allEvents.push({ type: 'Burn', wytAmount: event.args.value, pUSDAmount: ethers.BigNumber.from(0), blockNumber: event.blockNumber, txHash: event.transactionHash })); allEvents.sort((a, b) => b.blockNumber - a.blockNumber); if (allEvents.length === 0) { this.elements.txHistoryTable.innerHTML = '<p>No transaction history found.</p>'; return; } const tableHtml = `<table><thead><tr><th>Type</th><th>WYT Amount</th><th>pUSD Amount</th><th>Transaction</th></tr></thead><tbody>${allEvents.slice(0, 10).map(event => `<tr><td><span class="font-semibold ${event.type === 'Buy' ? 'text-green-400' : event.type === 'Redeem' ? 'text-red-400' : 'text-gray-400'}">${event.type}</span></td><td>${this.formatTokenValue(event.wytAmount, this.wytDecimals)}</td><td>${event.pUSDAmount ? this.formatTokenValue(event.pUSDAmount, this.paymentTokenDecimals) : 'N/A'}</td><td><a href="${PLUME_MAINNET.blockExplorerUrls[0]}/tx/${event.txHash}" target="_blank" rel="noopener noreferrer" class="footer-link">View on Explorer</a></td></tr>`).join('')}</tbody></table>`; this.elements.txHistoryTable.innerHTML = tableHtml; } catch (err) { this.elements.txHistoryTable.innerHTML = '<p class="text-red-500">Error loading history.</p>'; } },
-    exportPDF() { setTimeout(() => { try { if (typeof window.jspdf === 'undefined') { return this.showNotification('Error: Main PDF library (jspdf) could not be loaded.', 'error'); } const { jsPDF } = window.jspdf; const doc = new jsPDF({ orientation: 'landscape' }); if (typeof doc.autoTable !== 'function') { return this.showNotification('Error: PDF table plugin (autotable) failed to attach. Please check ad-blockers or network and refresh.', 'error'); } const tableElement = this.elements.workOrderResults.querySelector('table'); if (!tableElement) { return this.showNotification('No work order data available to export.', 'info'); } const tableClone = tableElement.cloneNode(true); tableClone.querySelectorAll('td').forEach(cell => { const cellText = cell.innerText.trim(); if (cellText === '✅') { cell.innerText = 'Yes'; } else if (cellText === '❌') { cell.innerText = 'No'; } }); const activeTab = this.elements.workOrderResults.querySelector('.wo-tab-btn.active'); let reportTitle = "Work Yield - Work Order Report"; if (activeTab) { reportTitle = `Work Order Report - ${activeTab.textContent.trim()}`; } doc.text(reportTitle, 14, 15); doc.setFontSize(10); doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 20); doc.autoTable({ html: tableClone, startY: 25, theme: 'grid', headStyles: { fillColor: [22, 160, 133] }, }); doc.save('work-yield-report.pdf'); this.showNotification('PDF report generated!', 'success'); } catch (err) { this.showNotification('An unexpected error occurred while exporting the PDF.', 'error'); } }, 100); },
+    
+    exportPDF() {
+        const button = this.elements.exportPdfButton;
+        this.setButtonLoading(button, true);
+    
+        setTimeout(() => {
+            try {
+                if (typeof window.jspdf === 'undefined') {
+                    throw new Error('PDF library (jsPDF) could not be loaded. Please check your internet connection and refresh the page.');
+                }
+    
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ orientation: 'landscape' });
+    
+                if (typeof doc.autoTable !== 'function') {
+                    throw new Error('PDF table plugin (autoTable) failed to load. Please disable ad-blockers and refresh.');
+                }
+    
+                const tableElement = this.getActiveTable();
+                if (!tableElement) {
+                    throw new Error('No work order data available to export.');
+                }
+    
+                const tableData = this.extractTableDataForPDF(tableElement);
+                const reportTitle = this.getReportTitle();
+    
+                this.createEnhancedPDF(doc, tableData, reportTitle);
+    
+                doc.save(`work-yield-report-${new Date().toISOString().split('T')[0]}.pdf`);
+                this.showNotification('PDF report generated successfully!', 'success');
+    
+            } catch (error) {
+                console.error('PDF Export Error:', error);
+                this.showNotification(error.message || 'Failed to generate PDF report.', 'error');
+            } finally {
+                this.setButtonLoading(button, false);
+            }
+        }, 100);
+    },
+    
+    getActiveTable() {
+        const searchInput = document.getElementById('workOrderSearchInput');
+        if (searchInput && searchInput.value.trim()) {
+            return this.elements.workOrderResults.querySelector('table');
+        }
+        const activePanel = this.elements.workOrderResults.querySelector('.wo-content-panel:not(.hidden)');
+        return activePanel ? activePanel.querySelector('table') : this.elements.workOrderResults.querySelector('table');
+    },
+
+    getReportTitle() {
+        const activeTab = this.elements.workOrderResults.querySelector('.wo-tab-btn.active');
+        if (activeTab) {
+            return `Work Order Report - ${activeTab.textContent.trim()}`;
+        }
+        return "Work Yield - All Work Orders Report";
+    },
+    
+    extractTableDataForPDF(tableElement) {
+        const rows = Array.from(tableElement.querySelectorAll('tbody tr'));
+        return rows.map(row => {
+            const cells = Array.from(row.querySelectorAll('td'));
+            return cells.map(cell => {
+                let text = cell.innerText.trim();
+                if (text === '✅') return 'Yes';
+                if (text === '❌') return 'No';
+                return text;
+            });
+        });
+    },
+    
+    createEnhancedPDF(doc, tableData, reportTitle) {
+        doc.setFontSize(16);
+        doc.setTextColor(22, 160, 133);
+        doc.text('Work Yield Token Dashboard', 14, 15);
+        
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        doc.text(reportTitle, 14, 25);
+        
+        doc.setFontSize(9);
+        doc.setTextColor(100, 100, 100);
+        doc.text(`Generated: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`, 14, 32);
+        
+        doc.autoTable({
+            head: [['ID', 'Gross Yield', 'Reserve', 'Tokens Issued', 'Active', 'Paid', 'Description', 'Created']],
+            body: tableData,
+            startY: 40,
+            theme: 'striped',
+            headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold', fontSize: 9 },
+            styles: { fontSize: 8, cellPadding: 2 },
+            columnStyles: {
+                0: { cellWidth: 15, halign: 'center' }, 1: { cellWidth: 25, halign: 'right' }, 2: { cellWidth: 25, halign: 'right' },
+                3: { cellWidth: 25, halign: 'right' }, 4: { cellWidth: 15, halign: 'center' }, 5: { cellWidth: 15, halign: 'center' },
+                6: { cellWidth: 'auto' }, 7: { cellWidth: 25, halign: 'center' }
+            }
+        });
+        
+        const pageHeight = doc.internal.pageSize.height;
+        doc.setFontSize(8);
+        doc.text('Powered by Service Coin - https://service.money/', 14, pageHeight - 10);
+    },
+
     async handleTransaction(button, transactionCallback) { if (!this.userAddress) return this.showNotification('Please connect your wallet first.', 'error'); this.setButtonLoading(button, true); try { const result = await transactionCallback(); this.showNotification(result, 'success'); await this.loadContractData(); } catch (error) { let errorMessage = 'Transaction failed.'; if (error.code === 4001) { errorMessage = 'Transaction rejected by user.'; } else if (error.data && error.data.message) { errorMessage = error.data.message; } else if (error.message) { errorMessage = error.message; } this.showNotification(errorMessage, 'error'); } finally { this.setButtonLoading(button, false); } },
     setButtonLoading(button, isLoading) { if (!button) return; if (isLoading) { button.disabled = true; button.dataset.originalText = button.textContent; button.innerHTML = '<span class="spinner"></span> Processing...'; } else { button.disabled = false; button.textContent = button.dataset.originalText || 'Submit'; } },
     showNotification(message, type = 'info') { const notification = document.createElement('div'); notification.className = `notification notification-${type}`; notification.textContent = message; document.body.appendChild(notification); setTimeout(() => { if (notification.parentNode) { notification.parentNode.removeChild(notification); } }, 5000); },
