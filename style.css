@@ -1,322 +1,244 @@
-/* Add these styles to the end of your existing style.css file */
+/*
+ * Modern Look for WorkYield Dashboard
+ */
 
-/* --- IMPROVED THREE CARD LAYOUT --- */
+/* Import the 'Inter' font for a clean, modern typeface */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-/* Container for the three main cards */
-.main-actions-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 2rem;
-    margin-bottom: 3rem;
-    max-width: 1400px;
-    margin-left: auto;
-    margin-right: auto;
+/* Define the color palette and other theme variables */
+:root {
+  --bg-primary: #111827;      /* A deep, dark blue-gray */
+  --bg-secondary: #1f2937;    /* A slightly lighter container background */
+  --accent: #f97316;          /* The primary orange accent color */
+  --text-primary: #f3f4f6;    /* Off-white for main text */
+  --text-secondary: #9ca3af;   /* A dimmer gray for labels and secondary text */
+  --border-color: #374151;    /* Subtle border color */
+  --danger: #ef4444;          /* Red for destructive actions */
+  --radius: 0.5rem;           /* Standard border radius */
 }
 
-/* On larger screens, force exactly 3 columns */
-@media (min-width: 1200px) {
-    .main-actions-container {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 2.5rem;
-    }
+/* General body styles */
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Enhanced card styling */
-.action-card {
-    background: linear-gradient(135deg, var(--bg-secondary), #2d3748);
-    border: 1px solid var(--border-color);
-    border-radius: 1rem;
-    padding: 2rem;
-    min-height: 400px;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
+/* Heading styles */
+h1 {
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+h2 {
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1.5rem !important;
 }
 
-.action-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--accent), #fb923c);
+/* Input field styles */
+input[type="number"],
+input[type="text"] {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  color: var(--text-primary);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
 }
 
-.action-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
-    border-color: var(--accent);
+input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
 }
 
-/* Card titles */
-.action-card h2 {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 1.5rem;
-    text-transform: none;
-    letter-spacing: normal;
-    border: none;
-    text-align: center;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid var(--border-color);
+/* Table design */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius);
+  overflow: hidden;
 }
 
-/* Input groups within cards */
-.card-input-group {
-    margin-bottom: 1.5rem;
-    flex-grow: 1;
+th, td {
+  padding: 1rem 1.25rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
 }
 
-.card-label {
-    display: block;
-    font-size: 0.875rem;
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+thead {
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+th {
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+/* Tab Styles */
+.tab-btn {
+    padding: 0.5rem 1rem;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
     font-weight: 600;
     color: var(--text-secondary);
-    margin-bottom: 0.5rem;
+    transition: all 0.2s ease-in-out;
 }
 
-.balance-display {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    text-align: right;
-    margin-bottom: 0.5rem;
+.tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
 }
 
-/* Enhanced input styling for cards */
-.card-input {
-    background: #374151;
-    border: 2px solid var(--border-color);
-    border-radius: 0.75rem;
-    padding: 1rem;
-    color: var(--text-primary);
-    font-size: 1rem;
-    transition: all 0.2s ease;
-    width: 100%;
-}
-
-.card-input:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
-    background: var(--bg-secondary);
-}
-
-.card-input::placeholder {
-    color: #6b7280;
-}
-
-/* Receive amount display */
-.receive-display {
-    background: linear-gradient(135deg, #065f46, #047857);
-    border-radius: 0.75rem;
-    padding: 1rem;
-    text-align: center;
-    margin: 1rem 0;
-}
-
-.receive-label {
-    font-size: 0.875rem;
-    color: #a7f3d0;
-    margin-bottom: 0.5rem;
-}
-
-.receive-amount {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: white;
-}
-
-/* Tab styling for Buy/Redeem card */
-.card-tabs {
-    display: flex;
-    background: #374151;
-    border-radius: 0.5rem;
-    padding: 0.25rem;
-    margin-bottom: 1.5rem;
-}
-
-.card-tab {
-    flex: 1;
-    padding: 0.75rem;
-    background: transparent;
-    border: none;
-    color: var(--text-secondary);
-    font-weight: 600;
-    border-radius: 0.375rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.card-tab.active {
-    background: var(--accent);
-    color: white;
-}
-
-.card-tab:hover:not(.active) {
-    color: var(--text-primary);
-}
-
-/* Enhanced button styling for cards */
-.card-button {
-    width: 100%;
-    padding: 1rem 1.5rem;
-    border-radius: 0.75rem;
-    font-weight: 700;
-    font-size: 1rem;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: auto;
-    position: relative;
-    overflow: hidden;
-}
-
-.card-button-primary {
-    background: linear-gradient(135deg, var(--accent), #ea580c);
-    color: white;
-}
-
-.card-button-primary:hover:not(:disabled) {
-    background: linear-gradient(135deg, #ea580c, #dc2626);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(249, 115, 22, 0.4);
-}
-
-.card-button-danger {
-    background: linear-gradient(135deg, var(--danger), #dc2626);
-    color: white;
-}
-
-.card-button-danger:hover:not(:disabled) {
-    background: linear-gradient(135deg, #dc2626, #b91c1c);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(239, 68, 68, 0.4);
-}
-
-.card-button:disabled {
-    background: var(--border-color) !important;
-    color: #6b7280 !important;
-    cursor: not-allowed;
-    transform: none !important;
-    box-shadow: none !important;
-}
-
-/* Description text styling */
-.card-description {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-    line-height: 1.5;
-    margin-bottom: 1.5rem;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .main-actions-container {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-        padding: 0 1rem;
-    }
-    
-    .action-card {
-        padding: 1.5rem;
-        min-height: auto;
-    }
-    
-    .action-card h2 {
-        font-size: 1.125rem;
-    }
-}
-
-/* Loading state for buttons */
-.card-button .spinner {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-top: 2px solid white;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-right: 8px;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-/* Add to the end of your existing style.css */
-
-/* Three card container - keeps your branding */
-.three-card-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 2rem;
-    margin-bottom: 3rem;
-}
-
-@media (min-width: 1200px) {
-    .three-card-container {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 2rem;
-    }
-}
-
-/* Enhanced styling while keeping your theme */
-.three-card-container > section {
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--border-color);
+/* General Button Styles */
+.btn {
     border-radius: var(--radius);
-    padding: 2rem;
-    min-height: 400px;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    position: relative;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.15s ease, background-color 0.2s ease, filter 0.2s ease;
 }
-
-.three-card-container > section:hover {
+.btn:hover:not(:disabled) {
+    filter: brightness(1.1);
     transform: translateY(-2px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-    border-color: var(--accent);
+}
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: var(--border-color) !important;
+    transform: none;
 }
 
-.three-card-container > section::before {
+.btn-primary {
+    background-color: var(--accent);
+    color: white;
+}
+
+.bg-red-600 {
+    background-color: var(--danger) !important;
+}
+
+/* Footer Styles */
+.footer {
+    text-align: center;
+    padding: 2rem;
+    margin-top: 2rem;
+    border-top: 1px solid var(--border-color);
+    color: var(--text-secondary);
+}
+
+.footer-link {
+    color: var(--text-primary);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s ease-in-out;
+}
+
+.footer-link:hover {
+    color: var(--accent);
+}
+
+/* Skeleton Loader Styles */
+.skeleton {
+    background-color: var(--border-color);
+    border-radius: var(--radius);
+    position: relative;
+    overflow: hidden;
+}
+
+.skeleton::after {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 3px;
-    background: var(--accent);
-    border-radius: var(--radius) var(--radius) 0 0;
+    bottom: 0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0,
+        rgba(255, 255, 255, 0.1) 20%,
+        rgba(255, 255, 255, 0.2) 60%,
+        rgba(255, 255, 255, 0)
+    );
+    animation: shimmer 2s infinite;
 }
 
-.three-card-container .max-w-md {
-    max-width: none;
-    margin: 0;
-    background: transparent;
-    padding: 0;
-    flex-grow: 1;
+@keyframes shimmer {
+    100% {
+        transform: translateX(100%);
+    }
+}
+.text-accent {
+    color: var(--accent);
+}
+
+/* Add these styles to the end of style.css */
+
+/* --- Work Order Tabs & Search --- */
+.wo-search-container {
+    margin-bottom: 1rem;
+}
+
+#workOrderSearchInput {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    background-color: #2d3748; /* Corresponds to Tailwind's gray-800 */
+    border: 1px solid #4a5568;  /* Corresponds to Tailwind's gray-700 */
+    border-radius: 0.375rem; /* Corresponds to Tailwind's rounded-md */
+    color: white;
+}
+
+#workOrderSearchInput::placeholder {
+    color: #a0aec0; /* Corresponds to Tailwind's gray-500 */
+}
+
+.wo-tabs {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
+    border-bottom: 2px solid #4a5568; /* gray-700 */
+    margin-bottom: 1rem;
 }
 
-.three-card-container .btn {
-    margin-top: auto;
+.wo-tab-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    background-color: transparent;
+    color: #a0aec0; /* gray-500 */
+    cursor: pointer;
+    font-weight: 600;
+    border-bottom: 2px solid transparent;
+    transform: translateY(2px);
+    transition: all 0.2s ease-in-out;
 }
 
-@media (max-width: 768px) {
-    .three-card-container {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-    }
-    
-    .three-card-container > section {
-        padding: 1.5rem;
-        min-height: auto;
-    }
+.wo-tab-btn:hover {
+    color: #cbd5e0; /* gray-400 */
+}
+
+.wo-tab-btn.active {
+    color: #ffffff;
+    border-bottom-color: #3b82f6; /* blue-500 */
+}
+
+.wo-content-panel.hidden {
+    display: none !important;
 }
