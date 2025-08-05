@@ -533,34 +533,48 @@ const App = {
     },
 
     exportPDF() {
-        if (typeof jspdf === 'undefined' || typeof jspdf.plugin.autotable === 'undefined') {
-            return this.showNotification('PDF library is not available.', 'error');
-        }
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({
-            orientation: 'landscape',
-        });
-        const tableElement = this.elements.workOrderResults.querySelector('table');
-        if (!tableElement) return this.showNotification('No work order table to export.', 'info');
-        const activeTab = this.elements.workOrderResults.querySelector('.wo-tab-btn.active');
-        let reportTitle = "Work Yield - Work Order Report";
-        if (activeTab) {
-            reportTitle = `Work Order Report - ${activeTab.textContent.trim()}`;
-        }
-        doc.text(reportTitle, 14, 15);
-        doc.setFontSize(10);
-        doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 20);
-        doc.autoTable({
-            html: tableElement,
-            startY: 25,
-            theme: 'grid',
-            headStyles: {
-                fillColor: [22, 160, 133]
-            },
-        });
-        doc.save('work-yield-report.pdf');
-        this.showNotification('PDF report generated!', 'success');
-    },
+    // 1. A simpler, correct check for the main PDF library
+    if (typeof window.jspdf === 'undefined') {
+        return this.showNotification('PDF library (jspdf) is not available.', 'error');
+    }
+    
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({
+        orientation: 'landscape',
+    });
+
+    // 2. The most reliable check: see if the autoTable plugin was successfully added
+    if (typeof doc.autoTable !== 'function') {
+        return this.showNotification('PDF table plugin (autotable) is not available.', 'error');
+    }
+
+    const tableElement = this.elements.workOrderResults.querySelector('table');
+    if (!tableElement) {
+        return this.showNotification('No work order data to export.', 'info');
+    }
+
+    const activeTab = this.elements.workOrderResults.querySelector('.wo-tab-btn.active');
+    let reportTitle = "Work Yield - Work Order Report";
+    if (activeTab) {
+        reportTitle = `Work Order Report - ${activeTab.textContent.trim()}`;
+    }
+
+    doc.text(reportTitle, 14, 15);
+    doc.setFontSize(10);
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 20);
+
+    doc.autoTable({
+        html: tableElement,
+        startY: 25,
+        theme: 'grid',
+        headStyles: {
+            fillColor: [22, 160, 133]
+        },
+    });
+
+    doc.save('work-yield-report.pdf');
+    this.showNotification('PDF report generated!', 'success');
+},
 
     async handleTransaction(button, transactionCallback) {
         if (!this.userAddress) return this.showNotification('Please connect your wallet first.', 'error');
