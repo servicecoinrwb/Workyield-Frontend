@@ -50,77 +50,81 @@
             </div>
         </section>
 
-        <section id="buyRedeem" class="mb-8">
-            <h2>Buy / Redeem WYT</h2>
-            <div class="mt-4 max-w-md mx-auto bg-secondary p-6 rounded-lg">
-                <div class="flex border-b border-gray-700 mb-4">
-                    <button id="buyTab" class="tab-btn active">Buy</button>
-                    <button id="redeemTab" class="tab-btn">Redeem</button>
-                </div>
-                <div id="buyPanel">
-                    <div class="flex justify-between items-center mb-1">
-                        <label for="buyAmount" class="text-sm text-secondary">You pay</label>
-                        <span class="text-xs text-secondary">Balance: <span id="pUSDBalance">...</span></span>
-                    </div>
-                    <div class="flex items-center bg-gray-900 p-3 rounded-md">
-                        <input type="number" id="buyAmount" placeholder="0.0" class="w-full bg-transparent focus:outline-none text-2xl">
-                        <span class="font-semibold text-gray-400">pUSD</span>
-                    </div>
-                </div>
-                <div id="redeemPanel" class="hidden">
-                    <div class="flex justify-between items-center mb-1">
-                        <label for="redeemAmount" class="text-sm text-secondary">You pay</label>
-                        <span class="text-xs text-secondary">Balance: <span id="wytUserBalance">...</span></span>
-                    </div>
-                    <div class="flex items-center bg-gray-900 p-3 rounded-md">
-                        <input type="number" id="redeemAmount" placeholder="0.0" class="w-full bg-transparent focus:outline-none text-2xl">
-                        <span class="font-semibold text-gray-400">WYT</span>
-                    </div>
-                </div>
-                <div class="mt-4">
-                    <p class="text-sm text-secondary">You receive (approx.)</p>
-                    <p id="receiveAmount" class="text-2xl font-semibold text-gray-400">0.00</p>
-                </div>
-                <button id="swapButton" class="w-full mt-6 btn btn-primary">Enter an amount</button>
-            </div>
-        </section>
+        <!-- BUY / REDEEM -->
+  <section id="buyRedeem">
+    <h2>Buy / Redeem WYT</h2>
+    <div class="mt-4 bg-secondary p-6 rounded-lg h-full">
+      <div class="flex border-b border-gray-700 mb-4">
+        <button id="buyTab" class="tab-btn active">Buy</button>
+        <button id="redeemTab" class="tab-btn">Redeem</button>
+      </div>
+      <div id="buyPanel">
+        <div class="flex justify-between items-center mb-1">
+          <label for="buyAmount" class="text-sm text-secondary">You pay</label>
+          <span class="text-xs text-secondary">Balance: <span id="pUSDBalance">...</span></span>
+        </div>
+        <div class="flex items-center bg-gray-900 p-3 rounded-md">
+          <input type="number" id="buyAmount" placeholder="0.0" class="w-full bg-transparent focus:outline-none text-2xl">
+          <span class="font-semibold text-gray-400">pUSD</span>
+        </div>
+      </div>
+      <div id="redeemPanel" class="hidden">
+        <div class="flex justify-between items-center mb-1">
+          <label for="redeemAmount" class="text-sm text-secondary">You pay</label>
+          <span class="text-xs text-secondary">Balance: <span id="wytUserBalance">...</span></span>
+        </div>
+        <div class="flex items-center bg-gray-900 p-3 rounded-md">
+          <input type="number" id="redeemAmount" placeholder="0.0" class="w-full bg-transparent focus:outline-none text-2xl">
+          <span class="font-semibold text-gray-400">WYT</span>
+        </div>
+      </div>
+      <div class="mt-4">
+        <p class="text-sm text-secondary">You receive (approx.)</p>
+        <p id="receiveAmount" class="text-2xl font-semibold text-gray-400">0.00</p>
+      </div>
+      <button id="swapButton" class="w-full mt-6 btn btn-primary">Enter an amount</button>
+    </div>
+  </section>
 
-        <section id="burnTokens" class="mb-8">
-            <h2>Burn Your Tokens</h2>
-            <div class="mt-4 max-w-md mx-auto bg-secondary p-6 rounded-lg">
-                <p class="text-sm text-secondary mb-4">
-                    Burning tokens permanently destroys them, reducing the total supply and increasing the value of all remaining tokens.
-                </p>
-                <div class="flex justify-between items-center mb-1">
-                    <label for="burnAmount" class="text-sm text-secondary">Amount to Burn</label>
-                    <span class="text-xs text-secondary">Your Balance: <span id="burnWytBalance">...</span></span>
-                </div>
-                <div class="flex items-center bg-gray-900 p-3 rounded-md">
-                    <input type="number" id="burnAmount" placeholder="0.0" class="w-full bg-transparent focus:outline-none text-2xl">
-                    <span class="font-semibold text-gray-400">WYT</span>
-                </div>
-                <button id="burnButton" class="w-full mt-6 btn btn-primary bg-red-600">Burn Tokens</button>
-            </div>
-        </section>
+  <!-- BURN TOKENS -->
+  <section id="burnTokens">
+    <h2>Burn Your Tokens</h2>
+    <div class="mt-4 bg-secondary p-6 rounded-lg h-full">
+      <p class="text-sm text-secondary mb-4">
+        Burning tokens permanently destroys them, reducing the total supply and increasing the value of all remaining tokens.
+      </p>
+      <div class="flex justify-between items-center mb-1">
+        <label for="burnAmount" class="text-sm text-secondary">Amount to Burn</label>
+        <span class="text-xs text-secondary">Your Balance: <span id="burnWytBalance">...</span></span>
+      </div>
+      <div class="flex items-center bg-gray-900 p-3 rounded-md">
+        <input type="number" id="burnAmount" placeholder="0.0" class="w-full bg-transparent focus:outline-none text-2xl">
+        <span class="font-semibold text-gray-400">WYT</span>
+      </div>
+      <button id="burnButton" class="w-full mt-6 btn btn-primary bg-red-600">Burn Tokens</button>
+    </div>
+  </section>
 
-        <section id="payouts" class="mb-8">
-            <h2>Submit a Work Order Payout</h2>
-            <div class="mt-4 max-w-md mx-auto bg-secondary p-6 rounded-lg">
-                <p class="text-sm text-secondary mb-4">
-                    Submit a pUSD payment to a work order to mark it as complete and increase the WYT token's backing value.
-                </p>
-                <div>
-                    <label for="payoutOrderId" class="block mb-2 font-semibold">Work Order ID</label>
-                    <input id="payoutOrderId" type="number" placeholder="Enter ID" class="mb-2">
-                </div>
-                <div>
-                    <label for="payoutAmount" class="block mb-2 font-semibold">Payout Amount (pUSD)</label>
-                    <input id="payoutAmount" type="number" placeholder="0.0">
-                </div>
-                <button id="payoutButton" class="w-full mt-6 btn btn-primary">Approve & Submit Payout</button>
-            </div>
-        </section>
+  <!-- PAYOUT -->
+  <section id="payouts">
+    <h2>Submit a Work Order Payout</h2>
+    <div class="mt-4 bg-secondary p-6 rounded-lg h-full">
+      <p class="text-sm text-secondary mb-4">
+        Submit a pUSD payment to a work order to mark it as complete and increase the WYT token's backing value.
+      </p>
+      <div>
+        <label for="payoutOrderId" class="block mb-2 font-semibold">Work Order ID</label>
+        <input id="payoutOrderId" type="number" placeholder="Enter ID" class="mb-2">
+      </div>
+      <div>
+        <label for="payoutAmount" class="block mb-2 font-semibold">Payout Amount (pUSD)</label>
+        <input id="payoutAmount" type="number" placeholder="0.0">
+      </div>
+      <button id="payoutButton" class="w-full mt-6 btn btn-primary">Approve & Submit Payout</button>
+    </div>
+  </section>
 
+</div>
         <section id="adminPanel" class="mb-8 hidden">
             <h2>Admin Panel</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
