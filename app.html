@@ -57,50 +57,7 @@
       <canvas id="mintRedeemChart" class="bg-secondary p-4 rounded-lg w-full h-[300px]"></canvas>
     </section>
 
-        document.addEventListener('DOMContentLoaded', () => {
-          const ctx = document.getElementById('mintRedeemChart').getContext('2d');
-          new Chart(ctx, {
-            type: 'bar',
-            data: {
-              labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-              datasets: [
-                {
-                  label: 'Minted',
-                  data: [100, 200, 150, 80, 120],
-                  backgroundColor: '#22c55e',
-                },
-                {
-                  label: 'Redeemed',
-                  data: [50, 100, 90, 40, 60],
-                  backgroundColor: '#f97316',
-                }
-              ]
-            },
-            options: {
-              responsive: true,
-              plugins: {
-                legend: {
-                  labels: {
-                    color: '#d1d5db'
-                  }
-                }
-              },
-              scales: {
-                x: {
-                  ticks: { color: '#9ca3af' },
-                  grid: { color: '#374151' }
-                },
-                y: {
-                  ticks: { color: '#9ca3af' },
-                  grid: { color: '#374151' }
-                }
-              }
-            }
-          });
-        });
-      </script>
-    </section>
-
+        
         <section id="tokenInfo" class="mb-8">
             <h2>Token Overview</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
