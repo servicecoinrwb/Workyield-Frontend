@@ -103,11 +103,8 @@ const App = {
         this.elements.setFeeButton?.addEventListener('click', () => this.setRedemptionFee());
         this.elements.cancelButton?.addEventListener('click', () => this.cancelWorkOrder());
         this.elements.exportPdfButton?.addEventListener('click', () => this.exportPDF());
-
-        // CORRECTED: Listeners are now attached to the correct, separated containers
         this.elements.workOrderSearchContainer?.addEventListener('input', (e) => this.handleWorkOrderSearch(e));
         this.elements.workOrderResults?.addEventListener('click', (e) => this.handleWorkOrderTabClick(e));
-
         if (window.ethereum) {
             window.ethereum.on('accountsChanged', (accounts) => {
                 if (accounts.length > 0) {
@@ -239,10 +236,180 @@ const App = {
             this.showNotification('Failed to load contract data.', 'error');
         }
     },
-    
-    // All other functions from getPaymentTokenContract() down to formatTokenValue() remain.
-    // To save space, they are omitted here but should be in your final file.
-    // The key changes are in the Work Order rendering section below.
+
+    async getPaymentTokenContract() {
+        const paymentTokenAddress = await this.contract.paymentToken();
+        return new ethers.Contract(paymentTokenAddress, tokenABI, this.signer);
+    },
+
+    async executeSwap() {
+        const isBuy = !this.elements.buyPanel.classList.contains('hidden');
+        if (isBuy) {
+            await this.handleTransaction(this.elements.swapButton, async () => {
+                const amount = this.elements.buyAmountInput.value;
+                if (!amount || parseFloat(amount) <= 0) throw new Error("Please enter a valid amount.");
+                const parsedAmount = ethers.utils.parseUnits(amount, this.paymentTokenDecimals);
+                const paymentToken = await this.getPaymentTokenContract();
+                this.showNotification('Approving spend... please wait.', 'info');
+                const approveTx = await paymentToken.approve(contractAddress, parsedAmount);
+                await approveTx.wait();
+                this.showNotification('Approval successful! Now buying...', 'info');
+                const buyTx = await this.contract.buyTokens(parsedAmount);
+                await buyTx.wait();
+                this.elements.buyAmountInput.value = '';
+                return 'WYT purchased successfully!';
+            });
+        } else {
+            await this.handleTransaction(this.elements.swapButton, async () => {
+                const amount = this.elements.redeemAmountInput.value;
+                if (!amount || parseFloat(amount) <= 0) throw new Error("Please enter a valid amount.");
+                const parsedAmount = ethers.utils.parseUnits(amount, this.wytDecimals);
+                const tx = await this.contract.redeemTokens(parsedAmount);
+                await tx.wait();
+                this.elements.redeemAmountInput.value = '';
+                return 'WYT redeemed successfully!';
+            });
+        }
+    },
+
+    switchTab(tab) {
+        const isBuy = tab === 'buy';
+        this.elements.buyTab.classList.toggle('active', isBuy);
+        this.elements.redeemTab.classList.toggle('active', !isBuy);
+        this.elements.buyPanel.classList.toggle('hidden', !isBuy);
+        this.elements.redeemPanel.classList.toggle('hidden', isBuy);
+        this.updateReceiveAmount();
+    },
+
+    updateReceiveAmount() {
+        const priceText = this.elements.wytPrice.textContent.replace(/,/g, '');
+        const price = parseFloat(priceText);
+        if (isNaN(price)) {
+            this.elements.swapButton.textContent = 'Price Unavailable';
+            this.elements.swapButton.disabled = true;
+            return;
+        }
+        const isBuy = !this.elements.buyPanel.classList.contains('hidden');
+        let receiveAmount = 0;
+        let buttonText = 'Enter an amount';
+        let disabled = true;
+        let amountInput = isBuy ? this.elements.buyAmountInput : this.elements.redeemAmountInput;
+        const amount = parseFloat(amountInput.value);
+        if (!isNaN(amount) && amount > 0) {
+            if (isBuy) {
+                if (price > 0) receiveAmount = amount / price;
+                buttonText = 'Buy WYT';
+            } else {
+                receiveAmount = amount * price;
+                buttonText = 'Redeem WYT';
+            }
+            disabled = false;
+        }
+        this.elements.receiveAmount.textContent = receiveAmount.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 4
+        });
+        this.elements.swapButton.textContent = buttonText;
+        this.elements.swapButton.disabled = disabled;
+    },
+
+    async mintWorkOrder() {
+        await this.handleTransaction(this.elements.mintButton, async () => {
+            const grossYield = this.elements.mintAmountInput.value;
+            const desc = this.elements.mintDescriptionInput.value;
+            if (!grossYield || !desc) throw new Error("Gross yield and description are required.");
+            const parsedGrossYield = ethers.utils.parseUnits(grossYield, this.paymentTokenDecimals);
+            const tx = await this.contract.mintFromWorkOrder(parsedGrossYield, desc);
+            await tx.wait();
+            this.elements.mintAmountInput.value = '';
+            this.elements.mintDescriptionInput.value = '';
+            return 'Work order minted!';
+        });
+    },
+
+    async fundWorkOrder() {
+        await this.handleTransaction(this.elements.fundButton, async () => {
+            const id = this.elements.fundIdInput.value;
+            const amount = this.elements.fundAmountInput.value;
+            if (!id || !amount) throw new Error("Work Order ID and amount are required.");
+            const parsedAmount = ethers.utils.parseUnits(amount, this.paymentTokenDecimals);
+            const paymentToken = await this.getPaymentTokenContract();
+            const approveTx = await paymentToken.approve(contractAddress, parsedAmount);
+            this.showNotification('Approving spend... please wait.', 'info');
+            await approveTx.wait();
+            this.showNotification('Approval successful! Now funding...', 'info');
+            const tx = await this.contract.fundWorkOrder(id, parsedAmount);
+            await tx.wait();
+            this.elements.fundIdInput.value = '';
+            this.elements.fundAmountInput.value = '';
+            return 'Work order funded!';
+        });
+    },
+
+    async withdrawFees() {
+        await this.handleTransaction(this.elements.withdrawFeesButton, async () => {
+            const tx = await this.contract.withdrawFees();
+            await tx.wait();
+            return 'Fees withdrawn successfully!';
+        });
+    },
+
+    async setRedemptionFee() {
+        await this.handleTransaction(this.elements.setFeeButton, async () => {
+            const newFee = parseInt(this.elements.feeInput.value);
+            if (isNaN(newFee) || newFee < 0 || newFee > 20) {
+                throw new Error("Fee must be a number between 0 and 20.");
+            }
+            const tx = await this.contract.setRedemptionFee(newFee);
+            await tx.wait();
+            this.elements.feeInput.value = '';
+            return 'Redemption fee updated!';
+        });
+    },
+
+    async cancelWorkOrder() {
+        await this.handleTransaction(this.elements.cancelButton, async () => {
+            const id = parseInt(this.elements.cancelIdInput.value);
+            if (isNaN(id) || id <= 0) throw new Error("Please enter a valid Work Order ID.");
+            const tx = await this.contract.cancelWorkOrder(id);
+            await tx.wait();
+            this.elements.cancelIdInput.value = '';
+            return 'Work order cancelled!';
+        });
+    },
+
+    async burnTokens() {
+        await this.handleTransaction(this.elements.burnButton, async () => {
+            const amount = this.elements.burnAmountInput.value;
+            if (!amount || parseFloat(amount) <= 0) throw new Error("Please enter a valid amount to burn.");
+            const parsedAmount = ethers.utils.parseUnits(amount, this.wytDecimals);
+            const tx = await this.contract.burn(parsedAmount);
+            await tx.wait();
+            this.elements.burnAmountInput.value = '';
+            return 'Tokens burned successfully!';
+        });
+    },
+
+    async payoutWorkOrder() {
+        await this.handleTransaction(this.elements.payoutButton, async () => {
+            const id = this.elements.payoutOrderIdInput.value;
+            const amount = this.elements.payoutAmountInput.value;
+            if (!id || !amount || parseFloat(amount) <= 0) {
+                throw new Error("Please enter a valid Work Order ID and payout amount.");
+            }
+            const parsedAmount = ethers.utils.parseUnits(amount, this.paymentTokenDecimals);
+            const paymentToken = await this.getPaymentTokenContract();
+            this.showNotification('Approving payout... please wait.', 'info');
+            const approveTx = await paymentToken.approve(contractAddress, parsedAmount);
+            await approveTx.wait();
+            this.showNotification('Approval successful! Submitting payout...', 'info');
+            const tx = await this.contract.payoutWorkOrder(id, parsedAmount);
+            await tx.wait();
+            this.elements.payoutOrderIdInput.value = '';
+            this.elements.payoutAmountInput.value = '';
+            return 'Work order payout successful!';
+        });
+    },
 
     // --- WORK ORDER RENDERING & UTILITIES ---
 
@@ -333,26 +500,126 @@ const App = {
     },
 
     async renderTransactionHistory() {
-        // ... (This function remains unchanged)
+        this.elements.txHistoryTable.innerHTML = '<p>Loading history...</p>';
+        try {
+            const buyFilter = this.contract.filters.Transfer(this.contract.address, this.userAddress);
+            const redeemFilter = this.contract.filters.TokensRedeemed(this.userAddress);
+            const burnFilter = this.contract.filters.Transfer(this.userAddress, "0x0000000000000000000000000000000000000000");
+            const [buyEvents, redeemEvents, burnEvents] = await Promise.all([
+                this.contract.queryFilter(buyFilter, 0, 'latest'),
+                this.contract.queryFilter(redeemFilter, 0, 'latest'),
+                this.contract.queryFilter(burnFilter, 0, 'latest')
+            ]);
+            let allEvents = [];
+            buyEvents.forEach(event => allEvents.push({ type: 'Buy', wytAmount: event.args.value, pUSDAmount: null, blockNumber: event.blockNumber, txHash: event.transactionHash }));
+            redeemEvents.forEach(event => allEvents.push({ type: 'Redeem', wytAmount: event.args.wytAmount, pUSDAmount: event.args.pUSDAmount, blockNumber: event.blockNumber, txHash: event.transactionHash }));
+            burnEvents.forEach(event => allEvents.push({ type: 'Burn', wytAmount: event.args.value, pUSDAmount: ethers.BigNumber.from(0), blockNumber: event.blockNumber, txHash: event.transactionHash }));
+            allEvents.sort((a, b) => b.blockNumber - a.blockNumber);
+            if (allEvents.length === 0) {
+                this.elements.txHistoryTable.innerHTML = '<p>No transaction history found.</p>';
+                return;
+            }
+            const tableHtml = `
+                <table>
+                    <thead><tr><th>Type</th><th>WYT Amount</th><th>pUSD Amount</th><th>Transaction</th></tr></thead>
+                    <tbody>
+                        ${allEvents.slice(0, 10).map(event => `
+                        <tr>
+                            <td><span class="font-semibold ${event.type === 'Buy' ? 'text-green-400' : event.type === 'Redeem' ? 'text-red-400' : 'text-gray-400'}">${event.type}</span></td>
+                            <td>${this.formatTokenValue(event.wytAmount, this.wytDecimals)}</td>
+                            <td>${event.pUSDAmount ? this.formatTokenValue(event.pUSDAmount, this.paymentTokenDecimals) : 'N/A'}</td>
+                            <td><a href="${PLUME_MAINNET.blockExplorerUrls[0]}/tx/${event.txHash}" target="_blank" rel="noopener noreferrer" class="footer-link">View on Explorer</a></td>
+                        </tr>`).join('')}
+                    </tbody>
+                </table>`;
+            this.elements.txHistoryTable.innerHTML = tableHtml;
+        } catch (err) {
+            console.error("Could not render transaction history", err);
+            this.elements.txHistoryTable.innerHTML = '<p class="text-red-500">Error loading history.</p>';
+        }
     },
+
     exportPDF() {
-        // ... (This function remains unchanged)
+        if (typeof jspdf === 'undefined' || typeof jspdf.plugin.autotable === 'undefined') {
+            return this.showNotification('PDF library is not available.', 'error');
+        }
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const tableElement = this.elements.workOrderResults.querySelector('table');
+        if (!tableElement) return this.showNotification('No work order table to export.', 'info');
+        doc.autoTable({
+            html: tableElement,
+            startY: 20,
+            theme: 'grid',
+            headStyles: { fillColor: [22, 160, 133] },
+        });
+        doc.text("Work Yield - Work Order Report", 14, 15);
+        doc.save('work-yield-orders.pdf');
     },
+
     async handleTransaction(button, transactionCallback) {
-        // ... (This function remains unchanged)
+        if (!this.userAddress) return this.showNotification('Please connect your wallet first.', 'error');
+        this.setButtonLoading(button, true);
+        try {
+            const result = await transactionCallback();
+            this.showNotification(result, 'success');
+            await this.loadContractData();
+        } catch (error) {
+            console.error('Transaction error:', error);
+            let errorMessage = 'Transaction failed.';
+            if (error.code === 4001) {
+                errorMessage = 'Transaction rejected by user.';
+            } else if (error.data && error.data.message) {
+                errorMessage = error.data.message;
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+            this.showNotification(errorMessage, 'error');
+        } finally {
+            this.setButtonLoading(button, false);
+        }
     },
+
     setButtonLoading(button, isLoading) {
-        // ... (This function remains unchanged)
+        if (!button) return;
+        if (isLoading) {
+            button.disabled = true;
+            button.dataset.originalText = button.textContent;
+            button.innerHTML = '<span class="spinner"></span> Processing...';
+        } else {
+            button.disabled = false;
+            button.textContent = button.dataset.originalText || 'Submit';
+        }
     },
+
     showNotification(message, type = 'info') {
-        // ... (This function remains unchanged)
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 5000);
+        console.log(`[${type.toUpperCase()}] ${message}`);
     },
+
     formatTokenValue(value, decimals) {
-        // ... (This function remains unchanged)
+        try {
+            const formatted = ethers.utils.formatUnits(value, decimals);
+            const number = parseFloat(formatted);
+            return number.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 4
+            });
+        } catch (error) {
+            console.error('Error formatting token value:', error);
+            return '0.00';
+        }
     }
 };
 
-// --- CSS INJECTION ---
 const styles = `
     .notification { position: fixed; top: 20px; right: 20px; padding: 12px 20px; border-radius: 8px; color: white; font-weight: 500; z-index: 1000; max-width: 300px; word-wrap: break-word; animation: slideIn 0.3s ease-out; }
     .notification-success { background-color: #10b981; } .notification-error { background-color: #ef4444; } .notification-info { background-color: #3b82f6; } .notification-warning { background-color: #f59e0b; }
@@ -373,5 +640,4 @@ const styleSheet = document.createElement("style");
 styleSheet.innerText = styles;
 document.head.appendChild(styleSheet);
 
-// --- START THE APP ---
 window.addEventListener('DOMContentLoaded', () => App.init());
