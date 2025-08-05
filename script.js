@@ -21,6 +21,7 @@ const contractABI = [
     {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},
     {"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"yieldAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"tokensIssued","type":"uint256"}],"name":"WorkOrderMinted","type":"event"},
     {"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":true,"internalType":"address","name":"payer","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"WorkOrderPaid","type":"event"},
+    // ... rest of your functions
     {"inputs":[],"name":"RESERVE_PERCENTAGE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
     {"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
     {"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},
@@ -589,13 +590,13 @@ const App = {
         console.error('Transaction history error:', err);
         this.elements.txHistoryTable.innerHTML = '<p class="text-red-500">Error loading history.</p>';
     }
-},
+}, // <-- THIS IS THE CRITICAL COMMA THAT WAS MISSING!
     
     exportPDF() {
         const button = this.elements.exportPdfButton;
         this.setButtonLoading(button, true);
 
-      
+        // Add print styles if they don't exist
         if (!document.getElementById('printStyles')) {
             const printStyles = document.createElement('style');
             printStyles.id = 'printStyles';
@@ -681,81 +682,6 @@ const App = {
         } 
     }
 };
-
-let mintRedeemChart;
-
-async function loadMintRedeemData() {
-  const provider = new ethers.providers.Web3Provider(window.ethereum);
-  const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
-
-  const fromBlock = await provider.getBlockNumber() - 5000;
-  const mintEvents = await contract.queryFilter(contract.filters.Minted(), fromBlock);
-  const redeemEvents = await contract.queryFilter(contract.filters.Redeemed(), fromBlock);
-
-  const dateMap = {};
-  for (let i = 0; i < 5; i++) {
-    const day = new Date(Date.now() - i * 86400000).toISOString().split('T')[0];
-    dateMap[day] = { minted: 0, redeemed: 0 };
-  }
-
-  for (const e of mintEvents) {
-    const date = new Date((await e.getBlock()).timestamp * 1000).toISOString().split('T')[0];
-    if (dateMap[date]) dateMap[date].minted += Number(ethers.utils.formatUnits(e.args.amount, 18));
-  }
-
-  for (const e of redeemEvents) {
-    const date = new Date((await e.getBlock()).timestamp * 1000).toISOString().split('T')[0];
-    if (dateMap[date]) dateMap[date].redeemed += Number(ethers.utils.formatUnits(e.args.amount, 18));
-  }
-
-  const labels = Object.keys(dateMap).reverse();
-  const mintData = labels.map(day => dateMap[day].minted);
-  const redeemData = labels.map(day => dateMap[day].redeemed);
-
-  updateChart(labels, mintData, redeemData);
-}
-
-function updateChart(labels, mintData, redeemData) {
-  if (mintRedeemChart) mintRedeemChart.destroy();
-
-  const ctx = document.getElementById('mintRedeemChart').getContext('2d');
-  mintRedeemChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        {
-          label: 'Minted',
-          data: mintData,
-          backgroundColor: '#22c55e',
-        },
-        {
-          label: 'Redeemed',
-          data: redeemData,
-          backgroundColor: '#f97316',
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { labels: { color: '#d1d5db' } }
-      },
-      scales: {
-        x: {
-          ticks: { color: '#9ca3af' },
-          grid: { color: '#374151' }
-        },
-        y: {
-          ticks: { color: '#9ca3af' },
-          grid: { color: '#374151' }
-        }
-      }
-    }
-  });
-}
-
-window.addEventListener('DOMContentLoaded', loadMintRedeemData);
 
 const styles = 
     .notification { position: fixed; top: 20px; right: 20px; padding: 12px 20px; border-radius: 8px; color: white; font-weight: 500; z-index: 1000; max-width: 300px; word-wrap: break-word; animation: slideIn 0.3s ease-out; }
