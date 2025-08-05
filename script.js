@@ -590,13 +590,13 @@ const App = {
         console.error('Transaction history error:', err);
         this.elements.txHistoryTable.innerHTML = '<p class="text-red-500">Error loading history.</p>';
     }
-}, // <-- THIS IS THE CRITICAL COMMA THAT WAS MISSING!
+},
     
     exportPDF() {
         const button = this.elements.exportPdfButton;
         this.setButtonLoading(button, true);
 
-        // Add print styles if they don't exist
+      
         if (!document.getElementById('printStyles')) {
             const printStyles = document.createElement('style');
             printStyles.id = 'printStyles';
