@@ -1,3 +1,31 @@
+function debugPdfLibraries() {
+    console.log("--- PDF Library Debug Report ---");
+
+    // 1. Check if the main library object (window.jspdf) exists
+    if (typeof window.jspdf === 'undefined') {
+        console.error("RESULT: FAILED. `window.jspdf` is undefined. The main library script (jspdf.umd.min.js) is not loading or executing.");
+        console.log("--- End Debug Report ---");
+        return;
+    }
+    console.log("CHECK 1: OK. `window.jspdf` object exists.", window.jspdf);
+
+    // 2. Check for the constructor function inside the main object
+    if (typeof window.jspdf.jsPDF !== 'function') {
+        console.error("RESULT: FAILED. `window.jspdf.jsPDF` is not a function. The main library object is malformed or an unexpected version.");
+        console.log("--- End Debug Report ---");
+        return;
+    }
+    console.log("CHECK 2: OK. `jsPDF` constructor function exists.");
+
+    // 3. Check the prototype of the constructor for the autotable method
+    if (typeof window.jspdf.jsPDF.prototype.autoTable === 'function') {
+        console.log("RESULT: SUCCESS! `autoTable` method is correctly attached to the prototype!");
+    } else {
+        console.error("RESULT: FAILED. `autoTable` method is MISSING from the prototype. This confirms the plugin (jspdf-autotable.umd.min.js) is either not loading, being blocked, or failing to execute correctly.");
+    }
+    
+    console.log("--- End Debug Report ---");
+}
 // --- CONFIGURATION ---
 const contractAddress = '0xccF4eaa301058Ec5561a07Cc38A75F47a2912EA5';
 
@@ -533,9 +561,9 @@ const App = {
     },
 
     exportPDF() {
-    // This delay is a good safeguard against slow network loading of the CDN scripts.
     setTimeout(() => {
         try {
+            debugPdfLibraries(); // <-- ADD THIS LINE HERE
             // Check 1: Is the main jsPDF library object available?
             if (typeof window.jspdf === 'undefined') {
                 return this.showNotification('Error: Main PDF library (jspdf) could not be loaded.', 'error');
