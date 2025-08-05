@@ -563,11 +563,12 @@ const App = {
     exportPDF() {
     setTimeout(() => {
         try {
-            debugPdfLibraries(); // <-- ADD THIS LINE HERE
-            // Check 1: Is the main jsPDF library object available?
+            debugPdfLibraries(); // <-- THIS LINE MUST BE HERE
+
             if (typeof window.jspdf === 'undefined') {
                 return this.showNotification('Error: Main PDF library (jspdf) could not be loaded.', 'error');
             }
+            // ... the rest of the function ...
             
             // Get the constructor from the window object
             const { jsPDF } = window.jspdf;
