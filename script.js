@@ -563,20 +563,100 @@ displayWorkOrders(orders, isSearchResult = false) {
         }
     },
 
-    exportPDF() {
-    // 1. A simpler, correct check for the main PDF library
-    if (typeof window.jspdf === 'undefined') {
-        return this.showNotification('PDF library (jspdf) is not available.', 'error');
-    }
-    
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({
-        orientation: 'landscape',
-    });
+    Of course. That's a great idea—it's often best to have the more visual icons on the webpage itself, while ensuring the exported document is as clean and universally compatible as possible.
 
-    // 2. The most reliable check: see if the autoTable plugin was successfully added
-    if (typeof doc.autoTable !== 'function') {
-        return this.showNotification('PDF table plugin (autotable) is not available.', 'error');
+We can absolutely do that. The solution is to get the best of both worlds:
+
+1.  We'll change the code to display the **green checkmarks (✅) and red Xs (❌)** on the website table.
+2.  We'll then cleverly update the `exportPDF` function. Just before it creates the PDF, it will temporarily replace the emojis with "Yes" and "No" in a hidden copy of the table.
+
+This way, you see the icons on your screen, but the PDF gets the professional text version.
+
+Here are the two functions in your `script.js` that you need to replace.
+
+-----
+
+### Step 1: Update the `displayWorkOrders` Function
+
+Replace your entire `displayWorkOrders` function with this new version. This will bring back the checkmarks and X's to the live HTML table on your dashboard.
+
+```javascript
+// Replace the entire displayWorkOrders function in your script.js with this version.
+
+displayWorkOrders(orders, isSearchResult = false) {
+    if (!this.elements.workOrderResults) return;
+    if (orders.length === 0) {
+        this.elements.workOrderResults.innerHTML = `<p>${isSearchResult ? 'No matching work order found.' : 'No work orders found.'}</p>`;
+        return;
+    }
+
+    // Logic for search results table
+    if (isSearchResult) {
+        const tableHtml = `
+            <table>
+                <thead><tr><th>ID</th><th>Gross Yield</th><th>Reserve</th><th>Issued</th><th>Active</th><th>Paid</th><th>Description</th><th>Created</th></tr></thead>
+                <tbody>
+                    ${orders.map(wo => `
+                    <tr>
+                        <td>${wo.id}</td>
+                        <td>${this.formatTokenValue(wo.grossYield, this.paymentTokenDecimals)}</td>
+                        <td>${this.formatTokenValue(wo.reserveAmount, this.paymentTokenDecimals)}</td>
+                        <td>${this.formatTokenValue(wo.tokensIssued, this.wytDecimals)}</td>
+                        <td>${wo.isActive ? '✅' : '❌'}</td> <td>${wo.isPaid ? '✅' : '❌'}</td>   <td>${wo.description}</td>
+                        <td>${new Date(wo.createdAt * 1000).toLocaleDateString()}</td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>`;
+        this.elements.workOrderResults.innerHTML = tableHtml;
+        return;
+    }
+
+    // Logic for the default tabbed view
+    const groupedOrders = orders.reduce((acc, wo) => {
+        const date = new Date(wo.createdAt * 1000);
+        const key = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(wo);
+        return acc;
+    }, {});
+
+    const sortedMonths = Object.keys(groupedOrders).sort().reverse();
+    const tabsHtml = sortedMonths.map((monthKey, index) => {
+        const [year, monthNum] = monthKey.split('-');
+        const monthName = new Date(year, monthNum - 1).toLocaleString('default', { month: 'long', year: 'numeric' });
+        return `<button class="wo-tab-btn ${index === 0 ? 'active' : ''}" data-month="${monthKey}">${monthName}</button>`;
+    }).join('');
+
+    const contentHtml = sortedMonths.map((monthKey, index) => {
+        const ordersForMonth = groupedOrders[monthKey];
+        const tableHeader = `<thead><tr><th>ID</th><th>Gross Yield</th><th>Reserve</th><th>Issued</th><th>Active</th><th>Paid</th><th>Description</th><th>Created</th></tr></thead>`;
+        const tableBody = `<tbody>
+            ${ordersForMonth.map(wo => `
+            <tr>
+                <td>${wo.id}</td>
+                <td>${this.formatTokenValue(wo.grossYield, this.paymentTokenDecimals)}</td>
+                <td>${this.formatTokenValue(wo.reserveAmount, this.paymentTokenDecimals)}</td>
+                <td>${this.formatTokenValue(wo.tokensIssued, this.wytDecimals)}</td>
+                <td>${wo.isActive ? '✅' : '❌'}</td> <td>${wo.isPaid ? '✅' : '❌'}</td>   <td>${wo.description}</td>
+                <td>${new Date(wo.createdAt * 1000).toLocaleDateString()}</td>
+            </tr>`).join('')}
+        </tbody>`;
+        return `<div id="wo-content-${monthKey}" class="wo-content-panel ${index > 0 ? 'hidden' : ''}"><table>${tableHeader}${tableBody}</table></div>`;
+    }).join('');
+
+    this.elements.workOrderResults.innerHTML = `<div class="wo-tabs">${tabsHtml}</div><div class="wo-content">${contentHtml}</div>`;
+},
+
+### Step 2: Update the `exportPDF` Function
+
+Now, replace your entire `exportPDF` function with this version. It contains the new logic to swap the emojis for text right before the PDF is created.
+
+```javascript
+// Replace the entire exportPDF function in your script.js with this version.
+
+exportPDF() {
+    if (typeof window.jspdf === 'undefined' || typeof window.jspdf.plugin.autotable === 'undefined') {
+        return this.showNotification('PDF library is not available.', 'error');
     }
 
     const tableElement = this.elements.workOrderResults.querySelector('table');
@@ -584,6 +664,30 @@ displayWorkOrders(orders, isSearchResult = false) {
         return this.showNotification('No work order data to export.', 'info');
     }
 
+    // --- NEW LOGIC START ---
+    // 1. Create a copy of the table in memory so we don't change the live webpage.
+    const tableClone = tableElement.cloneNode(true);
+
+    // 2. Find all cells in the cloned table and replace emojis with PDF-safe text.
+    tableClone.querySelectorAll('td').forEach(cell => {
+        const cellText = cell.innerText.trim();
+        if (cellText === '✅') {
+            cell.innerText = 'Yes';
+        } else if (cellText === '❌') {
+            cell.innerText = 'No';
+        }
+    });
+    // --- NEW LOGIC END ---
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({
+        orientation: 'landscape',
+    });
+
+    if (typeof doc.autoTable !== 'function') {
+        return this.showNotification('PDF table plugin is not available.', 'error');
+    }
+    
     const activeTab = this.elements.workOrderResults.querySelector('.wo-tab-btn.active');
     let reportTitle = "Work Yield - Work Order Report";
     if (activeTab) {
@@ -595,7 +699,7 @@ displayWorkOrders(orders, isSearchResult = false) {
     doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 20);
 
     doc.autoTable({
-        html: tableElement,
+        html: tableClone, // 3. Use the modified clone to generate the PDF
         startY: 25,
         theme: 'grid',
         headStyles: {
@@ -606,6 +710,8 @@ displayWorkOrders(orders, isSearchResult = false) {
     doc.save('work-yield-report.pdf');
     this.showNotification('PDF report generated!', 'success');
 },
+
+With these two changes, your dashboard will now show the checkmarks and X's, and your PDF exports will correctly show "Yes" and "No".
 
     async handleTransaction(button, transactionCallback) {
         if (!this.userAddress) return this.showNotification('Please connect your wallet first.', 'error');
