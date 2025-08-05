@@ -564,7 +564,7 @@ const App = {
         console.error('Transaction history error:', err);
         this.elements.txHistoryTable.innerHTML = '<p class="text-red-500">Error loading history.</p>';
     }
-}
+}, 
     
     exportPDF() {
         const button = this.elements.exportPdfButton;
