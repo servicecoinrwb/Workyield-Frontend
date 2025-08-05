@@ -10,7 +10,48 @@ const PLUME_MAINNET = {
 };
 
 const tokenABI = [ "function approve(address spender, uint256 amount) returns (bool)", "function allowance(address owner, address spender) view returns (uint256)", "function balanceOf(address account) view returns (uint256)", "function totalSupply() view returns (uint256)", "function decimals() view returns (uint8)" ];
-const contractABI = [{"inputs":[{"internalType":"address","name":"initialOwner","type":"address"},{"internalType":"address","name":"paymentTokenAddress","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"OrderFunded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newFeePercentage","type":"uint256"}],"name":"RedemptionFeeSet","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"ReserveFunded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"holder","type":"address"},{"indexed":false,"internalType":"uint256","name":"wytAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"pUSDAmount","type":"uint256"}],"name":"TokensRedeemed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"yieldAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"tokensIssued","type":"uint256"}],"name":"WorkOrderMinted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":true,"internalType":"address","name":"payer","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"WorkOrderPaid","type":"event"},{"inputs":[],"name":"RESERVE_PERCENTAGE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"availableTokens","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"pUSDAmount","type":"uint256"}],"name":"buyTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"workOrderId","type":"uint256"}],"name":"cancelWorkOrder","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"collectedFees","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"contractPaymentTokenBalance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"string","name":"description","type":"string"}],"name":"mintFromWorkOrder","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"nextWorkOrderId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"paymentToken","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"workOrderId","type":"uint256"},{"internalType":"uint256","name":"payoutAmount","type":"uint256"}],"name":"payoutWorkOrder","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"wytAmount","type":"uint256"}],"name":"redeemTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"redemptionFeePercentage","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"newFeePercentage","type":"uint256"}],"name":"setRedemptionFee","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalReserveFund","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"withdrawFees","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"workOrders","outputs":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"uint256","name":"reserveAmount","type":"uint256"},{"internalType":"uint256","name":"tokensIssued","type":"uint256"},{"internalType":"bool","name":"isActive","type":"bool"},{"internalType":"bool","name":"isPaid","type":"bool"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"createdAt","type":"uint256"}],"stateMutability":"view","type":"function"}];
+const contractABI = [
+    {"inputs":[{"internalType":"address","name":"initialOwner","type":"address"},{"internalType":"address","name":"paymentTokenAddress","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"OrderFunded","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newFeePercentage","type":"uint256"}],"name":"RedemptionFeeSet","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"ReserveFunded","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"holder","type":"address"},{"indexed":false,"internalType":"uint256","name":"wytAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"pUSDAmount","type":"uint256"}],"name":"TokensRedeemed","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"yieldAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"tokensIssued","type":"uint256"}],"name":"WorkOrderMinted","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":true,"internalType":"address","name":"payer","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"WorkOrderPaid","type":"event"},
+    // ... rest of your functions
+    {"inputs":[],"name":"RESERVE_PERCENTAGE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[],"name":"availableTokens","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"pUSDAmount","type":"uint256"}],"name":"buyTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"workOrderId","type":"uint256"}],"name":"cancelWorkOrder","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[],"name":"collectedFees","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"contractPaymentTokenBalance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"string","name":"description","type":"string"}],"name":"mintFromWorkOrder","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"nextWorkOrderId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"paymentToken","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"workOrderId","type":"uint256"},{"internalType":"uint256","name":"payoutAmount","type":"uint256"}],"name":"payoutWorkOrder","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"wytAmount","type":"uint256"}],"name":"redeemTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[],"name":"redemptionFeePercentage","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"newFeePercentage","type":"uint256"}],"name":"setRedemptionFee","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"totalReserveFund","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[],"name":"withdrawFees","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"workOrders","outputs":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"uint256","name":"reserveAmount","type":"uint256"},{"internalType":"uint256","name":"tokensIssued","type":"uint256"},{"internalType":"bool","name":"isActive","type":"bool"},{"internalType":"bool","name":"isPaid","type":"bool"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"createdAt","type":"uint256"}],"stateMutability":"view","type":"function"}
+];
 
 const App = {
     provider: null, 
@@ -456,115 +497,100 @@ const App = {
     },
 
     async renderTransactionHistory() {
-        this.elements.txHistoryTable.innerHTML = '<p>Loading history...</p>';
-        try {
-            // Get payment token contract
-            const paymentTokenAddress = await this.contract.paymentToken();
-            const paymentTokenContract = new ethers.Contract(paymentTokenAddress, tokenABI, this.provider);
+    this.elements.txHistoryTable.innerHTML = '<p>Loading history...</p>';
+    try {
+        // Get event filters - only use events from the main contract
+        const buyFilter = this.contract.filters.Transfer(this.contract.address, this.userAddress);
+        const redeemFilter = this.contract.filters.TokensRedeemed(this.userAddress);
+        const burnFilter = this.contract.filters.Transfer(this.userAddress, "0x0000000000000000000000000000000000000000");
 
-            // Get different event filters
-            const buyFilter = this.contract.filters.Transfer(this.contract.address, this.userAddress);
-            const redeemFilter = this.contract.filters.TokensRedeemed(this.userAddress);
-            const burnFilter = this.contract.filters.Transfer(this.userAddress, "0x0000000000000000000000000000000000000000");
-            
-            // Get approval events to find pUSD amounts for purchases
-            const approvalFilter = paymentTokenContract.filters.Approval(this.userAddress, this.contract.address);
+        const [buyEvents, redeemEvents, burnEvents] = await Promise.all([
+            this.contract.queryFilter(buyFilter, 0, 'latest'),
+            this.contract.queryFilter(redeemFilter, 0, 'latest'),
+            this.contract.queryFilter(burnFilter, 0, 'latest')
+        ]);
 
-            const [buyEvents, redeemEvents, burnEvents, approvalEvents] = await Promise.all([
-                this.contract.queryFilter(buyFilter, 0, 'latest'),
-                this.contract.queryFilter(redeemFilter, 0, 'latest'),
-                this.contract.queryFilter(burnFilter, 0, 'latest'),
-                paymentTokenContract.queryFilter(approvalFilter, 0, 'latest')
-            ]);
+        let allEvents = [];
 
-            let allEvents = [];
+        // Process buy events - show N/A for pUSD amount
+        buyEvents.forEach(event => allEvents.push({
+            type: 'Buy',
+            wytAmount: event.args.value,
+            pUSDAmount: null, // Will show as N/A
+            blockNumber: event.blockNumber,
+            txHash: event.transactionHash
+        }));
 
-            // Process buy events and match with approval amounts
-            for (const event of buyEvents) {
-                // Find corresponding approval event around the same time
-                const correspondingApproval = approvalEvents.find(approval => 
-                    Math.abs(approval.blockNumber - event.blockNumber) <= 2 // Within 2 blocks
-                );
+        // Process redeem events - these have pUSD amounts
+        redeemEvents.forEach(event => allEvents.push({
+            type: 'Redeem',
+            wytAmount: event.args.wytAmount,
+            pUSDAmount: event.args.pUSDAmount,
+            blockNumber: event.blockNumber,
+            txHash: event.transactionHash
+        }));
 
-                allEvents.push({
-                    type: 'Buy',
-                    wytAmount: event.args.value,
-                    pUSDAmount: correspondingApproval ? correspondingApproval.args.value : null,
-                    blockNumber: event.blockNumber,
-                    txHash: event.transactionHash
-                });
-            }
+        // Process burn events
+        burnEvents.forEach(event => allEvents.push({
+            type: 'Burn',
+            wytAmount: event.args.value,
+            pUSDAmount: ethers.BigNumber.from(0),
+            blockNumber: event.blockNumber,
+            txHash: event.transactionHash
+        }));
 
-            // Process redeem events (these already have pUSD amounts)
-            redeemEvents.forEach(event => allEvents.push({
-                type: 'Redeem',
-                wytAmount: event.args.wytAmount,
-                pUSDAmount: event.args.pUSDAmount,
-                blockNumber: event.blockNumber,
-                txHash: event.transactionHash
-            }));
+        // Sort by block number (newest first)
+        allEvents.sort((a, b) => b.blockNumber - a.blockNumber);
 
-            // Process burn events
-            burnEvents.forEach(event => allEvents.push({
-                type: 'Burn',
-                wytAmount: event.args.value,
-                pUSDAmount: ethers.BigNumber.from(0),
-                blockNumber: event.blockNumber,
-                txHash: event.transactionHash
-            }));
-
-            // Sort by block number (newest first)
-            allEvents.sort((a, b) => b.blockNumber - a.blockNumber);
-
-            if (allEvents.length === 0) {
-                this.elements.txHistoryTable.innerHTML = '<p>No transaction history found.</p>';
-                return;
-            }
-
-            const tableHtml = `<table>
-                <thead>
-                    <tr>
-                        <th>Type</th>
-                        <th>WYT Amount</th>
-                        <th>pUSD Amount</th>
-                        <th>Transaction</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${allEvents.slice(0, 10).map(event => `
-                        <tr>
-                            <td>
-                                <span class="font-semibold ${event.type === 'Buy' ? 'text-green-400' : event.type === 'Redeem' ? 'text-red-400' : 'text-gray-400'}">
-                                    ${event.type}
-                                </span>
-                            </td>
-                            <td>${this.formatTokenValue(event.wytAmount, this.wytDecimals)}</td>
-                            <td>
-                                ${event.pUSDAmount && !event.pUSDAmount.isZero() 
-                                    ? this.formatTokenValue(event.pUSDAmount, this.paymentTokenDecimals) 
-                                    : event.type === 'Burn' ? '0.00' : 'N/A'
-                                }
-                            </td>
-                            <td>
-                                <a href="${PLUME_MAINNET.blockExplorerUrls[0]}/tx/${event.txHash}" 
-                                   target="_blank" 
-                                   rel="noopener noreferrer" 
-                                   class="footer-link">
-                                    View on Explorer
-                                </a>
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>`;
-
-            this.elements.txHistoryTable.innerHTML = tableHtml;
-
-        } catch (err) {
-            console.error('Transaction history error:', err);
-            this.elements.txHistoryTable.innerHTML = '<p class="text-red-500">Error loading history.</p>';
+        if (allEvents.length === 0) {
+            this.elements.txHistoryTable.innerHTML = '<p>No transaction history found.</p>';
+            return;
         }
-    }, // <-- THIS IS THE CRITICAL COMMA THAT WAS MISSING!
+
+        const tableHtml = `<table>
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>WYT Amount</th>
+                    <th>pUSD Amount</th>
+                    <th>Transaction</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${allEvents.slice(0, 10).map(event => `
+                    <tr>
+                        <td>
+                            <span class="font-semibold ${event.type === 'Buy' ? 'text-green-400' : event.type === 'Redeem' ? 'text-red-400' : 'text-gray-400'}">
+                                ${event.type}
+                            </span>
+                        </td>
+                        <td>${this.formatTokenValue(event.wytAmount, this.wytDecimals)}</td>
+                        <td>
+                            ${event.pUSDAmount && !event.pUSDAmount.isZero() 
+                                ? this.formatTokenValue(event.pUSDAmount, this.paymentTokenDecimals) 
+                                : event.type === 'Burn' ? '0.00' : 'N/A'
+                            }
+                        </td>
+                        <td>
+                            <a href="${PLUME_MAINNET.blockExplorerUrls[0]}/tx/${event.txHash}" 
+                               target="_blank" 
+                               rel="noopener noreferrer" 
+                               class="footer-link">
+                                View on Explorer
+                            </a>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>`;
+
+        this.elements.txHistoryTable.innerHTML = tableHtml;
+
+    } catch (err) {
+        console.error('Transaction history error:', err);
+        this.elements.txHistoryTable.innerHTML = '<p class="text-red-500">Error loading history.</p>';
+    }
+}, // <-- THIS IS THE CRITICAL COMMA THAT WAS MISSING!
     
     exportPDF() {
         const button = this.elements.exportPdfButton;
