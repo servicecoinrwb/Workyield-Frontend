@@ -525,92 +525,93 @@ const App = {
     
     // <-- MODIFICATION: Added new displayWorkOrders function
     displayWorkOrders(orders, isSearchResult = false) {
-        // Start with the search bar HTML
-        let searchHtml = `
-            <div class="wo-search-container">
-                <input type="number" id="workOrderSearchInput" placeholder="Search by Work Order ID...">
-            </div>
-        `;
-    
-        if (orders.length === 0) {
-            const message = isSearchResult ? 'No matching work order found.' : 'No work orders found.';
-            this.elements.workOrderTable.innerHTML = searchHtml + `<p>${message}</p>`;
-            return;
+    // MODIFICATION: Changed input type to "text" and updated placeholder
+    let searchHtml = `
+        <div class="wo-search-container">
+            <input type="text" id="workOrderSearchInput" placeholder="Search by ID or Description...">
+        </div>
+    `;
+
+    if (orders.length === 0) {
+        const message = isSearchResult ? 'No matching work order found.' : 'No work orders found.';
+        this.elements.workOrderTable.innerHTML = searchHtml + `<p>${message}</p>`;
+        return;
+    }
+
+    // If it's a search result, display a simple table without tabs
+    if (isSearchResult) {
+        const tableHtml = `
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th><th>Gross Yield</th><th>Reserve</th><th>Issued</th>
+                        <th>Active</th><th>Paid</th><th>Description</th><th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${orders.map(wo => `
+                    <tr>
+                        <td>${wo.id}</td>
+                        <td>${this.formatTokenValue(wo.grossYield, this.paymentTokenDecimals)}</td>
+                        <td>${this.formatTokenValue(wo.reserveAmount, this.paymentTokenDecimals)}</td>
+                        <td>${this.formatTokenValue(wo.tokensIssued, this.wytDecimals)}</td>
+                        <td>${wo.isActive ? '✅' : '❌'}</td>
+                        <td>${wo.isPaid ? '✅' : '❌'}</td>
+                        <td>${wo.description}</td>
+                        <td>${new Date(wo.createdAt * 1000).toLocaleDateString()}</td>
+                    </tr>
+                    `).join('')}
+                </tbody>
+            </table>`;
+        // Set the table HTML and ensure the user's search term remains in the box
+        this.elements.workOrderTable.innerHTML = searchHtml + tableHtml;
+        const searchInput = document.getElementById('workOrderSearchInput');
+        if (searchInput && orders.length > 0) {
+             // We keep the focus and what the user typed, no need to pre-fill anymore.
         }
-    
-        // If it's a search result, display a simple table without tabs
-        if (isSearchResult) {
-            const tableHtml = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th><th>Gross Yield</th><th>Reserve</th><th>Issued</th>
-                            <th>Active</th><th>Paid</th><th>Description</th><th>Created</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${orders.map(wo => `
-                        <tr>
-                            <td>${wo.id}</td>
-                            <td>${this.formatTokenValue(wo.grossYield, this.paymentTokenDecimals)}</td>
-                            <td>${this.formatTokenValue(wo.reserveAmount, this.paymentTokenDecimals)}</td>
-                            <td>${this.formatTokenValue(wo.tokensIssued, this.wytDecimals)}</td>
-                            <td>${wo.isActive ? '✅' : '❌'}</td>
-                            <td>${wo.isPaid ? '✅' : '❌'}</td>
-                            <td>${wo.description}</td>
-                            <td>${new Date(wo.createdAt * 1000).toLocaleDateString()}</td>
-                        </tr>
-                        `).join('')}
-                    </tbody>
-                </table>`;
-            this.elements.workOrderTable.innerHTML = searchHtml + tableHtml;
-            // Pre-fill the search input with the ID
-            if (orders.length > 0) {
-                document.getElementById('workOrderSearchInput').value = orders[0].id.toString();
-            }
-            return;
-        }
-    
-        // --- Default Tabbed View ---
-        const groupedOrders = orders.reduce((acc, wo) => {
-            const date = new Date(wo.createdAt * 1000);
-            const key = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
-            if (!acc[key]) acc[key] = [];
-            acc[key].push(wo);
-            return acc;
-        }, {});
-    
-        const sortedMonths = Object.keys(groupedOrders).sort().reverse();
-        const tabsHtml = sortedMonths.map((monthKey, index) => {
-            const [year, monthNum] = monthKey.split('-');
-            const monthName = new Date(year, monthNum - 1).toLocaleString('default', { month: 'long', year: 'numeric' });
-            return `<button class="wo-tab-btn ${index === 0 ? 'active' : ''}" data-month="${monthKey}">${monthName}</button>`;
-        }).join('');
-    
-        const contentHtml = sortedMonths.map((monthKey, index) => {
-            const ordersForMonth = groupedOrders[monthKey];
-            const tableHeader = `<thead><tr><th>ID</th><th>Gross Yield</th><th>Reserve</th><th>Issued</th><th>Active</th><th>Paid</th><th>Description</th><th>Created</th></tr></thead>`;
-            const tableBody = `<tbody>${ordersForMonth.map(wo => `
-                <tr>
-                    <td>${wo.id}</td>
-                    <td>${this.formatTokenValue(wo.grossYield, this.paymentTokenDecimals)}</td>
-                    <td>${this.formatTokenValue(wo.reserveAmount, this.paymentTokenDecimals)}</td>
-                    <td>${this.formatTokenValue(wo.tokensIssued, this.wytDecimals)}</td>
-                    <td>${wo.isActive ? '✅' : '❌'}</td>
-                    <td>${wo.isPaid ? '✅' : '❌'}</td>
-                    <td>${wo.description}</td>
-                    <td>${new Date(wo.createdAt * 1000).toLocaleDateString()}</td>
-                </tr>
-            `).join('')}</tbody>`;
-            return `<div id="wo-content-${monthKey}" class="wo-content-panel ${index > 0 ? 'hidden' : ''}"><table>${tableHeader}${tableBody}</table></div>`;
-        }).join('');
-    
-        this.elements.workOrderTable.innerHTML = `
-            ${searchHtml}
-            <div class="wo-tabs">${tabsHtml}</div>
-            <div class="wo-content">${contentHtml}</div>
-        `;
-    },
+        return;
+    }
+
+    // --- Default Tabbed View ---
+    const groupedOrders = orders.reduce((acc, wo) => {
+        const date = new Date(wo.createdAt * 1000);
+        const key = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(wo);
+        return acc;
+    }, {});
+
+    const sortedMonths = Object.keys(groupedOrders).sort().reverse();
+    const tabsHtml = sortedMonths.map((monthKey, index) => {
+        const [year, monthNum] = monthKey.split('-');
+        const monthName = new Date(year, monthNum - 1).toLocaleString('default', { month: 'long', year: 'numeric' });
+        return `<button class="wo-tab-btn ${index === 0 ? 'active' : ''}" data-month="${monthKey}">${monthName}</button>`;
+    }).join('');
+
+    const contentHtml = sortedMonths.map((monthKey, index) => {
+        const ordersForMonth = groupedOrders[monthKey];
+        const tableHeader = `<thead><tr><th>ID</th><th>Gross Yield</th><th>Reserve</th><th>Issued</th><th>Active</th><th>Paid</th><th>Description</th><th>Created</th></tr></thead>`;
+        const tableBody = `<tbody>${ordersForMonth.map(wo => `
+            <tr>
+                <td>${wo.id}</td>
+                <td>${this.formatTokenValue(wo.grossYield, this.paymentTokenDecimals)}</td>
+                <td>${this.formatTokenValue(wo.reserveAmount, this.paymentTokenDecimals)}</td>
+                <td>${this.formatTokenValue(wo.tokensIssued, this.wytDecimals)}</td>
+                <td>${wo.isActive ? '✅' : '❌'}</td>
+                <td>${wo.isPaid ? '✅' : '❌'}</td>
+                <td>${wo.description}</td>
+                <td>${new Date(wo.createdAt * 1000).toLocaleDateString()}</td>
+            </tr>
+        `).join('')}</tbody>`;
+        return `<div id="wo-content-${monthKey}" class="wo-content-panel ${index > 0 ? 'hidden' : ''}"><table>${tableHeader}${tableBody}</table></div>`;
+    }).join('');
+
+    this.elements.workOrderTable.innerHTML = `
+        ${searchHtml}
+        <div class="wo-tabs">${tabsHtml}</div>
+        <div class="wo-content">${contentHtml}</div>
+    `;
+},
 
     // <-- MODIFICATION: Added new handleWorkOrderTabClick function
     handleWorkOrderTabClick(event) {
@@ -628,17 +629,28 @@ const App = {
     
     // <-- MODIFICATION: Added new handleWorkOrderSearch function
     handleWorkOrderSearch(event) {
-        if (event.target.id !== 'workOrderSearchInput') return;
-        const searchTerm = event.target.value;
-        if (!searchTerm) {
-            this.displayWorkOrders(this.allWorkOrders);
-        } else {
-            const searchId = parseInt(searchTerm, 10);
-            if (isNaN(searchId)) return;
-            const filteredOrders = this.allWorkOrders.filter(wo => wo.id.toNumber() === searchId);
-            this.displayWorkOrders(filteredOrders, true);
-        }
-    },
+    if (event.target.id !== 'workOrderSearchInput') return;
+
+    // Get the search term and clean it for case-insensitive matching
+    const cleanedSearchTerm = event.target.value.trim().toLowerCase();
+
+    if (!cleanedSearchTerm) {
+        // If search is cleared, display all orders in the default tabbed view
+        this.displayWorkOrders(this.allWorkOrders);
+    } else {
+        // MODIFICATION: Updated filter logic to check both ID and description
+        const filteredOrders = this.allWorkOrders.filter(wo => {
+            const workOrderId = wo.id.toString();
+            const workOrderDesc = wo.description.toLowerCase();
+
+            // Return true if the ID is an exact match OR if the description includes the search term
+            return workOrderId === cleanedSearchTerm || workOrderDesc.includes(cleanedSearchTerm);
+        });
+
+        // Display the filtered results, marking it as a search result
+        this.displayWorkOrders(filteredOrders, true);
+    }
+},
 
     async renderTransactionHistory() {
         this.elements.txHistoryTable.innerHTML = '<p>Loading history...</p>';
