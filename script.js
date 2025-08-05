@@ -429,42 +429,71 @@ const App = {
         }
     },
 
-    displayWorkOrders(orders, isSearchResult = false) {
-        if (!this.elements.workOrderResults) return;
-        if (orders.length === 0) {
-            this.elements.workOrderResults.innerHTML = `<p>${isSearchResult ? 'No matching work order found.' : 'No work orders found.'}</p>`;
-            return;
-        }
-        if (isSearchResult) {
-            const tableHtml = `
-                <table>
-                    <thead><tr><th>ID</th><th>Gross Yield</th><th>Reserve</th><th>Issued</th><th>Active</th><th>Paid</th><th>Description</th><th>Created</th></tr></thead>
-                    <tbody>${orders.map(wo => `<tr><td>${wo.id}</td><td>${this.formatTokenValue(wo.grossYield, this.paymentTokenDecimals)}</td><td>${this.formatTokenValue(wo.reserveAmount, this.paymentTokenDecimals)}</td><td>${this.formatTokenValue(wo.tokensIssued, this.wytDecimals)}</td><td>${wo.isActive ? '✅' : '❌'}</td><td>${wo.isPaid ? '✅' : '❌'}</td><td>${wo.description}</td><td>${new Date(wo.createdAt * 1000).toLocaleDateString()}</td></tr>`).join('')}</tbody>
-                </table>`;
-            this.elements.workOrderResults.innerHTML = tableHtml;
-            return;
-        }
-        const groupedOrders = orders.reduce((acc, wo) => {
-            const date = new Date(wo.createdAt * 1000);
-            const key = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
-            if (!acc[key]) acc[key] = [];
-            acc[key].push(wo);
-            return acc;
-        }, {});
-        const sortedMonths = Object.keys(groupedOrders).sort().reverse();
-        const tabsHtml = sortedMonths.map((monthKey, index) => {
-            const [year, monthNum] = monthKey.split('-');
-            const monthName = new Date(year, monthNum - 1).toLocaleString('default', { month: 'long', year: 'numeric' });
-            return `<button class="wo-tab-btn ${index === 0 ? 'active' : ''}" data-month="${monthKey}">${monthName}</button>`;
-        }).join('');
-        const contentHtml = sortedMonths.map((monthKey, index) => {
-            const ordersForMonth = groupedOrders[monthKey];
-            const tableHeader = `<thead><tr><th>ID</th><th>Gross Yield</th><th>Reserve</th><th>Issued</th><th>Active</th><th>Paid</th><th>Description</th><th>Created</th></tr></thead>`;
-            const tableBody = `<tbody>${ordersForMonth.map(wo => `<tr><td>${wo.id}</td><td>${this.formatTokenValue(wo.grossYield, this.paymentTokenDecimals)}</td><td>${this.formatTokenValue(wo.reserveAmount, this.paymentTokenDecimals)}</td><td>${this.formatTokenValue(wo.tokensIssued, this.wytDecimals)}</td><td>${wo.isActive ? '✅' : '❌'}</td><td>${wo.isPaid ? '✅' : '❌'}</td><td>${wo.description}</td><td>${new Date(wo.createdAt * 1000).toLocaleDateString()}</td></tr>`).join('')}</tbody>`;
-            return `<div id="wo-content-${monthKey}" class="wo-content-panel ${index > 0 ? 'hidden' : ''}"><table>${tableHeader}${tableBody}</table></div>`;
-        }).join('');
-        this.elements.workOrderResults.innerHTML = `<div class="wo-tabs">${tabsHtml}</div><div class="wo-content">${contentHtml}</div>`;
-    },
+    // Replace the entire displayWorkOrders function in your script.js with this version.
+
+displayWorkOrders(orders, isSearchResult = false) {
+    if (!this.elements.workOrderResults) return;
+    if (orders.length === 0) {
+        this.elements.workOrderResults.innerHTML = `<p>${isSearchResult ? 'No matching work order found.' : 'No work orders found.'}</p>`;
+        return;
+    }
+
+    // Logic for search results table
+    if (isSearchResult) {
+        const tableHtml = `
+            <table>
+                <thead><tr><th>ID</th><th>Gross Yield</th><th>Reserve</th><th>Issued</th><th>Active</th><th>Paid</th><th>Description</th><th>Created</th></tr></thead>
+                <tbody>
+                    ${orders.map(wo => `
+                    <tr>
+                        <td>${wo.id}</td>
+                        <td>${this.formatTokenValue(wo.grossYield, this.paymentTokenDecimals)}</td>
+                        <td>${this.formatTokenValue(wo.reserveAmount, this.paymentTokenDecimals)}</td>
+                        <td>${this.formatTokenValue(wo.tokensIssued, this.wytDecimals)}</td>
+                        <td>${wo.isActive ? 'Yes' : 'No'}</td> <td>${wo.isPaid ? 'Yes' : 'No'}</td>   <td>${wo.description}</td>
+                        <td>${new Date(wo.createdAt * 1000).toLocaleDateString()}</td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>`;
+        this.elements.workOrderResults.innerHTML = tableHtml;
+        return;
+    }
+
+    // Logic for the default tabbed view
+    const groupedOrders = orders.reduce((acc, wo) => {
+        const date = new Date(wo.createdAt * 1000);
+        const key = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(wo);
+        return acc;
+    }, {});
+
+    const sortedMonths = Object.keys(groupedOrders).sort().reverse();
+    const tabsHtml = sortedMonths.map((monthKey, index) => {
+        const [year, monthNum] = monthKey.split('-');
+        const monthName = new Date(year, monthNum - 1).toLocaleString('default', { month: 'long', year: 'numeric' });
+        return `<button class="wo-tab-btn ${index === 0 ? 'active' : ''}" data-month="${monthKey}">${monthName}</button>`;
+    }).join('');
+
+    const contentHtml = sortedMonths.map((monthKey, index) => {
+        const ordersForMonth = groupedOrders[monthKey];
+        const tableHeader = `<thead><tr><th>ID</th><th>Gross Yield</th><th>Reserve</th><th>Issued</th><th>Active</th><th>Paid</th><th>Description</th><th>Created</th></tr></thead>`;
+        const tableBody = `<tbody>
+            ${ordersForMonth.map(wo => `
+            <tr>
+                <td>${wo.id}</td>
+                <td>${this.formatTokenValue(wo.grossYield, this.paymentTokenDecimals)}</td>
+                <td>${this.formatTokenValue(wo.reserveAmount, this.paymentTokenDecimals)}</td>
+                <td>${this.formatTokenValue(wo.tokensIssued, this.wytDecimals)}</td>
+                <td>${wo.isActive ? 'Yes' : 'No'}</td> <td>${wo.isPaid ? 'Yes' : 'No'}</td>   <td>${wo.description}</td>
+                <td>${new Date(wo.createdAt * 1000).toLocaleDateString()}</td>
+            </tr>`).join('')}
+        </tbody>`;
+        return `<div id="wo-content-${monthKey}" class="wo-content-panel ${index > 0 ? 'hidden' : ''}"><table>${tableHeader}${tableBody}</table></div>`;
+    }).join('');
+
+    this.elements.workOrderResults.innerHTML = `<div class="wo-tabs">${tabsHtml}</div><div class="wo-content">${contentHtml}</div>`;
+},
     
     handleWorkOrderTabClick(event) {
         const tabButton = event.target.closest('.wo-tab-btn');
