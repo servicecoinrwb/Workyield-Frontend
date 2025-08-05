@@ -21,35 +21,14 @@
     </header>
 
     <!-- ANALYTICS CARDS + CHART -->
-    <section id="analytics" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-      <div class="bg-secondary p-4 rounded-lg shadow flex justify-between items-center">
-        <div>
-          <p class="text-sm text-secondary">Total Value Locked</p>
-          <p id="tvl" class="text-2xl font-bold mt-1">$0.00</p>
-        </div>
-        <button onclick="refreshTVL()">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-secondary hover:text-accent" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4v5h.582A7 7 0 0 1 17 10a7 7 0 0 1-6.418 6.979.75.75 0 1 0 .168 1.486A8.5 8.5 0 1 0 5.5 6.5V4H4Z"/></svg>
-        </button>
-      </div>
-      <div class="bg-secondary p-4 rounded-lg shadow flex justify-between items-center">
-        <div>
-          <p class="text-sm text-secondary">Total Yield Paid</p>
-          <p id="yieldPaid" class="text-2xl font-bold mt-1">$0.00</p>
-        </div>
-        <button onclick="refreshYieldPaid()">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-secondary hover:text-accent" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4v5h.582A7 7 0 0 1 17 10a7 7 0 0 1-6.418 6.979.75.75 0 1 0 .168 1.486A8.5 8.5 0 1 0 5.5 6.5V4H4Z"/></svg>
-        </button>
-      </div>
-      <div class="bg-secondary p-4 rounded-lg shadow flex justify-between items-center">
-        <div>
-          <p class="text-sm text-secondary">Recent Payout</p>
-          <p id="recentPayout" class="text-2xl font-bold mt-1">$0.00</p>
-        </div>
-        <button onclick="refreshRecentPayout()">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-secondary hover:text-accent" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4v5h.582A7 7 0 0 1 17 10a7 7 0 0 1-6.418 6.979.75.75 0 1 0 .168 1.486A8.5 8.5 0 1 0 5.5 6.5V4H4Z"/></svg>
-        </button>
-      </div>
-    </section>
+<!-- Chart container -->
+<div style="max-width: 800px; margin: 2rem auto;">
+  <canvas id="mintRedeemChart" height="300"></canvas>
+</div>
+
+<!-- Add Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 
     <!-- MINT / REDEEM CHART -->
   <section class="mb-10">
