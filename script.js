@@ -533,56 +533,76 @@ const App = {
     },
 
     exportPDF() {
-        setTimeout(() => {
-            try {
-                if (typeof window.jspdf === 'undefined') {
-                    return this.showNotification('PDF library (jspdf) is not available.', 'error');
-                }
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF({
-                    orientation: 'landscape',
-                });
-                if (typeof doc.autoTable !== 'function') {
-                    return this.showNotification('PDF table plugin (autotable) is not available. Please refresh and try again.', 'error');
-                }
-                const tableElement = this.elements.workOrderResults.querySelector('table');
-                if (!tableElement) {
-                    return this.showNotification('No work order data to export.', 'info');
-                }
-                const tableClone = tableElement.cloneNode(true);
-                tableClone.querySelectorAll('td').forEach(cell => {
-                    const cellText = cell.innerText.trim();
-                    if (cellText === '✅') {
-                        cell.innerText = 'Yes';
-                    } else if (cellText === '❌') {
-                        cell.innerText = 'No';
-                    }
-                });
-                const activeTab = this.elements.workOrderResults.querySelector('.wo-tab-btn.active');
-                let reportTitle = "Work Yield - Work Order Report";
-                if (activeTab) {
-                    reportTitle = `Work Order Report - ${activeTab.textContent.trim()}`;
-                }
-                doc.text(reportTitle, 14, 15);
-                doc.setFontSize(10);
-                doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 20);
-                doc.autoTable({
-                    html: tableClone,
-                    startY: 25,
-                    theme: 'grid',
-                    headStyles: {
-                        fillColor: [22, 160, 133]
-                    },
-                });
-                doc.save('work-yield-report.pdf');
-                this.showNotification('PDF report generated!', 'success');
-            } catch (err) {
-                console.error("PDF Export Error:", err);
-                this.showNotification('An error occurred while exporting the PDF.', 'error');
+    // This delay gives the external scripts a moment to ensure they are available on the window object.
+    setTimeout(() => {
+        try {
+            // Check 1: Is the main jsPDF library loaded?
+            if (typeof window.jspdf === 'undefined') {
+                return this.showNotification('Error: Main PDF library (jspdf) not found.', 'error');
             }
-        }, 100); 
-    },
 
+            // Check 2: Is the autotable plugin loaded?
+            if (typeof window.jspdfAutoTable === 'undefined') {
+                return this.showNotification('Error: PDF table plugin (jspdf-autotable) not found.', 'error');
+            }
+
+            // Get the jsPDF constructor from the loaded library.
+            const jsPDF = window.jspdf.jsPDF;
+            
+            // --- THE CRITICAL FIX ---
+            // Manually apply the autotable plugin to the jsPDF constructor.
+            // This forces them to connect and removes any loading ambiguity.
+            window.jspdfAutoTable(jsPDF);
+            
+            // Now we can safely create a new document.
+            const doc = new jsPDF({
+                orientation: 'landscape',
+            });
+            
+            const tableElement = this.elements.workOrderResults.querySelector('table');
+            if (!tableElement) {
+                return this.showNotification('No work order data to export.', 'info');
+            }
+
+            const tableClone = tableElement.cloneNode(true);
+            tableClone.querySelectorAll('td').forEach(cell => {
+                const cellText = cell.innerText.trim();
+                if (cellText === '✅') {
+                    cell.innerText = 'Yes';
+                } else if (cellText === '❌') {
+                    cell.innerText = 'No';
+                }
+            });
+
+            const activeTab = this.elements.workOrderResults.querySelector('.wo-tab-btn.active');
+            let reportTitle = "Work Yield - Work Order Report";
+            if (activeTab) {
+                reportTitle = `Work Order Report - ${active.textContent.trim()}`;
+            }
+
+            doc.text(reportTitle, 14, 15);
+            doc.setFontSize(10);
+            doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 20);
+
+            // This call will now work correctly because we manually connected the plugin.
+            doc.autoTable({
+                html: tableClone,
+                startY: 25,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [22, 160, 133]
+                },
+            });
+
+            doc.save('work-yield-report.pdf');
+            this.showNotification('PDF report generated!', 'success');
+
+        } catch (err) {
+            console.error("PDF Export Error:", err);
+            this.showNotification('An error occurred while exporting the PDF.', 'error');
+        }
+    }, 100);
+},
     async handleTransaction(button, transactionCallback) {
         if (!this.userAddress) return this.showNotification('Please connect your wallet first.', 'error');
         this.setButtonLoading(button, true);
