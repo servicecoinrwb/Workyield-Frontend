@@ -87,28 +87,35 @@ const App = {
     const button = this.elements.exportPdfButton;
     this.setButtonLoading(button, true);
 
-    try {
-        // Create print-specific styles
+    // Add print styles if they don't exist
+    if (!document.getElementById('printStyles')) {
         const printStyles = document.createElement('style');
+        printStyles.id = 'printStyles';
         printStyles.innerHTML = `
             @media print {
                 body * { visibility: hidden; }
                 #workOrders, #workOrders * { visibility: visible; }
                 #workOrders { position: absolute; left: 0; top: 0; width: 100%; }
                 table { border-collapse: collapse; width: 100%; }
-                th, td { border: 1px solid #000; padding: 8px; text-align: left; }
-                th { background-color: #f0f0f0; }
-                .wo-tab-btn { display: none; }
+                th, td { border: 1px solid #000; padding: 8px; text-align: left; font-size: 12px; }
+                th { background-color: #f0f0f0; font-weight: bold; }
+                .wo-tab-btn, .no-print { display: none !important; }
             }
         `;
         document.head.appendChild(printStyles);
+    }
 
-        setTimeout(() => {
+    setTimeout(() => {
+        try {
             window.print();
-            document.head.removeChild(printStyles);
-            this.setButtonLoading(button, false);
             this.showNotification('Print dialog opened! Choose "Save as PDF"', 'info');
-        }, 500);
+        } catch (error) {
+            this.showNotification('Failed to open print dialog', 'error');
+        } finally {
+            this.setButtonLoading(button, false);
+        }
+    }, 300);
+}
 
     } catch (error) {
         this.showNotification('Failed to open print dialog', 'error');
