@@ -411,8 +411,6 @@ const App = {
         });
     },
 
-    // --- WORK ORDER RENDERING & UTILITIES ---
-
     renderSearchBar() {
         if (!this.elements.workOrderSearchContainer) return;
         this.elements.workOrderSearchContainer.innerHTML = `
