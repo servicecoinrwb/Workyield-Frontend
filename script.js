@@ -533,38 +533,35 @@ const App = {
     },
 
     exportPDF() {
-    // This delay gives the external scripts a moment to ensure they are available on the window object.
+    // This delay is a good safeguard against slow network loading of the CDN scripts.
     setTimeout(() => {
         try {
-            // Check 1: Is the main jsPDF library loaded?
+            // Check 1: Is the main jsPDF library object available?
             if (typeof window.jspdf === 'undefined') {
-                return this.showNotification('Error: Main PDF library (jspdf) not found.', 'error');
+                return this.showNotification('Error: Main PDF library (jspdf) could not be loaded.', 'error');
             }
-
-            // Check 2: Is the autotable plugin loaded?
-            if (typeof window.jspdfAutoTable === 'undefined') {
-                return this.showNotification('Error: PDF table plugin (jspdf-autotable) not found.', 'error');
-            }
-
-            // Get the jsPDF constructor from the loaded library.
-            const jsPDF = window.jspdf.jsPDF;
             
-            // --- THE CRITICAL FIX ---
-            // Manually apply the autotable plugin to the jsPDF constructor.
-            // This forces them to connect and removes any loading ambiguity.
-            window.jspdfAutoTable(jsPDF);
-            
-            // Now we can safely create a new document.
+            // Get the constructor from the window object
+            const { jsPDF } = window.jspdf;
             const doc = new jsPDF({
                 orientation: 'landscape',
             });
-            
-            const tableElement = this.elements.workOrderResults.querySelector('table');
-            if (!tableElement) {
-                return this.showNotification('No work order data to export.', 'info');
+
+            // Check 2: This is the definitive check.
+            // Has the autoTable plugin successfully attached itself to new documents?
+            if (typeof doc.autoTable !== 'function') {
+                return this.showNotification('Error: PDF table plugin (autotable) failed to attach. Please check ad-blockers or network and refresh.', 'error');
             }
 
+            const tableElement = this.elements.workOrderResults.querySelector('table');
+            if (!tableElement) {
+                return this.showNotification('No work order data available to export.', 'info');
+            }
+
+            // Create a temporary copy of the table to avoid changing the live webpage
             const tableClone = tableElement.cloneNode(true);
+
+            // Replace emojis with PDF-safe text in the cloned table
             tableClone.querySelectorAll('td').forEach(cell => {
                 const cellText = cell.innerText.trim();
                 if (cellText === '✅') {
@@ -577,14 +574,14 @@ const App = {
             const activeTab = this.elements.workOrderResults.querySelector('.wo-tab-btn.active');
             let reportTitle = "Work Yield - Work Order Report";
             if (activeTab) {
-                reportTitle = `Work Order Report - ${active.textContent.trim()}`;
+                reportTitle = `Work Order Report - ${activeTab.textContent.trim()}`;
             }
 
             doc.text(reportTitle, 14, 15);
             doc.setFontSize(10);
             doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 20);
 
-            // This call will now work correctly because we manually connected the plugin.
+            // This call will now work.
             doc.autoTable({
                 html: tableClone,
                 startY: 25,
@@ -599,9 +596,9 @@ const App = {
 
         } catch (err) {
             console.error("PDF Export Error:", err);
-            this.showNotification('An error occurred while exporting the PDF.', 'error');
+            this.showNotification('An unexpected error occurred while exporting the PDF.', 'error');
         }
-    }, 100);
+    }, 100); 
 },
     async handleTransaction(button, transactionCallback) {
         if (!this.userAddress) return this.showNotification('Please connect your wallet first.', 'error');
