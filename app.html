@@ -1,26 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Work Yield Token Dashboard</title>
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf-autotable.umd.min.js"></script>
-
-    <link rel="stylesheet" href="style.css">
-    <script src="script.js?v=FINAL" defer></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Work Yield Token Dashboard</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf-autotable.umd.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+  <script src="script.js?v=FINAL" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="min-h-screen">
-    <main class="container mx-auto max-w-7xl p-4 md:p-8">
-        <header class="flex justify-between items-center mb-10">
-            <h1 class="text-3xl font-bold">Work Yield</h1>
-            <button id="connectButton" class="btn btn-primary">Connect Wallet</button>
-        </header>
+  <main class="container mx-auto max-w-7xl px-2 sm:px-4 md:px-8">
+    <header class="flex justify-between items-center mb-10">
+      <h1 class="text-3xl font-bold">Work Yield</h1>
+      <button id="connectButton" class="btn btn-primary">Connect Wallet</button>
+    </header>
+
+    <!-- ANALYTICS CARDS + CHART -->
+    <section id="analytics" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+      <div class="bg-secondary p-4 rounded-lg shadow flex justify-between items-center">
+        <div>
+          <p class="text-sm text-secondary">Total Value Locked</p>
+          <p id="tvl" class="text-2xl font-bold mt-1">$0.00</p>
+        </div>
+        <button onclick="refreshTVL()">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-secondary hover:text-accent" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4v5h.582A7 7 0 0 1 17 10a7 7 0 0 1-6.418 6.979.75.75 0 1 0 .168 1.486A8.5 8.5 0 1 0 5.5 6.5V4H4Z"/></svg>
+        </button>
+      </div>
+      <div class="bg-secondary p-4 rounded-lg shadow flex justify-between items-center">
+        <div>
+          <p class="text-sm text-secondary">Total Yield Paid</p>
+          <p id="yieldPaid" class="text-2xl font-bold mt-1">$0.00</p>
+        </div>
+        <button onclick="refreshYieldPaid()">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-secondary hover:text-accent" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4v5h.582A7 7 0 0 1 17 10a7 7 0 0 1-6.418 6.979.75.75 0 1 0 .168 1.486A8.5 8.5 0 1 0 5.5 6.5V4H4Z"/></svg>
+        </button>
+      </div>
+      <div class="bg-secondary p-4 rounded-lg shadow flex justify-between items-center">
+        <div>
+          <p class="text-sm text-secondary">Recent Payout</p>
+          <p id="recentPayout" class="text-2xl font-bold mt-1">$0.00</p>
+        </div>
+        <button onclick="refreshRecentPayout()">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-secondary hover:text-accent" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4v5h.582A7 7 0 0 1 17 10a7 7 0 0 1-6.418 6.979.75.75 0 1 0 .168 1.486A8.5 8.5 0 1 0 5.5 6.5V4H4Z"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- MINT / REDEEM CHART -->
+    <section class="mb-10">
+      <h2 class="text-secondary text-sm uppercase font-semibold border-b border-gray-700 pb-2 mb-4">WYT Mint/Redeem Activity</h2>
+      <canvas id="mintRedeemChart" class="bg-secondary p-4 rounded-lg w-full"></canvas>
+    </section>
 
         <section id="tokenInfo" class="mb-8">
             <h2>Token Overview</h2>
