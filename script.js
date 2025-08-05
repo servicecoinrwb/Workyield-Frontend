@@ -1,47 +1,14 @@
-function debugPdfLibraries() {
-    console.log("--- PDF Library Debug Report ---");
-
-    // 1. Check if the main library object (window.jspdf) exists
-    if (typeof window.jspdf === 'undefined') {
-        console.error("RESULT: FAILED. `window.jspdf` is undefined. The main library script (jspdf.umd.min.js) is not loading or executing.");
-        console.log("--- End Debug Report ---");
-        return;
-    }
-    console.log("CHECK 1: OK. `window.jspdf` object exists.", window.jspdf);
-
-    // 2. Check for the constructor function inside the main object
-    if (typeof window.jspdf.jsPDF !== 'function') {
-        console.error("RESULT: FAILED. `window.jspdf.jsPDF` is not a function. The main library object is malformed or an unexpected version.");
-        console.log("--- End Debug Report ---");
-        return;
-    }
-    console.log("CHECK 2: OK. `jsPDF` constructor function exists.");
-
-    // 3. Check the prototype of the constructor for the autotable method
-    if (typeof window.jspdf.jsPDF.prototype.autoTable === 'function') {
-        console.log("RESULT: SUCCESS! `autoTable` method is correctly attached to the prototype!");
-    } else {
-        console.error("RESULT: FAILED. `autoTable` method is MISSING from the prototype. This confirms the plugin (jspdf-autotable.umd.min.js) is either not loading, being blocked, or failing to execute correctly.");
-    }
-    
-    console.log("--- End Debug Report ---");
-}
 // --- CONFIGURATION ---
 const contractAddress = '0xccF4eaa301058Ec5561a07Cc38A75F47a2912EA5';
 
 const PLUME_MAINNET = {
-    chainId: '0x18232', // Correct hex for 98866 (actual Plume mainnet)
+    chainId: '0x18232',
     chainName: 'Plume',
-    nativeCurrency: {
-        name: 'PLUME',
-        symbol: 'PLUME',
-        decimals: 18
-    },
-    rpcUrls: ['https://rpc.plume.org'], // Official Plume mainnet RPC
+    nativeCurrency: { name: 'PLUME', symbol: 'PLUME', decimals: 18 },
+    rpcUrls: ['https://rpc.plume.org'],
     blockExplorerUrls: ['https://explorer.plume.org'],
 };
 
-// Standard ERC20 ABI for interacting with the payment token
 const tokenABI = [
     "function approve(address spender, uint256 amount) returns (bool)",
     "function allowance(address owner, address spender) view returns (uint256)",
@@ -50,7 +17,6 @@ const tokenABI = [
     "function decimals() view returns (uint8)"
 ];
 
-// Main contract ABI
 const contractABI = [{"inputs":[{"internalType":"address","name":"initialOwner","type":"address"},{"internalType":"address","name":"paymentTokenAddress","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"OrderFunded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newFeePercentage","type":"uint256"}],"name":"RedemptionFeeSet","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"ReserveFunded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"holder","type":"address"},{"indexed":false,"internalType":"uint256","name":"wytAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"pUSDAmount","type":"uint256"}],"name":"TokensRedeemed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"yieldAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"tokensIssued","type":"uint256"}],"name":"WorkOrderMinted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"workOrderId","type":"uint256"},{"indexed":true,"internalType":"address","name":"payer","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"WorkOrderPaid","type":"event"},{"inputs":[],"name":"RESERVE_PERCENTAGE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"availableTokens","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"pUSDAmount","type":"uint256"}],"name":"buyTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"workOrderId","type":"uint256"}],"name":"cancelWorkOrder","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"collectedFees","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"contractPaymentTokenBalance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"string","name":"description","type":"string"}],"name":"mintFromWorkOrder","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"nextWorkOrderId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"paymentToken","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"workOrderId","type":"uint256"},{"internalType":"uint256","name":"payoutAmount","type":"uint256"}],"name":"payoutWorkOrder","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"wytAmount","type":"uint256"}],"name":"redeemTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"redemptionFeePercentage","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"newFeePercentage","type":"uint256"}],"name":"setRedemptionFee","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalReserveFund","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"withdrawFees","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"workOrders","outputs":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"grossYield","type":"uint256"},{"internalType":"uint256","name":"reserveAmount","type":"uint256"},{"internalType":"uint256","name":"tokensIssued","type":"uint256"},{"internalType":"bool","name":"isActive","type":"bool"},{"internalType":"bool","name":"isPaid","type":"bool"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint256","name":"createdAt","type":"uint256"}],"stateMutability":"view","type":"function"}];
 
 const App = {
@@ -132,10 +98,7 @@ const App = {
         this.elements.workOrderSearchContainer?.addEventListener('input', (e) => this.handleWorkOrderSearch(e));
         this.elements.workOrderResults?.addEventListener('click', (e) => this.handleWorkOrderTabClick(e));
         if (window.ethereum) {
-            window.ethereum.on('accountsChanged', (accounts) => {
-                if (accounts.length > 0) this.connectWallet();
-                else this.disconnectWallet();
-            });
+            window.ethereum.on('accountsChanged', () => this.connectWallet());
             window.ethereum.on('chainChanged', () => window.location.reload());
         }
     },
@@ -178,12 +141,9 @@ const App = {
                         method: 'wallet_addEthereumChain',
                         params: [PLUME_MAINNET],
                     });
-                } else {
-                    throw switchError;
-                }
+                } else { throw switchError; }
             }
         } catch (error) {
-            console.error('Network switch failed:', error);
             this.showNotification('Failed to switch to Plume Network. Please do it manually.', 'error');
             throw error;
         }
@@ -207,7 +167,6 @@ const App = {
             await this.loadContractData();
             this.switchTab('buy');
         } catch (err) {
-            console.error('Connection Error:', err);
             this.showNotification(err.message || 'Connection failed.', 'error');
             this.disconnectWallet();
         }
@@ -255,7 +214,6 @@ const App = {
             this.updateReceiveAmount();
             this.showNotification('Contract data loaded.', 'success');
         } catch (error) {
-            console.error("Error loading contract data:", error);
             this.showNotification('Failed to load contract data.', 'error');
         }
     },
@@ -273,7 +231,7 @@ const App = {
                 if (!amount || parseFloat(amount) <= 0) throw new Error("Please enter a valid amount.");
                 const parsedAmount = ethers.utils.parseUnits(amount, this.paymentTokenDecimals);
                 const paymentToken = await this.getPaymentTokenContract();
-                this.showNotification('Approving spend... please wait.', 'info');
+                this.showNotification('Approving spend...', 'info');
                 const approveTx = await paymentToken.approve(contractAddress, parsedAmount);
                 await approveTx.wait();
                 this.showNotification('Approval successful! Now buying...', 'info');
@@ -436,10 +394,7 @@ const App = {
 
     renderSearchBar() {
         if (!this.elements.workOrderSearchContainer) return;
-        this.elements.workOrderSearchContainer.innerHTML = `
-            <div class="wo-search-container">
-                <input type="text" id="workOrderSearchInput" placeholder="Search by ID or Description...">
-            </div>`;
+        this.elements.workOrderSearchContainer.innerHTML = `<div class="wo-search-container"><input type="text" id="workOrderSearchInput" placeholder="Search by ID or Description..."></div>`;
     },
 
     async renderWorkOrders() {
@@ -452,7 +407,6 @@ const App = {
             this.allWorkOrders = (await Promise.all(promises)).filter(wo => wo.id > 0);
             this.displayWorkOrders(this.allWorkOrders);
         } catch (err) {
-            console.error("Could not render work orders", err);
             this.elements.workOrderResults.innerHTML = '<p class="text-red-500">Error loading work orders.</p>';
         }
     },
@@ -464,11 +418,7 @@ const App = {
             return;
         }
         if (isSearchResult) {
-            const tableHtml = `
-                <table>
-                    <thead><tr><th>ID</th><th>Gross Yield</th><th>Reserve</th><th>Issued</th><th>Active</th><th>Paid</th><th>Description</th><th>Created</th></tr></thead>
-                    <tbody>${orders.map(wo => `<tr><td>${wo.id}</td><td>${this.formatTokenValue(wo.grossYield, this.paymentTokenDecimals)}</td><td>${this.formatTokenValue(wo.reserveAmount, this.paymentTokenDecimals)}</td><td>${this.formatTokenValue(wo.tokensIssued, this.wytDecimals)}</td><td>${wo.isActive ? '✅' : '❌'}</td><td>${wo.isPaid ? '✅' : '❌'}</td><td>${wo.description}</td><td>${new Date(wo.createdAt * 1000).toLocaleDateString()}</td></tr>`).join('')}</tbody>
-                </table>`;
+            const tableHtml = `<table><thead><tr><th>ID</th><th>Gross Yield</th><th>Reserve</th><th>Issued</th><th>Active</th><th>Paid</th><th>Description</th><th>Created</th></tr></thead><tbody>${orders.map(wo => `<tr><td>${wo.id}</td><td>${this.formatTokenValue(wo.grossYield, this.paymentTokenDecimals)}</td><td>${this.formatTokenValue(wo.reserveAmount, this.paymentTokenDecimals)}</td><td>${this.formatTokenValue(wo.tokensIssued, this.wytDecimals)}</td><td>${wo.isActive ? '✅' : '❌'}</td><td>${wo.isPaid ? '✅' : '❌'}</td><td>${wo.description}</td><td>${new Date(wo.createdAt * 1000).toLocaleDateString()}</td></tr>`).join('')}</tbody></table>`;
             this.elements.workOrderResults.innerHTML = tableHtml;
             return;
         }
@@ -540,95 +490,61 @@ const App = {
                 this.elements.txHistoryTable.innerHTML = '<p>No transaction history found.</p>';
                 return;
             }
-            const tableHtml = `
-                <table>
-                    <thead><tr><th>Type</th><th>WYT Amount</th><th>pUSD Amount</th><th>Transaction</th></tr></thead>
-                    <tbody>
-                        ${allEvents.slice(0, 10).map(event => `
-                        <tr>
-                            <td><span class="font-semibold ${event.type === 'Buy' ? 'text-green-400' : event.type === 'Redeem' ? 'text-red-400' : 'text-gray-400'}">${event.type}</span></td>
-                            <td>${this.formatTokenValue(event.wytAmount, this.wytDecimals)}</td>
-                            <td>${event.pUSDAmount ? this.formatTokenValue(event.pUSDAmount, this.paymentTokenDecimals) : 'N/A'}</td>
-                            <td><a href="${PLUME_MAINNET.blockExplorerUrls[0]}/tx/${event.txHash}" target="_blank" rel="noopener noreferrer" class="footer-link">View on Explorer</a></td>
-                        </tr>`).join('')}
-                    </tbody>
-                </table>`;
+            const tableHtml = `<table><thead><tr><th>Type</th><th>WYT Amount</th><th>pUSD Amount</th><th>Transaction</th></tr></thead><tbody>${allEvents.slice(0, 10).map(event => `<tr><td><span class="font-semibold ${event.type === 'Buy' ? 'text-green-400' : event.type === 'Redeem' ? 'text-red-400' : 'text-gray-400'}">${event.type}</span></td><td>${this.formatTokenValue(event.wytAmount, this.wytDecimals)}</td><td>${event.pUSDAmount ? this.formatTokenValue(event.pUSDAmount, this.paymentTokenDecimals) : 'N/A'}</td><td><a href="${PLUME_MAINNET.blockExplorerUrls[0]}/tx/${event.txHash}" target="_blank" rel="noopener noreferrer" class="footer-link">View on Explorer</a></td></tr>`).join('')}</tbody></table>`;
             this.elements.txHistoryTable.innerHTML = tableHtml;
         } catch (err) {
-            console.error("Could not render transaction history", err);
             this.elements.txHistoryTable.innerHTML = '<p class="text-red-500">Error loading history.</p>';
         }
     },
 
     exportPDF() {
-    setTimeout(() => {
-        try {
-            debugPdfLibraries(); // <-- THIS LINE MUST BE HERE
-
-            if (typeof window.jspdf === 'undefined') {
-                return this.showNotification('Error: Main PDF library (jspdf) could not be loaded.', 'error');
-            }
-            // ... the rest of the function ...
-            
-            // Get the constructor from the window object
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({
-                orientation: 'landscape',
-            });
-
-            // Check 2: This is the definitive check.
-            // Has the autoTable plugin successfully attached itself to new documents?
-            if (typeof doc.autoTable !== 'function') {
-                return this.showNotification('Error: PDF table plugin (autotable) failed to attach. Please check ad-blockers or network and refresh.', 'error');
-            }
-
-            const tableElement = this.elements.workOrderResults.querySelector('table');
-            if (!tableElement) {
-                return this.showNotification('No work order data available to export.', 'info');
-            }
-
-            // Create a temporary copy of the table to avoid changing the live webpage
-            const tableClone = tableElement.cloneNode(true);
-
-            // Replace emojis with PDF-safe text in the cloned table
-            tableClone.querySelectorAll('td').forEach(cell => {
-                const cellText = cell.innerText.trim();
-                if (cellText === '✅') {
-                    cell.innerText = 'Yes';
-                } else if (cellText === '❌') {
-                    cell.innerText = 'No';
+        setTimeout(() => {
+            try {
+                if (typeof window.jspdf === 'undefined') {
+                    return this.showNotification('Error: Main PDF library (jspdf) could not be loaded.', 'error');
                 }
-            });
-
-            const activeTab = this.elements.workOrderResults.querySelector('.wo-tab-btn.active');
-            let reportTitle = "Work Yield - Work Order Report";
-            if (activeTab) {
-                reportTitle = `Work Order Report - ${activeTab.textContent.trim()}`;
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ orientation: 'landscape' });
+                if (typeof doc.autoTable !== 'function') {
+                    return this.showNotification('Error: PDF table plugin (autotable) failed to attach. Please check ad-blockers or network and refresh.', 'error');
+                }
+                const tableElement = this.elements.workOrderResults.querySelector('table');
+                if (!tableElement) {
+                    return this.showNotification('No work order data available to export.', 'info');
+                }
+                const tableClone = tableElement.cloneNode(true);
+                tableClone.querySelectorAll('td').forEach(cell => {
+                    const cellText = cell.innerText.trim();
+                    if (cellText === '✅') {
+                        cell.innerText = 'Yes';
+                    } else if (cellText === '❌') {
+                        cell.innerText = 'No';
+                    }
+                });
+                const activeTab = this.elements.workOrderResults.querySelector('.wo-tab-btn.active');
+                let reportTitle = "Work Yield - Work Order Report";
+                if (activeTab) {
+                    reportTitle = `Work Order Report - ${activeTab.textContent.trim()}`;
+                }
+                doc.text(reportTitle, 14, 15);
+                doc.setFontSize(10);
+                doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 20);
+                doc.autoTable({
+                    html: tableClone,
+                    startY: 25,
+                    theme: 'grid',
+                    headStyles: {
+                        fillColor: [22, 160, 133]
+                    },
+                });
+                doc.save('work-yield-report.pdf');
+                this.showNotification('PDF report generated!', 'success');
+            } catch (err) {
+                this.showNotification('An unexpected error occurred while exporting the PDF.', 'error');
             }
+        }, 100); 
+    },
 
-            doc.text(reportTitle, 14, 15);
-            doc.setFontSize(10);
-            doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 20);
-
-            // This call will now work.
-            doc.autoTable({
-                html: tableClone,
-                startY: 25,
-                theme: 'grid',
-                headStyles: {
-                    fillColor: [22, 160, 133]
-                },
-            });
-
-            doc.save('work-yield-report.pdf');
-            this.showNotification('PDF report generated!', 'success');
-
-        } catch (err) {
-            console.error("PDF Export Error:", err);
-            this.showNotification('An unexpected error occurred while exporting the PDF.', 'error');
-        }
-    }, 100); 
-},
     async handleTransaction(button, transactionCallback) {
         if (!this.userAddress) return this.showNotification('Please connect your wallet first.', 'error');
         this.setButtonLoading(button, true);
@@ -637,7 +553,6 @@ const App = {
             this.showNotification(result, 'success');
             await this.loadContractData();
         } catch (error) {
-            console.error('Transaction error:', error);
             let errorMessage = 'Transaction failed.';
             if (error.code === 4001) {
                 errorMessage = 'Transaction rejected by user.';
@@ -674,7 +589,6 @@ const App = {
                 notification.parentNode.removeChild(notification);
             }
         }, 5000);
-        console.log(`[${type.toUpperCase()}] ${message}`);
     },
 
     formatTokenValue(value, decimals) {
@@ -686,7 +600,6 @@ const App = {
                 maximumFractionDigits: 4
             });
         } catch (error) {
-            console.error('Error formatting token value:', error);
             return '0.00';
         }
     }
