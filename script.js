@@ -683,54 +683,87 @@ const App = {
     }
 };
 
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const ctx = document.getElementById("craphLineChart").getContext("2d");
+async function loadChartData() {
+  const provider = new ethers.providers.JsonRpcProvider("https://rpc.ankr.com/arbitrum");
+  const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
 
-    new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-        datasets: [
-          {
-            label: "Minted",
-            data: [40, 80, 60, 120, 100, 90, 70],
-            borderColor: "#22c55e",
-            backgroundColor: "rgba(34, 197, 94, 0.2)",
-            fill: true,
-            tension: 0.3,
-          },
-          {
-            label: "Redeemed",
-            data: [30, 50, 40, 60, 80, 70, 60],
-            borderColor: "#f97316",
-            backgroundColor: "rgba(249, 115, 22, 0.2)",
-            fill: true,
-            tension: 0.3,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            labels: { color: "#ffffff" },
-          },
+  const minted = await contract.queryFilter("WorkOrderMinted");
+  const redeemed = await contract.queryFilter("TokensRedeemed");
+
+  const mintData = {};
+  const redeemData = {};
+
+  for (const e of minted) {
+    const ts = (await e.getBlock()).timestamp;
+    const date = new Date(ts * 1000).toLocaleDateString();
+    const amount = Number(ethers.utils.formatUnits(e.args.tokensIssued, 18));
+    mintData[date] = (mintData[date] || 0) + amount;
+  }
+
+  for (const e of redeemed) {
+    const ts = (await e.getBlock()).timestamp;
+    const date = new Date(ts * 1000).toLocaleDateString();
+    const amount = Number(ethers.utils.formatUnits(e.args.wytAmount, 18));
+    redeemData[date] = (redeemData[date] || 0) + amount;
+  }
+
+  const allDates = Array.from(new Set([...Object.keys(mintData), ...Object.keys(redeemData)])).sort((a, b) => new Date(a) - new Date(b));
+  const mintSeries = allDates.map(d => mintData[d] || 0);
+  const redeemSeries = allDates.map(d => redeemData[d] || 0);
+
+  renderChart(allDates, mintSeries, redeemSeries);
+}
+
+function renderChart(labels, minted, redeemed) {
+  const ctx = document.getElementById("mintRedeemChart").getContext("2d");
+
+  new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Minted",
+          data: minted,
+          borderColor: "#10b981",
+          backgroundColor: "#10b98133",
+          tension: 0.4,
+          fill: true
         },
-        scales: {
-          x: {
-            ticks: { color: "#9ca3af" },
-            grid: { color: "#374151" },
-          },
-          y: {
-            ticks: { color: "#9ca3af" },
-            grid: { color: "#374151" },
-          },
-        },
+        {
+          label: "Redeemed",
+          data: redeemed,
+          borderColor: "#f59e0b",
+          backgroundColor: "#f59e0b33",
+          tension: 0.4,
+          fill: true
+        }
+      ]
+    },
+    options: {
+      plugins: {
+        legend: {
+          labels: { color: "#f3f4f6" }
+        }
       },
-    });
+      scales: {
+        x: {
+          ticks: { color: "#9ca3af" },
+          grid: { color: "#374151" }
+        },
+        y: {
+          ticks: { color: "#9ca3af" },
+          grid: { color: "#374151" },
+          beginAtZero: true
+        }
+      }
+    }
   });
-</script>
+}
+
+// ⏳ Run chart load after your app is ready
+window.addEventListener("DOMContentLoaded", loadChartData);
+
 
 
 const styles = `
