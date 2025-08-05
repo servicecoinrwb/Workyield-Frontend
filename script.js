@@ -84,43 +84,37 @@ const App = {
     async renderTransactionHistory() { this.elements.txHistoryTable.innerHTML = '<p>Loading history...</p>'; try { const buyFilter = this.contract.filters.Transfer(this.contract.address, this.userAddress); const redeemFilter = this.contract.filters.TokensRedeemed(this.userAddress); const burnFilter = this.contract.filters.Transfer(this.userAddress, "0x0000000000000000000000000000000000000000"); const [buyEvents, redeemEvents, burnEvents] = await Promise.all([ this.contract.queryFilter(buyFilter, 0, 'latest'), this.contract.queryFilter(redeemFilter, 0, 'latest'), this.contract.queryFilter(burnFilter, 0, 'latest') ]); let allEvents = []; buyEvents.forEach(event => allEvents.push({ type: 'Buy', wytAmount: event.args.value, pUSDAmount: null, blockNumber: event.blockNumber, txHash: event.transactionHash })); redeemEvents.forEach(event => allEvents.push({ type: 'Redeem', wytAmount: event.args.wytAmount, pUSDAmount: event.args.pUSDAmount, blockNumber: event.blockNumber, txHash: event.transactionHash })); burnEvents.forEach(event => allEvents.push({ type: 'Burn', wytAmount: event.args.value, pUSDAmount: ethers.BigNumber.from(0), blockNumber: event.blockNumber, txHash: event.transactionHash })); allEvents.sort((a, b) => b.blockNumber - a.blockNumber); if (allEvents.length === 0) { this.elements.txHistoryTable.innerHTML = '<p>No transaction history found.</p>'; return; } const tableHtml = `<table><thead><tr><th>Type</th><th>WYT Amount</th><th>pUSD Amount</th><th>Transaction</th></tr></thead><tbody>${allEvents.slice(0, 10).map(event => `<tr><td><span class="font-semibold ${event.type === 'Buy' ? 'text-green-400' : event.type === 'Redeem' ? 'text-red-400' : 'text-gray-400'}">${event.type}</span></td><td>${this.formatTokenValue(event.wytAmount, this.wytDecimals)}</td><td>${event.pUSDAmount ? this.formatTokenValue(event.pUSDAmount, this.paymentTokenDecimals) : 'N/A'}</td><td><a href="${PLUME_MAINNET.blockExplorerUrls[0]}/tx/${event.txHash}" target="_blank" rel="noopener noreferrer" class="footer-link">View on Explorer</a></td></tr>`).join('')}</tbody></table>`; this.elements.txHistoryTable.innerHTML = tableHtml; } catch (err) { this.elements.txHistoryTable.innerHTML = '<p class="text-red-500">Error loading history.</p>'; } },
     
     exportPDF() {
-        const button = this.elements.exportPdfButton;
-        this.setButtonLoading(button, true);
-    
-        setTimeout(() => {
-            try {
-                if (typeof window.jspdf === 'undefined') {
-                    throw new Error('PDF library (jsPDF) could not be loaded. Please check your internet connection and refresh the page.');
-                }
-    
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF({ orientation: 'landscape' });
-    
-                if (typeof doc.autoTable !== 'function') {
-                    throw new Error('PDF table plugin (autoTable) failed to load. Please disable ad-blockers and refresh.');
-                }
-    
-                const tableElement = this.getActiveTable();
-                if (!tableElement) {
-                    throw new Error('No work order data available to export.');
-                }
-    
-                const tableData = this.extractTableDataForPDF(tableElement);
-                const reportTitle = this.getReportTitle();
-    
-                this.createEnhancedPDF(doc, tableData, reportTitle);
-    
-                doc.save(`work-yield-report-${new Date().toISOString().split('T')[0]}.pdf`);
-                this.showNotification('PDF report generated successfully!', 'success');
-    
-            } catch (error) {
-                console.error('PDF Export Error:', error);
-                this.showNotification(error.message || 'Failed to generate PDF report.', 'error');
-            } finally {
-                this.setButtonLoading(button, false);
+    const button = this.elements.exportPdfButton;
+    this.setButtonLoading(button, true);
+
+    try {
+        // Create print-specific styles
+        const printStyles = document.createElement('style');
+        printStyles.innerHTML = `
+            @media print {
+                body * { visibility: hidden; }
+                #workOrders, #workOrders * { visibility: visible; }
+                #workOrders { position: absolute; left: 0; top: 0; width: 100%; }
+                table { border-collapse: collapse; width: 100%; }
+                th, td { border: 1px solid #000; padding: 8px; text-align: left; }
+                th { background-color: #f0f0f0; }
+                .wo-tab-btn { display: none; }
             }
-        }, 100);
-    },
+        `;
+        document.head.appendChild(printStyles);
+
+        setTimeout(() => {
+            window.print();
+            document.head.removeChild(printStyles);
+            this.setButtonLoading(button, false);
+            this.showNotification('Print dialog opened! Choose "Save as PDF"', 'info');
+        }, 500);
+
+    } catch (error) {
+        this.showNotification('Failed to open print dialog', 'error');
+        this.setButtonLoading(button, false);
+    }
+}
     
     getActiveTable() {
         const searchInput = document.getElementById('workOrderSearchInput');
