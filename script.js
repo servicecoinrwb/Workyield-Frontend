@@ -683,80 +683,55 @@ const App = {
     }
 };
 
-let mintRedeemChart;
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const ctx = document.getElementById("craphLineChart").getContext("2d");
 
-async function loadMintRedeemData() {
-  const provider = new ethers.providers.Web3Provider(window.ethereum);
-  const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
-
-  const fromBlock = await provider.getBlockNumber() - 5000;
-  const mintEvents = await contract.queryFilter(contract.filters.Minted(), fromBlock);
-  const redeemEvents = await contract.queryFilter(contract.filters.Redeemed(), fromBlock);
-
-  const dateMap = {};
-  for (let i = 0; i < 5; i++) {
-    const day = new Date(Date.now() - i * 86400000).toISOString().split('T')[0];
-    dateMap[day] = { minted: 0, redeemed: 0 };
-  }
-
-  for (const e of mintEvents) {
-    const date = new Date((await e.getBlock()).timestamp * 1000).toISOString().split('T')[0];
-    if (dateMap[date]) dateMap[date].minted += Number(ethers.utils.formatUnits(e.args.amount, 18));
-  }
-
-  for (const e of redeemEvents) {
-    const date = new Date((await e.getBlock()).timestamp * 1000).toISOString().split('T')[0];
-    if (dateMap[date]) dateMap[date].redeemed += Number(ethers.utils.formatUnits(e.args.amount, 18));
-  }
-
-  const labels = Object.keys(dateMap).reverse();
-  const mintData = labels.map(day => dateMap[day].minted);
-  const redeemData = labels.map(day => dateMap[day].redeemed);
-
-  updateChart(labels, mintData, redeemData);
-}
-
-function updateChart(labels, mintData, redeemData) {
-  if (mintRedeemChart) mintRedeemChart.destroy();
-
-  const ctx = document.getElementById('mintRedeemChart').getContext('2d');
-  mintRedeemChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        {
-          label: 'Minted',
-          data: mintData,
-          backgroundColor: '#22c55e',
-        },
-        {
-          label: 'Redeemed',
-          data: redeemData,
-          backgroundColor: '#f97316',
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { labels: { color: '#d1d5db' } }
+    new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        datasets: [
+          {
+            label: "Minted",
+            data: [40, 80, 60, 120, 100, 90, 70],
+            borderColor: "#22c55e",
+            backgroundColor: "rgba(34, 197, 94, 0.2)",
+            fill: true,
+            tension: 0.3,
+          },
+          {
+            label: "Redeemed",
+            data: [30, 50, 40, 60, 80, 70, 60],
+            borderColor: "#f97316",
+            backgroundColor: "rgba(249, 115, 22, 0.2)",
+            fill: true,
+            tension: 0.3,
+          },
+        ],
       },
-      scales: {
-        x: {
-          ticks: { color: '#9ca3af' },
-          grid: { color: '#374151' }
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            labels: { color: "#ffffff" },
+          },
         },
-        y: {
-          ticks: { color: '#9ca3af' },
-          grid: { color: '#374151' }
-        }
-      }
-    }
+        scales: {
+          x: {
+            ticks: { color: "#9ca3af" },
+            grid: { color: "#374151" },
+          },
+          y: {
+            ticks: { color: "#9ca3af" },
+            grid: { color: "#374151" },
+          },
+        },
+      },
+    });
   });
-}
+</script>
 
-window.addEventListener('DOMContentLoaded', loadMintRedeemData);
 
 const styles = `
     .notification { position: fixed; top: 20px; right: 20px; padding: 12px 20px; border-radius: 8px; color: white; font-weight: 500; z-index: 1000; max-width: 300px; word-wrap: break-word; animation: slideIn 0.3s ease-out; }
