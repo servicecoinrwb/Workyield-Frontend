@@ -50,110 +50,144 @@
             </div>
         </section>
 
-        <section id="buyRedeem" class="mb-8">
-            <h2>Buy / Redeem WYT</h2>
-            <div class="mt-4 max-w-md mx-auto bg-secondary p-6 rounded-lg">
-                <div class="flex border-b border-gray-700 mb-4">
-                    <button id="buyTab" class="tab-btn active">Buy</button>
-                    <button id="redeemTab" class="tab-btn">Redeem</button>
+        <!-- IMPROVED THREE CARD LAYOUT -->
+        <div class="main-actions-container mb-8">
+            <!-- Buy / Redeem WYT Card -->
+            <div class="action-card">
+                <h2>Buy / Redeem WYT</h2>
+                
+                <div class="card-tabs">
+                    <button id="buyTab" class="card-tab active">Buy</button>
+                    <button id="redeemTab" class="card-tab">Redeem</button>
                 </div>
-                <div id="buyPanel">
-                    <div class="flex justify-between items-center mb-1">
-                        <label for="buyAmount" class="text-sm text-secondary">You pay</label>
-                        <span class="text-xs text-secondary">Balance: <span id="pUSDBalance">...</span></span>
-                    </div>
-                    <div class="flex items-center bg-gray-900 p-3 rounded-md">
-                        <input type="number" id="buyAmount" placeholder="0.0" class="w-full bg-transparent focus:outline-none text-2xl">
-                        <span class="font-semibold text-gray-400">pUSD</span>
-                    </div>
-                </div>
-                <div id="redeemPanel" class="hidden">
-                    <div class="flex justify-between items-center mb-1">
-                        <label for="redeemAmount" class="text-sm text-secondary">You pay</label>
-                        <span class="text-xs text-secondary">Balance: <span id="wytUserBalance">...</span></span>
-                    </div>
-                    <div class="flex items-center bg-gray-900 p-3 rounded-md">
-                        <input type="number" id="redeemAmount" placeholder="0.0" class="w-full bg-transparent focus:outline-none text-2xl">
-                        <span class="font-semibold text-gray-400">WYT</span>
-                    </div>
-                </div>
-                <div class="mt-4">
-                    <p class="text-sm text-secondary">You receive (approx.)</p>
-                    <p id="receiveAmount" class="text-2xl font-semibold text-gray-400">0.00</p>
-                </div>
-                <button id="swapButton" class="w-full mt-6 btn btn-primary">Enter an amount</button>
-            </div>
-        </section>
 
-        <section id="burnTokens" class="mb-8">
-            <h2>Burn Your Tokens</h2>
-            <div class="mt-4 max-w-md mx-auto bg-secondary p-6 rounded-lg">
-                <p class="text-sm text-secondary mb-4">
+                <div id="buyPanel">
+                    <div class="card-input-group">
+                        <div class="balance-display">Balance: <span id="pUSDBalance">...</span></div>
+                        <label class="card-label">You pay</label>
+                        <input type="number" id="buyAmount" placeholder="0.0" class="card-input">
+                        <div class="text-right text-xs text-gray-400 mt-1">pUSD</div>
+                    </div>
+                </div>
+
+                <div id="redeemPanel" class="hidden">
+                    <div class="card-input-group">
+                        <div class="balance-display">Balance: <span id="wytUserBalance">...</span></div>
+                        <label class="card-label">You pay</label>
+                        <input type="number" id="redeemAmount" placeholder="0.0" class="card-input">
+                        <div class="text-right text-xs text-gray-400 mt-1">WYT</div>
+                    </div>
+                </div>
+
+                <div class="receive-display">
+                    <div class="receive-label">You receive (approx.)</div>
+                    <div class="receive-amount" id="receiveAmount">0.00</div>
+                </div>
+
+                <button id="swapButton" class="card-button card-button-primary">Enter an amount</button>
+            </div>
+
+            <!-- Burn Your Tokens Card -->
+            <div class="action-card">
+                <h2>Burn Your Tokens</h2>
+                
+                <p class="card-description">
                     Burning tokens permanently destroys them, reducing the total supply and increasing the value of all remaining tokens.
                 </p>
-                <div class="flex justify-between items-center mb-1">
-                    <label for="burnAmount" class="text-sm text-secondary">Amount to Burn</label>
-                    <span class="text-xs text-secondary">Your Balance: <span id="burnWytBalance">...</span></span>
-                </div>
-                <div class="flex items-center bg-gray-900 p-3 rounded-md">
-                    <input type="number" id="burnAmount" placeholder="0.0" class="w-full bg-transparent focus:outline-none text-2xl">
-                    <span class="font-semibold text-gray-400">WYT</span>
-                </div>
-                <button id="burnButton" class="w-full mt-6 btn btn-primary bg-red-600">Burn Tokens</button>
-            </div>
-        </section>
 
-        <section id="payouts" class="mb-8">
-            <h2>Submit a Work Order Payout</h2>
-            <div class="mt-4 max-w-md mx-auto bg-secondary p-6 rounded-lg">
-                <p class="text-sm text-secondary mb-4">
+                <div class="card-input-group">
+                    <div class="balance-display">Your Balance: <span id="burnWytBalance">...</span></div>
+                    <label class="card-label">Amount to Burn</label>
+                    <input type="number" id="burnAmount" placeholder="0.0" class="card-input">
+                    <div class="text-right text-xs text-gray-400 mt-1">WYT</div>
+                </div>
+
+                <button id="burnButton" class="card-button card-button-danger">Burn Tokens</button>
+            </div>
+
+            <!-- Submit Work Order Payout Card -->
+            <div class="action-card">
+                <h2>Submit a Work Order Payout</h2>
+                
+                <p class="card-description">
                     Submit a pUSD payment to a work order to mark it as complete and increase the WYT token's backing value.
                 </p>
-                <div>
-                    <label for="payoutOrderId" class="block mb-2 font-semibold">Work Order ID</label>
-                    <input id="payoutOrderId" type="number" placeholder="Enter ID" class="mb-2">
+
+                <div class="card-input-group">
+                    <label class="card-label">Work Order ID</label>
+                    <input id="payoutOrderId" type="number" placeholder="Enter ID" class="card-input">
                 </div>
-                <div>
-                    <label for="payoutAmount" class="block mb-2 font-semibold">Payout Amount (pUSD)</label>
-                    <input id="payoutAmount" type="number" placeholder="0.0">
+
+                <div class="card-input-group">
+                    <label class="card-label">Payout Amount (pUSD)</label>
+                    <input id="payoutAmount" type="number" placeholder="0.0" class="card-input">
                 </div>
-                <button id="payoutButton" class="w-full mt-6 btn btn-primary">Approve & Submit Payout</button>
+
+                <button id="payoutButton" class="card-button card-button-primary">Approve & Submit Payout</button>
             </div>
-        </section>
+        </div>
 
         <section id="adminPanel" class="mb-8 hidden">
             <h2>Admin Panel</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                <div>
-                    <label for="mintAmount" class="block mb-2 font-semibold">Mint Work Order</label>
-                    <input id="mintAmount" type="number" placeholder="Gross Yield" class="mb-2">
-                    <input id="mintDescription" type="text" placeholder="Description">
-                    <button id="mintButton" class="w-full mt-2 btn btn-primary">Mint Order</button>
-                </div>
-                <div>
-                    <label for="fundId" class="block mb-2 font-semibold">Fund Work Order</label>
-                    <input id="fundId" type="number" placeholder="Work Order ID" class="mb-2">
-                    <input id="fundAmount" type="number" placeholder="Amount to fund">
-                    <button id="fundButton" class="w-full mt-2 btn btn-primary">Fund Order</button>
-                </div>
-                <div class="space-y-6">
-                    <div>
-                        <label for="feeInput" class="block mb-2 font-semibold">Set Redemption Fee</label>
-                        <input id="feeInput" type="number" min="0" max="20" placeholder="Fee % (e.g., 5 for 5%)">
-                        <button id="setFeeButton" class="w-full mt-2 btn btn-primary">Update Fee</button>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
+                <!-- Mint Work Order Card -->
+                <div class="action-card">
+                    <h2>Mint Work Order</h2>
+                    <div class="card-input-group">
+                        <label class="card-label">Gross Yield</label>
+                        <input id="mintAmount" type="number" placeholder="Gross Yield" class="card-input">
                     </div>
-                    <div>
-                        <label for="cancelId" class="block mb-2 font-semibold">Cancel Work Order</label>
-                        <input id="cancelId" type="number" placeholder="Work Order ID">
-                        <button id="cancelButton" class="w-full mt-2 btn btn-primary">Cancel Order</button>
+                    <div class="card-input-group">
+                        <label class="card-label">Description</label>
+                        <input id="mintDescription" type="text" placeholder="Description" class="card-input">
                     </div>
+                    <button id="mintButton" class="card-button card-button-primary">Mint Order</button>
                 </div>
-                <div class="flex flex-col justify-between">
-                    <div>
-                        <label class="block mb-2 font-semibold">Available Fees to Withdraw</label>
-                        <p class="text-2xl font-semibold"><span id="collectedFees">0.00</span> pUSD</p>
+
+                <!-- Fund Work Order Card -->
+                <div class="action-card">
+                    <h2>Fund Work Order</h2>
+                    <div class="card-input-group">
+                        <label class="card-label">Work Order ID</label>
+                        <input id="fundId" type="number" placeholder="Work Order ID" class="card-input">
                     </div>
-                    <button id="withdrawFeesButton" class="w-full mt-2 btn btn-primary">Withdraw All Fees</button>
+                    <div class="card-input-group">
+                        <label class="card-label">Amount to fund</label>
+                        <input id="fundAmount" type="number" placeholder="Amount to fund" class="card-input">
+                    </div>
+                    <button id="fundButton" class="card-button card-button-primary">Fund Order</button>
+                </div>
+
+                <!-- Fee Management Card -->
+                <div class="action-card">
+                    <h2>Fee Management</h2>
+                    <div class="receive-display" style="background: linear-gradient(135deg, #2d5016, #38a169);">
+                        <div class="receive-label">Available Fees to Withdraw</div>
+                        <div class="receive-amount">
+                            <span id="collectedFees">0.00</span> pUSD
+                        </div>
+                    </div>
+                    <button id="withdrawFeesButton" class="card-button card-button-primary">Withdraw All Fees</button>
+                </div>
+
+                <!-- Set Redemption Fee Card -->
+                <div class="action-card">
+                    <h2>Set Redemption Fee</h2>
+                    <div class="card-input-group">
+                        <label class="card-label">Fee % (e.g., 5 for 5%)</label>
+                        <input id="feeInput" type="number" min="0" max="20" placeholder="Fee %" class="card-input">
+                    </div>
+                    <button id="setFeeButton" class="card-button card-button-primary">Update Fee</button>
+                </div>
+
+                <!-- Cancel Work Order Card -->
+                <div class="action-card">
+                    <h2>Cancel Work Order</h2>
+                    <div class="card-input-group">
+                        <label class="card-label">Work Order ID</label>
+                        <input id="cancelId" type="number" placeholder="Work Order ID" class="card-input">
+                    </div>
+                    <button id="cancelButton" class="card-button card-button-primary">Cancel Order</button>
                 </div>
             </div>
         </section>
