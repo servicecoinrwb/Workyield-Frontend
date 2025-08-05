@@ -4,10 +4,10 @@ const contractAddress = '0xccF4eaa301058Ec5561a07Cc38A75F47a2912EA5';
 const PLUME_MAINNET = {
     chainId: '0x18232', // Correct hex for 98866 (actual Plume mainnet)
     chainName: 'Plume',
-    nativeCurrency: { 
-        name: 'PLUME', 
-        symbol: 'PLUME', 
-        decimals: 18 
+    nativeCurrency: {
+        name: 'PLUME',
+        symbol: 'PLUME',
+        decimals: 18
     },
     rpcUrls: ['https://rpc.plume.org'], // Official Plume mainnet RPC
     blockExplorerUrls: ['https://explorer.plume.org'],
@@ -15,11 +15,11 @@ const PLUME_MAINNET = {
 
 // Standard ERC20 ABI for interacting with the payment token
 const tokenABI = [
-  "function approve(address spender, uint256 amount) returns (bool)",
-  "function allowance(address owner, address spender) view returns (uint256)",
-  "function balanceOf(address account) view returns (uint256)",
-  "function totalSupply() view returns (uint256)",
-  "function decimals() view returns (uint8)"
+    "function approve(address spender, uint256 amount) returns (bool)",
+    "function allowance(address owner, address spender) view returns (uint256)",
+    "function balanceOf(address account) view returns (uint256)",
+    "function totalSupply() view returns (uint256)",
+    "function decimals() view returns (uint8)"
 ];
 
 // Main contract ABI
@@ -33,6 +33,7 @@ const App = {
     userAddress: null,
     wytDecimals: 18,
     paymentTokenDecimals: 18,
+    allWorkOrders: [], // <-- MODIFICATION: Added to store all work orders
     elements: {},
 
     // --- INITIALIZATION ---
@@ -40,7 +41,7 @@ const App = {
         this.cacheDOMElements();
         this.addEventListeners();
         console.log("App initialized.");
-        
+
         // Check if already connected on page load
         this.checkExistingConnection();
     },
@@ -87,7 +88,7 @@ const App = {
             exportPdfButton: document.getElementById('exportPdfButton')
         };
     },
-  
+
     addEventListeners() {
         this.elements.connectButton?.addEventListener('click', () => this.connectWallet());
         this.elements.swapButton?.addEventListener('click', () => this.executeSwap());
@@ -104,6 +105,10 @@ const App = {
         this.elements.cancelButton?.addEventListener('click', () => this.cancelWorkOrder());
         this.elements.exportPdfButton?.addEventListener('click', () => this.exportPDF());
 
+        // <-- MODIFICATION: Added event listeners for tab clicks and search input
+        this.elements.workOrderTable?.addEventListener('click', (e) => this.handleWorkOrderTabClick(e));
+        this.elements.workOrderTable?.addEventListener('input', (e) => this.handleWorkOrderSearch(e));
+
         if (window.ethereum) {
             window.ethereum.on('accountsChanged', (accounts) => {
                 if (accounts.length > 0) {
@@ -112,7 +117,7 @@ const App = {
                     this.disconnectWallet();
                 }
             });
-            
+
             window.ethereum.on('chainChanged', (chainId) => {
                 // Reload the page when network changes
                 window.location.reload();
@@ -123,7 +128,7 @@ const App = {
     // Check if wallet is already connected
     async checkExistingConnection() {
         if (!window.ethereum) return;
-        
+
         try {
             const accounts = await window.ethereum.request({ method: 'eth_accounts' });
             if (accounts.length > 0) {
@@ -139,12 +144,12 @@ const App = {
         this.provider = null;
         this.signer = null;
         this.contract = null;
-        
+
         if (this.elements.connectButton) {
             this.elements.connectButton.textContent = 'Connect Wallet';
             this.elements.connectButton.disabled = false;
         }
-        
+
         if (this.elements.adminPanel) {
             this.elements.adminPanel.classList.add('hidden');
         }
@@ -156,14 +161,14 @@ const App = {
             const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
             console.log('Current chain ID:', currentChainId);
             console.log('Expected chain ID:', PLUME_MAINNET.chainId);
-            
-            if (currentChainId === PLUME_MAINNET.chainId) { 
+
+            if (currentChainId === PLUME_MAINNET.chainId) {
                 console.log('Already on Plume mainnet');
-                return; 
+                return;
             }
 
             console.log('Attempting to switch to Plume mainnet...');
-            
+
             try {
                 await window.ethereum.request({
                     method: 'wallet_switchEthereumChain',
@@ -172,7 +177,7 @@ const App = {
                 console.log('Successfully switched to Plume mainnet');
             } catch (switchError) {
                 console.log('Switch error:', switchError);
-                
+
                 // This error code indicates that the chain has not been added to MetaMask
                 if (switchError.code === 4902) {
                     console.log('Adding Plume mainnet to wallet...');
@@ -191,10 +196,10 @@ const App = {
                     throw new Error("Network switch was rejected. Please manually switch to Plume network in your wallet.");
                 } else {
                     console.error('Network switch error:', switchError);
-                    
+
                     // For any other error, provide manual instructions instead of failing
                     this.showNotification('Please manually switch to Plume network in your wallet.', 'warning');
-                    
+
                     // Instead of throwing, let's continue and see if the connection works anyway
                     const retryChainId = await window.ethereum.request({ method: 'eth_chainId' });
                     if (retryChainId !== PLUME_MAINNET.chainId) {
@@ -212,32 +217,32 @@ const App = {
         if (!window.ethereum) {
             return this.showNotification('Please install MetaMask or another Web3 wallet.', 'error');
         }
-        
+
         try {
             this.showNotification('Connecting wallet...', 'info');
-            
+
             await this.checkAndSwitchNetwork();
-            
+
             this.provider = new ethers.providers.Web3Provider(window.ethereum);
             const accounts = await this.provider.send("eth_requestAccounts", []);
-            
+
             if (accounts.length === 0) {
                 throw new Error('No accounts found. Please unlock your wallet.');
             }
-            
+
             this.signer = this.provider.getSigner();
             this.userAddress = accounts[0];
-            
+
             // Verify we can get the address from signer
             const signerAddress = await this.signer.getAddress();
             console.log('Connected address:', signerAddress);
-            
+
             this.contract = new ethers.Contract(contractAddress, contractABI, this.signer);
-            
+
             const shortAddress = `${this.userAddress.slice(0, 6)}...${this.userAddress.slice(-4)}`;
             this.elements.connectButton.textContent = `Connected: ${shortAddress}`;
             this.elements.connectButton.disabled = true;
-            
+
             this.showNotification('Wallet connected successfully!', 'success');
             await this.loadContractData();
             this.switchTab('buy');
@@ -251,7 +256,7 @@ const App = {
     async loadContractData() {
         try {
             this.showNotification('Loading contract data...', 'info');
-            
+
             // Test contract connection first
             try {
                 await this.contract.name();
@@ -259,12 +264,12 @@ const App = {
                 console.error('Contract connection error:', contractError);
                 throw new Error('Failed to connect to contract. Please verify the contract address and network.');
             }
-            
+
             this.wytDecimals = await this.contract.decimals();
             const paymentTokenAddress = await this.contract.paymentToken();
             const paymentTokenContract = new ethers.Contract(paymentTokenAddress, tokenABI, this.provider);
             this.paymentTokenDecimals = await paymentTokenContract.decimals();
-            
+
             const [totalSupply, available, paymentBalance, owner, userWytBalance, userPusdBalance, collectedFees] = await Promise.all([
                 this.contract.totalSupply(),
                 this.contract.availableTokens(),
@@ -274,7 +279,7 @@ const App = {
                 paymentTokenContract.balanceOf(this.userAddress),
                 this.contract.collectedFees()
             ]);
-            
+
             this.elements.totalSupply.innerHTML = this.formatTokenValue(totalSupply, this.wytDecimals);
             this.elements.availableTokens.innerHTML = this.formatTokenValue(available, this.wytDecimals);
             this.elements.paymentBalance.innerHTML = this.formatTokenValue(paymentBalance, this.paymentTokenDecimals);
@@ -290,22 +295,22 @@ const App = {
             } else {
                 this.elements.wytPrice.innerHTML = '0.00';
             }
-            
+
             if (owner.toLowerCase() === this.userAddress.toLowerCase()) {
                 this.elements.adminPanel.classList.remove('hidden');
             }
-            
+
             await this.renderWorkOrders();
             await this.renderTransactionHistory();
             this.updateReceiveAmount();
-            
+
             this.showNotification('Contract data loaded successfully!', 'success');
         } catch (error) {
             console.error("Error loading contract data:", error);
             this.showNotification('Failed to load contract data: ' + error.message, 'error');
         }
     },
-  
+
     // --- USER & ADMIN ACTIONS ---
     async getPaymentTokenContract() {
         const paymentTokenAddress = await this.contract.paymentToken();
@@ -354,7 +359,7 @@ const App = {
     updateReceiveAmount() {
         const priceText = this.elements.wytPrice.textContent.replace(/,/g, '');
         const price = parseFloat(priceText);
-        
+
         if (isNaN(price)) {
             this.elements.swapButton.textContent = 'Price Unavailable';
             this.elements.swapButton.disabled = true;
@@ -378,7 +383,7 @@ const App = {
             }
             disabled = false;
         }
-        
+
         this.elements.receiveAmount.textContent = receiveAmount.toLocaleString('en-US', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 4
@@ -386,7 +391,7 @@ const App = {
         this.elements.swapButton.textContent = buttonText;
         this.elements.swapButton.disabled = disabled;
     },
-    
+
     async mintWorkOrder() {
         await this.handleTransaction(this.elements.mintButton, async () => {
             const grossYield = this.elements.mintAmountInput.value;
@@ -406,7 +411,7 @@ const App = {
             const id = this.elements.fundIdInput.value;
             const amount = this.elements.fundAmountInput.value;
             if (!id || !amount) throw new Error("Work Order ID and amount are required.");
-            
+
             const parsedAmount = ethers.utils.parseUnits(amount, this.paymentTokenDecimals);
             const paymentToken = await this.getPaymentTokenContract();
             const approveTx = await paymentToken.approve(contractAddress, parsedAmount);
@@ -444,7 +449,7 @@ const App = {
             return 'Redemption fee updated!';
         });
     },
-  
+
     async cancelWorkOrder() {
         await this.handleTransaction(this.elements.cancelButton, async () => {
             const id = parseInt(this.elements.cancelIdInput.value);
@@ -460,11 +465,11 @@ const App = {
         await this.handleTransaction(this.elements.burnButton, async () => {
             const amount = this.elements.burnAmountInput.value;
             if (!amount || parseFloat(amount) <= 0) throw new Error("Please enter a valid amount to burn.");
-            
+
             const parsedAmount = ethers.utils.parseUnits(amount, this.wytDecimals);
             const tx = await this.contract.burn(parsedAmount);
             await tx.wait();
-            
+
             this.elements.burnAmountInput.value = '';
             return 'Tokens burned successfully!';
         });
@@ -477,9 +482,9 @@ const App = {
             if (!id || !amount || parseFloat(amount) <= 0) {
                 throw new Error("Please enter a valid Work Order ID and payout amount.");
             }
-            
+
             const parsedAmount = ethers.utils.parseUnits(amount, this.paymentTokenDecimals);
-            
+
             const paymentToken = await this.getPaymentTokenContract();
             const approveTx = await paymentToken.approve(contractAddress, parsedAmount);
             this.showNotification('Approving payout... please wait.', 'info');
@@ -488,57 +493,150 @@ const App = {
             this.showNotification('Approval successful! Submitting payout...', 'info');
             const tx = await this.contract.payoutWorkOrder(id, parsedAmount);
             await tx.wait();
-            
+
             this.elements.payoutOrderIdInput.value = '';
             this.elements.payoutAmountInput.value = '';
             return 'Work order payout successful!';
         });
     },
-  
+
     // --- RENDERING & UTILITIES ---
+
+    // <-- MODIFICATION: Replaced original renderWorkOrders with this simplified one
     async renderWorkOrders() {
-        this.elements.workOrderTable.innerHTML = '<table><tbody><tr><td>Loading work orders...</td></tr></tbody></table>';
+        this.elements.workOrderTable.innerHTML = '<p>Loading work orders...</p>';
         try {
             const nextId = await this.contract.nextWorkOrderId();
-            if (nextId.eq(1)) {
-                this.elements.workOrderTable.innerHTML = '<p>No work orders found.</p>';
-                return;
-            }
-            
             const promises = [];
             for (let i = 1; i < nextId; i++) {
                 promises.push(this.contract.workOrders(i));
             }
-            const workOrders = await Promise.all(promises);
-
-            const tableHtml = `
-                <table>
-                <thead>
-                    <tr>
-                    <th>ID</th><th>Gross Yield</th><th>Reserve</th><th>Issued</th>
-                    <th>Active</th><th>Paid</th><th>Description</th><th>Created</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${workOrders.map(wo => `
-                    <tr>
-                        <td>${wo.id}</td>
-                        <td>${this.formatTokenValue(wo.grossYield, this.paymentTokenDecimals)}</td>
-                        <td>${this.formatTokenValue(wo.reserveAmount, this.paymentTokenDecimals)}</td>
-                        <td>${this.formatTokenValue(wo.tokensIssued, this.wytDecimals)}</td>
-                        <td>${wo.isActive ? '✅' : '❌'}</td>
-                        <td>${wo.isPaid ? '✅' : '❌'}</td>
-                        <td>${wo.description}</td>
-                        <td>${new Date(wo.createdAt * 1000).toLocaleDateString()}</td>
-                    </tr>
-                    `).join('')}
-                </tbody>
-                </table>
-            `;
-            this.elements.workOrderTable.innerHTML = tableHtml;
+            // Store the full list of orders in our App state
+            this.allWorkOrders = (await Promise.all(promises)).filter(wo => wo.id > 0);
+    
+            // Call the new display function with the full list
+            this.displayWorkOrders(this.allWorkOrders);
+    
         } catch (err) {
             console.error("Could not render work orders", err);
             this.elements.workOrderTable.innerHTML = '<p class="text-red-500">Error loading work orders.</p>';
+        }
+    },
+    
+    // <-- MODIFICATION: Added new displayWorkOrders function
+    displayWorkOrders(orders, isSearchResult = false) {
+        // Start with the search bar HTML
+        let searchHtml = `
+            <div class="wo-search-container">
+                <input type="number" id="workOrderSearchInput" placeholder="Search by Work Order ID...">
+            </div>
+        `;
+    
+        if (orders.length === 0) {
+            const message = isSearchResult ? 'No matching work order found.' : 'No work orders found.';
+            this.elements.workOrderTable.innerHTML = searchHtml + `<p>${message}</p>`;
+            return;
+        }
+    
+        // If it's a search result, display a simple table without tabs
+        if (isSearchResult) {
+            const tableHtml = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th><th>Gross Yield</th><th>Reserve</th><th>Issued</th>
+                            <th>Active</th><th>Paid</th><th>Description</th><th>Created</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${orders.map(wo => `
+                        <tr>
+                            <td>${wo.id}</td>
+                            <td>${this.formatTokenValue(wo.grossYield, this.paymentTokenDecimals)}</td>
+                            <td>${this.formatTokenValue(wo.reserveAmount, this.paymentTokenDecimals)}</td>
+                            <td>${this.formatTokenValue(wo.tokensIssued, this.wytDecimals)}</td>
+                            <td>${wo.isActive ? '✅' : '❌'}</td>
+                            <td>${wo.isPaid ? '✅' : '❌'}</td>
+                            <td>${wo.description}</td>
+                            <td>${new Date(wo.createdAt * 1000).toLocaleDateString()}</td>
+                        </tr>
+                        `).join('')}
+                    </tbody>
+                </table>`;
+            this.elements.workOrderTable.innerHTML = searchHtml + tableHtml;
+            // Pre-fill the search input with the ID
+            if (orders.length > 0) {
+                document.getElementById('workOrderSearchInput').value = orders[0].id.toString();
+            }
+            return;
+        }
+    
+        // --- Default Tabbed View ---
+        const groupedOrders = orders.reduce((acc, wo) => {
+            const date = new Date(wo.createdAt * 1000);
+            const key = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+            if (!acc[key]) acc[key] = [];
+            acc[key].push(wo);
+            return acc;
+        }, {});
+    
+        const sortedMonths = Object.keys(groupedOrders).sort().reverse();
+        const tabsHtml = sortedMonths.map((monthKey, index) => {
+            const [year, monthNum] = monthKey.split('-');
+            const monthName = new Date(year, monthNum - 1).toLocaleString('default', { month: 'long', year: 'numeric' });
+            return `<button class="wo-tab-btn ${index === 0 ? 'active' : ''}" data-month="${monthKey}">${monthName}</button>`;
+        }).join('');
+    
+        const contentHtml = sortedMonths.map((monthKey, index) => {
+            const ordersForMonth = groupedOrders[monthKey];
+            const tableHeader = `<thead><tr><th>ID</th><th>Gross Yield</th><th>Reserve</th><th>Issued</th><th>Active</th><th>Paid</th><th>Description</th><th>Created</th></tr></thead>`;
+            const tableBody = `<tbody>${ordersForMonth.map(wo => `
+                <tr>
+                    <td>${wo.id}</td>
+                    <td>${this.formatTokenValue(wo.grossYield, this.paymentTokenDecimals)}</td>
+                    <td>${this.formatTokenValue(wo.reserveAmount, this.paymentTokenDecimals)}</td>
+                    <td>${this.formatTokenValue(wo.tokensIssued, this.wytDecimals)}</td>
+                    <td>${wo.isActive ? '✅' : '❌'}</td>
+                    <td>${wo.isPaid ? '✅' : '❌'}</td>
+                    <td>${wo.description}</td>
+                    <td>${new Date(wo.createdAt * 1000).toLocaleDateString()}</td>
+                </tr>
+            `).join('')}</tbody>`;
+            return `<div id="wo-content-${monthKey}" class="wo-content-panel ${index > 0 ? 'hidden' : ''}"><table>${tableHeader}${tableBody}</table></div>`;
+        }).join('');
+    
+        this.elements.workOrderTable.innerHTML = `
+            ${searchHtml}
+            <div class="wo-tabs">${tabsHtml}</div>
+            <div class="wo-content">${contentHtml}</div>
+        `;
+    },
+
+    // <-- MODIFICATION: Added new handleWorkOrderTabClick function
+    handleWorkOrderTabClick(event) {
+        const tabButton = event.target.closest('.wo-tab-btn');
+        if (!tabButton) return;
+        this.elements.workOrderTable.querySelectorAll('.wo-tab-btn').forEach(btn => btn.classList.remove('active'));
+        this.elements.workOrderTable.querySelectorAll('.wo-content-panel').forEach(panel => panel.classList.add('hidden'));
+        tabButton.classList.add('active');
+        const monthKey = tabButton.dataset.month;
+        const contentPanel = document.getElementById(`wo-content-${monthKey}`);
+        if (contentPanel) {
+            contentPanel.classList.remove('hidden');
+        }
+    },
+    
+    // <-- MODIFICATION: Added new handleWorkOrderSearch function
+    handleWorkOrderSearch(event) {
+        if (event.target.id !== 'workOrderSearchInput') return;
+        const searchTerm = event.target.value;
+        if (!searchTerm) {
+            this.displayWorkOrders(this.allWorkOrders);
+        } else {
+            const searchId = parseInt(searchTerm, 10);
+            if (isNaN(searchId)) return;
+            const filteredOrders = this.allWorkOrders.filter(wo => wo.id.toNumber() === searchId);
+            this.displayWorkOrders(filteredOrders, true);
         }
     },
 
@@ -593,7 +691,7 @@ const App = {
                         <td>${event.pUSDAmount ? this.formatTokenValue(event.pUSDAmount, this.paymentTokenDecimals) : 'N/A'}</td>
                         <td>
                             <a href="${PLUME_MAINNET.blockExplorerUrls[0]}/tx/${event.txHash}" target="_blank" rel="noopener noreferrer" class="footer-link">
-                               View on Explorer
+                                View on Explorer
                             </a>
                         </td>
                     </tr>
@@ -610,8 +708,26 @@ const App = {
     },
 
     exportPDF() {
-        // PDF export functionality would go here
-        this.showNotification('PDF export functionality not implemented yet.', 'info');
+        if (typeof jspdf === 'undefined' || typeof jspdf.plugin.autotable === 'undefined') {
+            return this.showNotification('PDF library is not available.', 'error');
+        }
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+    
+        const tableElement = this.elements.workOrderTable.querySelector('table');
+        if (!tableElement) {
+            return this.showNotification('No work order table to export.', 'info');
+        }
+    
+        doc.autoTable({
+            html: tableElement,
+            startY: 20,
+            theme: 'grid',
+            headStyles: { fillColor: [22, 160, 133] },
+        });
+    
+        doc.text("Work Yield - Work Order Report", 14, 15);
+        doc.save('work-yield-orders.pdf');
     },
 
     async handleTransaction(button, transactionCallback) {
@@ -631,6 +747,8 @@ const App = {
             
             if (error.code === 4001) {
                 errorMessage = 'Transaction rejected by user.';
+            } else if (error.data && error.data.message) {
+                errorMessage = error.data.message;
             } else if (error.message) {
                 errorMessage = error.message;
             }
@@ -643,7 +761,7 @@ const App = {
 
     setButtonLoading(button, isLoading) {
         if (!button) return;
-        
+
         if (isLoading) {
             button.disabled = true;
             button.dataset.originalText = button.textContent;
@@ -659,17 +777,17 @@ const App = {
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
         notification.textContent = message;
-        
+
         // Add to page
         document.body.appendChild(notification);
-        
+
         // Remove after 5 seconds
         setTimeout(() => {
             if (notification.parentNode) {
                 notification.parentNode.removeChild(notification);
             }
         }, 5000);
-        
+
         console.log(`[${type.toUpperCase()}] ${message}`);
     },
 
@@ -689,6 +807,7 @@ const App = {
 };
 
 // --- CSS FOR UTILITIES (Spinner and Notifications) ---
+// <-- MODIFICATION: Added new CSS for tabs and search
 const styles = `
     .notification {
         position: fixed;
@@ -722,6 +841,7 @@ const styles = `
         border-top: 2px solid #ffffff;
         border-radius: 50%;
         animation: spin 1s linear infinite;
+        margin-right: 8px;
     }
     
     @keyframes spin {
@@ -730,6 +850,56 @@ const styles = `
     }
     
     .hidden { display: none !important; }
+
+    /* --- Work Order Tabs & Search --- */
+    .wo-search-container {
+        margin-bottom: 1rem;
+    }
+
+    #workOrderSearchInput {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        background-color: #2d3748; /* Corresponds to Tailwind's gray-800 */
+        border: 1px solid #4a5568;  /* Corresponds to Tailwind's gray-700 */
+        border-radius: 0.375rem; /* Corresponds to Tailwind's rounded-md */
+        color: white;
+    }
+
+    #workOrderSearchInput::placeholder {
+        color: #a0aec0; /* Corresponds to Tailwind's gray-500 */
+    }
+
+    .wo-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        border-bottom: 2px solid #4a5568; /* gray-700 */
+        margin-bottom: 1rem;
+    }
+
+    .wo-tab-btn {
+        padding: 0.5rem 1rem;
+        border: none;
+        background-color: transparent;
+        color: #a0aec0; /* gray-500 */
+        cursor: pointer;
+        font-weight: 600;
+        border-bottom: 2px solid transparent;
+        transform: translateY(2px);
+        transition: all 0.2s ease-in-out;
+    }
+
+    .wo-tab-btn:hover {
+        color: #cbd5e0; /* gray-400 */
+    }
+
+    .wo-tab-btn.active {
+        color: #ffffff;
+        border-bottom-color: #3b82f6; /* blue-500 */
+    }
+
+    .wo-content-panel.hidden {
+        display: none !important;
+    }
 `;
 
 const styleSheet = document.createElement("style");
