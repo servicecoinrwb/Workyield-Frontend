@@ -456,115 +456,115 @@ const App = {
     },
 
     async renderTransactionHistory() {
-    this.elements.txHistoryTable.innerHTML = '<p>Loading history...</p>';
-    try {
-        // Get payment token contract
-        const paymentTokenAddress = await this.contract.paymentToken();
-        const paymentTokenContract = new ethers.Contract(paymentTokenAddress, tokenABI, this.provider);
+        this.elements.txHistoryTable.innerHTML = '<p>Loading history...</p>';
+        try {
+            // Get payment token contract
+            const paymentTokenAddress = await this.contract.paymentToken();
+            const paymentTokenContract = new ethers.Contract(paymentTokenAddress, tokenABI, this.provider);
 
-        // Get different event filters
-        const buyFilter = this.contract.filters.Transfer(this.contract.address, this.userAddress);
-        const redeemFilter = this.contract.filters.TokensRedeemed(this.userAddress);
-        const burnFilter = this.contract.filters.Transfer(this.userAddress, "0x0000000000000000000000000000000000000000");
-        
-        // Get approval events to find pUSD amounts for purchases
-        const approvalFilter = paymentTokenContract.filters.Approval(this.userAddress, this.contract.address);
+            // Get different event filters
+            const buyFilter = this.contract.filters.Transfer(this.contract.address, this.userAddress);
+            const redeemFilter = this.contract.filters.TokensRedeemed(this.userAddress);
+            const burnFilter = this.contract.filters.Transfer(this.userAddress, "0x0000000000000000000000000000000000000000");
+            
+            // Get approval events to find pUSD amounts for purchases
+            const approvalFilter = paymentTokenContract.filters.Approval(this.userAddress, this.contract.address);
 
-        const [buyEvents, redeemEvents, burnEvents, approvalEvents] = await Promise.all([
-            this.contract.queryFilter(buyFilter, 0, 'latest'),
-            this.contract.queryFilter(redeemFilter, 0, 'latest'),
-            this.contract.queryFilter(burnFilter, 0, 'latest'),
-            paymentTokenContract.queryFilter(approvalFilter, 0, 'latest')
-        ]);
+            const [buyEvents, redeemEvents, burnEvents, approvalEvents] = await Promise.all([
+                this.contract.queryFilter(buyFilter, 0, 'latest'),
+                this.contract.queryFilter(redeemFilter, 0, 'latest'),
+                this.contract.queryFilter(burnFilter, 0, 'latest'),
+                paymentTokenContract.queryFilter(approvalFilter, 0, 'latest')
+            ]);
 
-        let allEvents = [];
+            let allEvents = [];
 
-        // Process buy events and match with approval amounts
-        for (const event of buyEvents) {
-            // Find corresponding approval event around the same time
-            const correspondingApproval = approvalEvents.find(approval => 
-                Math.abs(approval.blockNumber - event.blockNumber) <= 2 // Within 2 blocks
-            );
+            // Process buy events and match with approval amounts
+            for (const event of buyEvents) {
+                // Find corresponding approval event around the same time
+                const correspondingApproval = approvalEvents.find(approval => 
+                    Math.abs(approval.blockNumber - event.blockNumber) <= 2 // Within 2 blocks
+                );
 
-            allEvents.push({
-                type: 'Buy',
-                wytAmount: event.args.value,
-                pUSDAmount: correspondingApproval ? correspondingApproval.args.value : null,
+                allEvents.push({
+                    type: 'Buy',
+                    wytAmount: event.args.value,
+                    pUSDAmount: correspondingApproval ? correspondingApproval.args.value : null,
+                    blockNumber: event.blockNumber,
+                    txHash: event.transactionHash
+                });
+            }
+
+            // Process redeem events (these already have pUSD amounts)
+            redeemEvents.forEach(event => allEvents.push({
+                type: 'Redeem',
+                wytAmount: event.args.wytAmount,
+                pUSDAmount: event.args.pUSDAmount,
                 blockNumber: event.blockNumber,
                 txHash: event.transactionHash
-            });
-        }
+            }));
 
-        // Process redeem events (these already have pUSD amounts)
-        redeemEvents.forEach(event => allEvents.push({
-            type: 'Redeem',
-            wytAmount: event.args.wytAmount,
-            pUSDAmount: event.args.pUSDAmount,
-            blockNumber: event.blockNumber,
-            txHash: event.transactionHash
-        }));
+            // Process burn events
+            burnEvents.forEach(event => allEvents.push({
+                type: 'Burn',
+                wytAmount: event.args.value,
+                pUSDAmount: ethers.BigNumber.from(0),
+                blockNumber: event.blockNumber,
+                txHash: event.transactionHash
+            }));
 
-        // Process burn events
-        burnEvents.forEach(event => allEvents.push({
-            type: 'Burn',
-            wytAmount: event.args.value,
-            pUSDAmount: ethers.BigNumber.from(0),
-            blockNumber: event.blockNumber,
-            txHash: event.transactionHash
-        }));
+            // Sort by block number (newest first)
+            allEvents.sort((a, b) => b.blockNumber - a.blockNumber);
 
-        // Sort by block number (newest first)
-        allEvents.sort((a, b) => b.blockNumber - a.blockNumber);
+            if (allEvents.length === 0) {
+                this.elements.txHistoryTable.innerHTML = '<p>No transaction history found.</p>';
+                return;
+            }
 
-        if (allEvents.length === 0) {
-            this.elements.txHistoryTable.innerHTML = '<p>No transaction history found.</p>';
-            return;
-        }
-
-        const tableHtml = `<table>
-            <thead>
-                <tr>
-                    <th>Type</th>
-                    <th>WYT Amount</th>
-                    <th>pUSD Amount</th>
-                    <th>Transaction</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${allEvents.slice(0, 10).map(event => `
+            const tableHtml = `<table>
+                <thead>
                     <tr>
-                        <td>
-                            <span class="font-semibold ${event.type === 'Buy' ? 'text-green-400' : event.type === 'Redeem' ? 'text-red-400' : 'text-gray-400'}">
-                                ${event.type}
-                            </span>
-                        </td>
-                        <td>${this.formatTokenValue(event.wytAmount, this.wytDecimals)}</td>
-                        <td>
-                            ${event.pUSDAmount && !event.pUSDAmount.isZero() 
-                                ? this.formatTokenValue(event.pUSDAmount, this.paymentTokenDecimals) 
-                                : event.type === 'Burn' ? '0.00' : 'N/A'
-                            }
-                        </td>
-                        <td>
-                            <a href="${PLUME_MAINNET.blockExplorerUrls[0]}/tx/${event.txHash}" 
-                               target="_blank" 
-                               rel="noopener noreferrer" 
-                               class="footer-link">
-                                View on Explorer
-                            </a>
-                        </td>
+                        <th>Type</th>
+                        <th>WYT Amount</th>
+                        <th>pUSD Amount</th>
+                        <th>Transaction</th>
                     </tr>
-                `).join('')}
-            </tbody>
-        </table>`;
+                </thead>
+                <tbody>
+                    ${allEvents.slice(0, 10).map(event => `
+                        <tr>
+                            <td>
+                                <span class="font-semibold ${event.type === 'Buy' ? 'text-green-400' : event.type === 'Redeem' ? 'text-red-400' : 'text-gray-400'}">
+                                    ${event.type}
+                                </span>
+                            </td>
+                            <td>${this.formatTokenValue(event.wytAmount, this.wytDecimals)}</td>
+                            <td>
+                                ${event.pUSDAmount && !event.pUSDAmount.isZero() 
+                                    ? this.formatTokenValue(event.pUSDAmount, this.paymentTokenDecimals) 
+                                    : event.type === 'Burn' ? '0.00' : 'N/A'
+                                }
+                            </td>
+                            <td>
+                                <a href="${PLUME_MAINNET.blockExplorerUrls[0]}/tx/${event.txHash}" 
+                                   target="_blank" 
+                                   rel="noopener noreferrer" 
+                                   class="footer-link">
+                                    View on Explorer
+                                </a>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>`;
 
-        this.elements.txHistoryTable.innerHTML = tableHtml;
+            this.elements.txHistoryTable.innerHTML = tableHtml;
 
-    } catch (err) {
-        console.error('Transaction history error:', err);
-        this.elements.txHistoryTable.innerHTML = '<p class="text-red-500">Error loading history.</p>';
-    }
-}, 
+        } catch (err) {
+            console.error('Transaction history error:', err);
+            this.elements.txHistoryTable.innerHTML = '<p class="text-red-500">Error loading history.</p>';
+        }
+    }, // <-- THIS IS THE CRITICAL COMMA THAT WAS MISSING!
     
     exportPDF() {
         const button = this.elements.exportPdfButton;
