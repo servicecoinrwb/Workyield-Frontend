@@ -533,46 +533,49 @@ const App = {
     },
 
     exportPDF() {
-        if (typeof jspdf === 'undefined' || typeof jspdf.plugin.autotable === 'undefined') {
-            return this.showNotification('PDF library is not available.', 'error');
-        }
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const tableElement = this.elements.workOrderResults.querySelector('table');
-        if (!tableElement) return this.showNotification('No work order table to export.', 'info');
-        doc.autoTable({
-            html: tableElement,
-            startY: 20,
-            theme: 'grid',
-            headStyles: { fillColor: [22, 160, 133] },
-        });
-        doc.text("Work Yield - Work Order Report", 14, 15);
-        doc.save('work-yield-orders.pdf');
-    },
+    // Check if the PDF generation libraries are loaded
+    if (typeof jspdf === 'undefined' || typeof jspdf.plugin.autotable === 'undefined') {
+        return this.showNotification('PDF library is not available.', 'error');
+    }
 
-    async handleTransaction(button, transactionCallback) {
-        if (!this.userAddress) return this.showNotification('Please connect your wallet first.', 'error');
-        this.setButtonLoading(button, true);
-        try {
-            const result = await transactionCallback();
-            this.showNotification(result, 'success');
-            await this.loadContractData();
-        } catch (error) {
-            console.error('Transaction error:', error);
-            let errorMessage = 'Transaction failed.';
-            if (error.code === 4001) {
-                errorMessage = 'Transaction rejected by user.';
-            } else if (error.data && error.data.message) {
-                errorMessage = error.data.message;
-            } else if (error.message) {
-                errorMessage = error.message;
-            }
-            this.showNotification(errorMessage, 'error');
-        } finally {
-            this.setButtonLoading(button, false);
-        }
-    },
+    // Find the table currently visible in the results container
+    const tableElement = this.elements.workOrderResults.querySelector('table');
+    if (!tableElement) {
+        return this.showNotification('No work order data to export.', 'info');
+    }
 
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({
+        orientation: 'landscape', // Use landscape for wide tables
+    });
+
+    // Check if there's an active tab to use in the title
+    const activeTab = this.elements.workOrderResults.querySelector('.wo-tab-btn.active');
+    let reportTitle = "Work Yield - Work Order Report";
+    if (activeTab) {
+        reportTitle = `Work Order Report - ${activeTab.textContent.trim()}`;
+    }
+
+    // Add a title to the PDF
+    doc.text(reportTitle, 14, 15);
+    doc.setFontSize(10);
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 20);
+
+
+    // Use autoTable to convert the HTML table to a PDF table
+    doc.autoTable({
+        html: tableElement,
+        startY: 25, // Start after the title
+        theme: 'grid',
+        headStyles: {
+            fillColor: [22, 160, 133] // A nice green color for the header
+        },
+    });
+
+    // Prompt the user to save the file
+    doc.save('work-yield-report.pdf');
+    this.showNotification('PDF report generated!', 'success');
+},
     setButtonLoading(button, isLoading) {
         if (!button) return;
         if (isLoading) {
