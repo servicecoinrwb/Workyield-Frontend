@@ -533,47 +533,54 @@ const App = {
     },
 
     exportPDF() {
-        if (typeof window.jspdf === 'undefined' || typeof window.jspdf.plugin.autotable === 'undefined') {
-            return this.showNotification('PDF library is not available.', 'error');
-        }
-        const tableElement = this.elements.workOrderResults.querySelector('table');
-        if (!tableElement) {
-            return this.showNotification('No work order data to export.', 'info');
-        }
-        const tableClone = tableElement.cloneNode(true);
-        tableClone.querySelectorAll('td').forEach(cell => {
-            const cellText = cell.innerText.trim();
-            if (cellText === '✅') {
-                cell.innerText = 'Yes';
-            } else if (cellText === '❌') {
-                cell.innerText = 'No';
+        setTimeout(() => {
+            try {
+                if (typeof window.jspdf === 'undefined') {
+                    return this.showNotification('PDF library (jspdf) is not available.', 'error');
+                }
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({
+                    orientation: 'landscape',
+                });
+                if (typeof doc.autoTable !== 'function') {
+                    return this.showNotification('PDF table plugin (autotable) is not available. Please refresh and try again.', 'error');
+                }
+                const tableElement = this.elements.workOrderResults.querySelector('table');
+                if (!tableElement) {
+                    return this.showNotification('No work order data to export.', 'info');
+                }
+                const tableClone = tableElement.cloneNode(true);
+                tableClone.querySelectorAll('td').forEach(cell => {
+                    const cellText = cell.innerText.trim();
+                    if (cellText === '✅') {
+                        cell.innerText = 'Yes';
+                    } else if (cellText === '❌') {
+                        cell.innerText = 'No';
+                    }
+                });
+                const activeTab = this.elements.workOrderResults.querySelector('.wo-tab-btn.active');
+                let reportTitle = "Work Yield - Work Order Report";
+                if (activeTab) {
+                    reportTitle = `Work Order Report - ${activeTab.textContent.trim()}`;
+                }
+                doc.text(reportTitle, 14, 15);
+                doc.setFontSize(10);
+                doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 20);
+                doc.autoTable({
+                    html: tableClone,
+                    startY: 25,
+                    theme: 'grid',
+                    headStyles: {
+                        fillColor: [22, 160, 133]
+                    },
+                });
+                doc.save('work-yield-report.pdf');
+                this.showNotification('PDF report generated!', 'success');
+            } catch (err) {
+                console.error("PDF Export Error:", err);
+                this.showNotification('An error occurred while exporting the PDF.', 'error');
             }
-        });
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({
-            orientation: 'landscape',
-        });
-        if (typeof doc.autoTable !== 'function') {
-            return this.showNotification('PDF table plugin is not available.', 'error');
-        }
-        const activeTab = this.elements.workOrderResults.querySelector('.wo-tab-btn.active');
-        let reportTitle = "Work Yield - Work Order Report";
-        if (activeTab) {
-            reportTitle = `Work Order Report - ${activeTab.textContent.trim()}`;
-        }
-        doc.text(reportTitle, 14, 15);
-        doc.setFontSize(10);
-        doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 20);
-        doc.autoTable({
-            html: tableClone,
-            startY: 25,
-            theme: 'grid',
-            headStyles: {
-                fillColor: [22, 160, 133]
-            },
-        });
-        doc.save('work-yield-report.pdf');
-        this.showNotification('PDF report generated!', 'success');
+        }, 100); 
     },
 
     async handleTransaction(button, transactionCallback) {
