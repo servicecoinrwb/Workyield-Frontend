@@ -431,6 +431,8 @@ const App = {
 
     // Replace the entire displayWorkOrders function in your script.js with this version.
 
+// Replace the entire displayWorkOrders function in your script.js with this version.
+
 displayWorkOrders(orders, isSearchResult = false) {
     if (!this.elements.workOrderResults) return;
     if (orders.length === 0) {
@@ -450,7 +452,7 @@ displayWorkOrders(orders, isSearchResult = false) {
                         <td>${this.formatTokenValue(wo.grossYield, this.paymentTokenDecimals)}</td>
                         <td>${this.formatTokenValue(wo.reserveAmount, this.paymentTokenDecimals)}</td>
                         <td>${this.formatTokenValue(wo.tokensIssued, this.wytDecimals)}</td>
-                        <td>${wo.isActive ? 'Yes' : 'No'}</td> <td>${wo.isPaid ? 'Yes' : 'No'}</td>   <td>${wo.description}</td>
+                        <td>${wo.isActive ? '✅' : '❌'}</td> <td>${wo.isPaid ? '✅' : '❌'}</td>   <td>${wo.description}</td>
                         <td>${new Date(wo.createdAt * 1000).toLocaleDateString()}</td>
                     </tr>`).join('')}
                 </tbody>
@@ -485,7 +487,7 @@ displayWorkOrders(orders, isSearchResult = false) {
                 <td>${this.formatTokenValue(wo.grossYield, this.paymentTokenDecimals)}</td>
                 <td>${this.formatTokenValue(wo.reserveAmount, this.paymentTokenDecimals)}</td>
                 <td>${this.formatTokenValue(wo.tokensIssued, this.wytDecimals)}</td>
-                <td>${wo.isActive ? 'Yes' : 'No'}</td> <td>${wo.isPaid ? 'Yes' : 'No'}</td>   <td>${wo.description}</td>
+                <td>${wo.isActive ? '✅' : '❌'}</td> <td>${wo.isPaid ? '✅' : '❌'}</td>   <td>${wo.description}</td>
                 <td>${new Date(wo.createdAt * 1000).toLocaleDateString()}</td>
             </tr>`).join('')}
         </tbody>`;
