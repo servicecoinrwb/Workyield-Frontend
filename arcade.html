@@ -117,13 +117,6 @@
         input[type=range] { -webkit-appearance: none; background: transparent; }
         input[type=range]::-webkit-slider-runnable-track { height: 5px; background: #374151; border-radius: 5px; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; background: var(--brand-orange); border-radius: 50%; margin-top: -5.5px; }
-        
-        /* Leaderboard Styles */
-        #leaderboard-table { width: 100%; border-collapse: collapse; }
-        #leaderboard-table th, #leaderboard-table td { padding: 12px; text-align: left; border-bottom: 1px solid #374151; }
-        #leaderboard-table th { font-weight: 600; }
-        #leaderboard-table tr:last-child td { border-bottom: none; }
-        #leaderboard-table td:last-child { text-align: right; font-weight: bold; color: var(--brand-orange); }
     </style>
 </head>
 <body>
@@ -419,7 +412,7 @@
             button.textContent = "Submitting...";
 
             try {
-                const response = await fetch('http://localhost:3000/submit-score', {
+                const response = await fetch('http://localhost:3000/submit-score', { // <-- IMPORTANT: REPLACE THIS URL
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -434,11 +427,10 @@
                     button.textContent = "Submitted!";
                 } else {
                     button.textContent = "Submission Failed";
-                    button.disabled = false;
                 }
             } catch (error) {
                 console.error("Error submitting score:", error);
-                alert("Could not connect to the referee server. Is it running?");
+                alert("Could not connect to the referee server.");
                 button.disabled = false;
                 button.textContent = "Submit Score";
             }
