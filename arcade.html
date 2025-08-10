@@ -412,42 +412,43 @@
         }
         
         async function showLeaderboard() {
-            gameSelection.classList.add('hidden');
-            leaderboard.classList.remove('hidden');
-            const leaderboardBody = document.getElementById('leaderboard-body');
-            leaderboardBody.innerHTML = '<tr><td colspan="3">Loading...</td></tr>';
+    gameSelection.classList.add('hidden');
+    leaderboard.classList.remove('hidden');
+    const leaderboardBody = document.getElementById('leaderboard-body');
+    leaderboardBody.innerHTML = '<tr><td colspan="3">Loading...</td></tr>';
 
-            try {
-                const response = await fetch('https://arcade-referee-server.onrender.com/leaderboard');
-                const data = await response.json();
+    try {
+        const response = await fetch('https://arcade-referee-server.onrender.com/leaderboard');
+        const data = await response.json();
 
-                if (!data.success || !data.leaderboard) {
-                    throw new Error(data.message || "Failed to fetch leaderboard.");
-                }
-
-                const scores = data.leaderboard;
-                leaderboardBody.innerHTML = '';
-
-                if (scores.length === 0) {
-                    leaderboardBody.innerHTML = '<tr><td colspan="3">No scores submitted for this week yet!</td></tr>';
-                    return;
-                }
-
-                scores.slice(0, 10).forEach((entry, index) => {
-                    const rank = index + 1;
-                    const playerAddress = `${entry.player.slice(0, 6)}...${entry.player.slice(-4)}`;
-                    const tickets = entry.score.toString();
-                    
-                    const row = document.createElement('tr');
-                    row.innerHTML = `<td>${rank}</td><td>${playerAddress}</td><td>${tickets}</td>`;
-                    leaderboardBody.appendChild(row);
-                });
-
-            } catch (error) {
-                console.error("Could not fetch leaderboard data:", error);
-                leaderboardBody.innerHTML = '<tr><td colspan="3">Could not load leaderboard. Is the server running?</td></tr>';
-            }
+        if (!data.success || !data.leaderboard) {
+            throw new Error(data.message || "Failed to fetch leaderboard.");
         }
+
+        const scores = data.leaderboard;
+        leaderboardBody.innerHTML = '';
+
+        if (scores.length === 0) {
+            leaderboardBody.innerHTML = '<tr><td colspan="3">No scores submitted for this week yet!</td></tr>';
+            return;
+        }
+
+        scores.slice(0, 10).forEach((entry, index) => {
+            const rank = index + 1;
+            const playerAddress = `${entry.player.slice(0, 6)}...${entry.player.slice(-4)}`;
+            const tickets = entry.score.toString();
+
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${rank}</td><td>${playerAddress}</td><td>${tickets}</td>`;
+            leaderboardBody.appendChild(row);
+        });
+
+    } catch (error) {
+        console.error("Could not fetch leaderboard data:", error);
+        leaderboardBody.innerHTML = '<tr><td colspan="3">Could not load leaderboard. Is the server running?</td></tr>';
+    }
+}
+
         
         async function submitScoreToReferee(score, gameId, button) {
             if (!userAddress) {
