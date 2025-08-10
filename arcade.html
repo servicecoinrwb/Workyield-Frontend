@@ -117,6 +117,13 @@
         input[type=range] { -webkit-appearance: none; background: transparent; }
         input[type=range]::-webkit-slider-runnable-track { height: 5px; background: #374151; border-radius: 5px; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; background: var(--brand-orange); border-radius: 50%; margin-top: -5.5px; }
+        
+        /* Leaderboard Styles */
+        #leaderboard-table { width: 100%; border-collapse: collapse; }
+        #leaderboard-table th, #leaderboard-table td { padding: 12px; text-align: left; border-bottom: 1px solid #374151; }
+        #leaderboard-table th { font-weight: 600; }
+        #leaderboard-table tr:last-child td { border-bottom: none; }
+        #leaderboard-table td:last-child { text-align: right; font-weight: bold; color: var(--brand-orange); }
     </style>
 </head>
 <body>
@@ -274,12 +281,7 @@
                 </tr>
             </thead>
             <tbody id="leaderboard-body">
-                <!-- Sample Data -->
-                <tr><td>1</td><td>0xAb...c123</td><td>5,430</td></tr>
-                <tr><td>2</td><td>0xCd...d456</td><td>4,980</td></tr>
-                <tr><td>3</td><td>0xEf...e789</td><td>4,550</td></tr>
-                <tr><td>4</td><td>0xGh...f012</td><td>3,780</td></tr>
-                <tr><td>5</td><td>0xIj...g345</td><td>3,120</td></tr>
+                <!-- Leaderboard data will be populated here -->
             </tbody>
         </table>
         <button class="btn btn-secondary" style="margin-top: 20px;" onclick="showMenu()">Back to Menu</button>
@@ -327,6 +329,15 @@
         const connectButton = document.getElementById('connectButton');
         let activeGame = null;
         let userAddress = null;
+
+        // --- NEW: Leaderboard Contract Configuration ---
+        const ARCADE_REWARDS_ADDRESS = "0x5BCCc96fA6E6315d63bF196B2d14bAe064436031"; // Your deployed contract address
+        const ARCADE_REWARDS_ABI = [
+            "function getLeaderboard(uint256 _seasonId) view returns (tuple(address player, uint256 score)[] memory)",
+            "function currentSeasonId() view returns (uint256)"
+        ];
+        const plumeProvider = new ethers.providers.JsonRpcProvider('https://testnet-rpc.plumenetwork.xyz/http');
+        const arcadeRewardsContract = new ethers.Contract(ARCADE_REWARDS_ADDRESS, ARCADE_REWARDS_ABI, plumeProvider);
 
         async function connectWallet() {
             if (typeof window.ethereum === 'undefined') {
@@ -398,9 +409,40 @@
             }
         }
         
-        function showLeaderboard() {
+        async function showLeaderboard() {
             gameSelection.classList.add('hidden');
             leaderboard.classList.remove('hidden');
+            const leaderboardBody = document.getElementById('leaderboard-body');
+            leaderboardBody.innerHTML = '<tr><td colspan="3">Loading...</td></tr>'; // Loading state
+
+            try {
+                const seasonId = await arcadeRewardsContract.currentSeasonId();
+                const scores = await arcadeRewardsContract.getLeaderboard(seasonId);
+
+                // Sort scores from highest to lowest
+                scores.sort((a, b) => b.score - a.score);
+
+                leaderboardBody.innerHTML = ''; // Clear loading/old data
+
+                if (scores.length === 0) {
+                    leaderboardBody.innerHTML = '<tr><td colspan="3">No scores submitted for this week yet!</td></tr>';
+                    return;
+                }
+
+                scores.slice(0, 10).forEach((entry, index) => { // Show top 10
+                    const rank = index + 1;
+                    const playerAddress = `${entry.player.slice(0, 6)}...${entry.player.slice(-4)}`;
+                    const tickets = entry.score.toString();
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td>${rank}</td><td>${playerAddress}</td><td>${tickets}</td>`;
+                    leaderboardBody.appendChild(row);
+                });
+
+            } catch (error) {
+                console.error("Could not fetch leaderboard data:", error);
+                leaderboardBody.innerHTML = '<tr><td colspan="3">Could not load leaderboard.</td></tr>';
+            }
         }
         
         async function submitScoreToReferee(score, gameId, button) {
@@ -427,10 +469,11 @@
                     button.textContent = "Submitted!";
                 } else {
                     button.textContent = "Submission Failed";
+                    button.disabled = false;
                 }
             } catch (error) {
                 console.error("Error submitting score:", error);
-                alert("Could not connect to the referee server.");
+                alert("Could not connect to the referee server. Is it running?");
                 button.disabled = false;
                 button.textContent = "Submit Score";
             }
