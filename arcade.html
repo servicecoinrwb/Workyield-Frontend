@@ -412,7 +412,7 @@
             button.textContent = "Submitting...";
 
             try {
-                const response = await fetch('YOUR_SERVER_URL_HERE/submit-score', { // <-- IMPORTANT: REPLACE THIS URL
+                const response = await fetch('http://localhost:3000/submit-score', { // <-- IMPORTANT: REPLACE THIS URL
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
