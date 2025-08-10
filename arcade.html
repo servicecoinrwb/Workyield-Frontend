@@ -101,11 +101,14 @@
             display: flex; flex-direction: column; justify-content: center;
             align-items: center; text-align: center; z-index: 10;
         }
-        .end-screen-buttons, .trade-buttons {
+        .end-screen-buttons, .trade-buttons, .start-button-container {
             display: flex;
             gap: 10px;
             width: 80%;
             max-width: 300px;
+        }
+        .game-overlay .btn {
+            width: 100%; /* Let the container control the width */
         }
         .volume-control {
             display: flex;
@@ -171,11 +174,13 @@
         <div id="btc-trader-start-screen" class="game-overlay">
             <h2>BTC Trader</h2>
             <p>Will the price be higher or lower in 15 seconds?</p>
-            <button class="btn" id="btc-trader-start-btn">Start Game</button>
+            <div class="start-button-container">
+                <button class="btn" id="btc-trader-start-btn">Start Game</button>
+            </div>
         </div>
         <div id="btc-trader-end-screen" class="game-overlay hidden">
             <h2 id="btc-trader-winner-message">You Win!</h2>
-            <p>You won <span id="btc-trader-final-score">100</span> Tickets 🎟️!</p>
+            <p>You won <span id="btc-trader-final-score">100</span> Tickets �️!</p>
             <button class="btn" id="btc-trader-submit-btn">Submit Score</button>
             <div class="end-screen-buttons">
                 <button class="btn" id="btc-trader-restart-btn">Play Again</button>
@@ -199,7 +204,9 @@
         <div id="pepe-jumper-start-screen" class="game-overlay hidden">
             <h2>Pepe Jumper</h2>
             <p>Jump as high as you can!</p>
-            <button class="btn" id="pepe-jumper-start-btn">Start Game</button>
+            <div class="start-button-container">
+                <button class="btn" id="pepe-jumper-start-btn">Start Game</button>
+            </div>
         </div>
         <div id="pepe-jumper-end-screen" class="game-overlay hidden">
             <h2>Game Over</h2>
@@ -227,7 +234,9 @@
         <div id="breakout-start-screen" class="game-overlay hidden">
             <h2>Work Yield Breakout</h2>
             <p>Clear all the blocks to win!</p>
-            <button class="btn" id="breakout-start-btn">Start Game</button>
+            <div class="start-button-container">
+                <button class="btn" id="breakout-start-btn">Start Game</button>
+            </div>
         </div>
         <div id="breakout-end-screen" class="game-overlay hidden">
             <h2 id="breakout-winner-message">You Win!</h2>
@@ -255,7 +264,9 @@
         <div id="stacker-start-screen" class="game-overlay hidden">
             <h2>Work Yield Stacker</h2>
             <p>Stack the blocks as high as you can!</p>
-            <button class="btn" id="stacker-start-btn">Start Game</button>
+            <div class="start-button-container">
+                <button class="btn" id="stacker-start-btn">Start Game</button>
+            </div>
         </div>
         <div id="stacker-end-screen" class="game-overlay hidden">
             <h2 id="stacker-winner-message">Game Over</h2>
@@ -641,3 +652,4 @@
     </script>
 </body>
 </html>
+�
