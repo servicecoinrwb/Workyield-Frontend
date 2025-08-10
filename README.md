@@ -75,3 +75,45 @@ The **WorkYield Token (WYT)** is a digital asset whose supply and value are link
 ```bash
 git clone https://github.com/your-username/workyield-dashboard.git
 cd workyield-dashboard
+
+
+
+Welcome to the Work Yield Arcade!
+Thanks for taking a break from stacking yield to touch some grass and play some games. Here's everything you need to know to compete for weekly prizes.
+
+How It Works
+1. Play & Get a High Score 🚀
+
+Choose any game from the menu and do your best to get a high score.
+
+Your score is converted into "Tickets" 🎟️ at the end of each game.
+
+2. Connect Your Wallet 🔗
+
+To submit your tickets to the weekly leaderboard, you'll need to connect your wallet.
+
+Click the "Connect Wallet" button in the top right corner. This lets us know who you are!
+
+3. Submit Your Score ✅
+
+After a game ends, you'll see a "Submit Score" button.
+
+Clicking this will send your score to our secure server. The server acts as a referee to validate the score and then posts it to the on-chain leaderboard.
+
+You can submit a new score every 12 hours to add to your weekly total!
+
+4. Climb the Leaderboard 🏆
+
+Click the "Leaderboard" button on the main menu to see where you rank against other players.
+
+The leaderboard shows the total accumulated tickets for the current weekly season.
+
+5. Win Weekly Rewards 🎉
+
+At the end of each week, the leaderboard is finalized.
+
+The top 3 players will automatically receive token rewards for their high scores!
+
+After the prizes are sent, the leaderboard resets for a new week of competition.
+
+Good luck, and have fun!
