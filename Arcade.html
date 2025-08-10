@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Work Yield - Arcade</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Sound Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <style>
+        :root {
+            --brand-orange: #f97316;
+            --background-dark: #111827;
+            --text-light: #f3f4f6;
+            --card-dark: rgba(31, 41, 55, 0.6);
+            --wall-color: #3b82f6;
+            --price-up: #22c55e;
+            --price-down: #ef4444;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-dark);
+            color: var(--text-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+        .hidden { display: none !important; }
+        #game-selection, .game-instance {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        h1, h2 { text-align: center; }
+        h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        p { font-size: 1.2rem; margin-bottom: 30px; text-align: center; }
+        .btn {
+            background-color: var(--brand-orange);
+            color: white;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        .btn-secondary { background-color: #374151; }
+        .btn-up { background-color: var(--price-up); }
+        .btn-down { background-color: var(--price-down); }
+        .btn:hover { transform: translateY(-2px); }
+        .btn-secondary:hover { background-color: #4b5563; }
+        canvas {
+            background-color: var(--card-dark);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: block;
+            width: 100%;
+            border-radius: 1rem;
+        }
+        .game-header { width: 100%; text-align: center; margin-bottom: 20px; }
+        .game-header h2 { font-size: 2rem; margin: 0; }
+        .game-header p { font-size: 1.5rem; color: var(--brand-orange); margin: 5px 0 0 0; }
+        .game-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(17, 24, 39, 0.8); backdrop-filter: blur(5px);
+            display: flex; flex-direction: column; justify-content: center;
+            align-items: center; text-align: center; z-index: 10;
+        }
+        .end-screen-buttons, .trade-buttons {
+            display: flex;
+            gap: 10px;
+            width: 80%;
+            max-width: 300px;
+        }
+        .volume-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        input[type=range] { -webkit-appearance: none; background: transparent; }
+        input[type=range]::-webkit-slider-runnable-track { height: 5px; background: #374151; border-radius: 5px; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; background: var(--brand-orange); border-radius: 50%; margin-top: -5.5px; }
+        
+        /* Leaderboard Styles */
+        #leaderboard-table { width: 100%; border-collapse: collapse; }
+        #leaderboard-table th, #leaderboard-table td { padding: 12px; text-align: left; border-bottom: 1px solid #374151; }
+        #leaderboard-table th { font-weight: 600; }
+        #leaderboard-table tr:last-child td { border-bottom: none; }
+        #leaderboard-table td:last-child { text-align: right; font-weight: bold; color: var(--brand-orange); }
+    </style>
+</head>
+<body>
+
+    <!-- Main Game Selection Menu -->
+    <div id="game-selection">
+        <h1>Work Yield Arcade</h1>
+        <p>Choose a game to play!</p>
+        <button class="btn" onclick="showGame('btc-trader')">BTC Trader</button>
+        <button class="btn" onclick="showGame('pepe-jumper')">Pepe Jumper</button>
+        <button class="btn" onclick="showGame('breakout')">Breakout</button>
+        <button class="btn" onclick="showGame('stacker')">Yield Stacker</button>
+        <button class="btn btn-secondary" onclick="showLeaderboard()">Leaderboard</button>
+        <button class="btn btn-secondary" id="muteButton">Mute Sound</button>
+    </div>
+
+    <!-- BTC Trader Game Instance -->
+    <div id="btc-trader-game" class="game-instance hidden">
+        <div class="game-header">
+            <h2>BTC Trader</h2>
+            <p id="btc-trader-price">Price: $0.00</p>
+            <div class="volume-control">
+                <span>🔉</span>
+                <input type="range" class="volume-slider" min="0" max="100" value="100">
+            </div>
+        </div>
+        <canvas id="btcTraderCanvas"></canvas>
+        <div class="trade-buttons" style="margin-top: 20px;">
+            <button class="btn btn-up" id="btc-trader-up-btn">Up</button>
+            <button class="btn btn-down" id="btc-trader-down-btn">Down</button>
+        </div>
+        <p id="btc-trader-timer" style="font-size: 1.2rem; margin-top: 10px;">Time: 15s</p>
+        <button class="btn btn-secondary" style="margin-top: auto;" onclick="showMenu()">Back to Menu</button>
+        <div id="btc-trader-start-screen" class="game-overlay">
+            <h2>BTC Trader</h2>
+            <p>Will the price be higher or lower in 15 seconds?</p>
+            <button class="btn" id="btc-trader-start-btn">Start Game</button>
+        </div>
+        <div id="btc-trader-end-screen" class="game-overlay hidden">
+            <h2 id="btc-trader-winner-message">You Win!</h2>
+            <p>You won <span id="btc-trader-final-score">100</span> Tickets 🎟️!</p>
+            <div class="end-screen-buttons">
+                <button class="btn" id="btc-trader-restart-btn">Play Again</button>
+                <button class="btn btn-secondary" onclick="showMenu()">Quit Game</button>
+            </div>
+             <button class="btn" style="margin-top: 15px;" onclick="alert('Score submitted! (Placeholder)')">Submit Score</button>
+        </div>
+    </div>
+
+    <!-- Pepe Jumper Game Instance -->
+    <div id="pepe-jumper-game" class="game-instance hidden">
+        <div class="game-header">
+            <h2>Pepe Jumper</h2>
+            <p id="pepe-jumper-score">Tickets 🎟️: 0</p>
+            <div class="volume-control">
+                <span>🔉</span>
+                <input type="range" class="volume-slider" min="0" max="100" value="100">
+            </div>
+        </div>
+        <canvas id="pepeJumperCanvas"></canvas>
+        <button class="btn btn-secondary" style="margin-top: 20px;" onclick="showMenu()">Back to Menu</button>
+        <div id="pepe-jumper-start-screen" class="game-overlay hidden">
+            <h2>Pepe Jumper</h2>
+            <p>Jump as high as you can!</p>
+            <button class="btn" id="pepe-jumper-start-btn">Start Game</button>
+        </div>
+        <div id="pepe-jumper-end-screen" class="game-overlay hidden">
+            <h2>Game Over</h2>
+            <p>Final Tickets 🎟️: <span id="pepe-jumper-final-score">0</span></p>
+            <div class="end-screen-buttons">
+                <button class="btn" id="pepe-jumper-restart-btn">Play Again</button>
+                <button class="btn btn-secondary" onclick="showMenu()">Quit Game</button>
+            </div>
+             <button class="btn" style="margin-top: 15px;" onclick="alert('Score submitted! (Placeholder)')">Submit Score</button>
+        </div>
+    </div>
+    
+    <!-- Breakout Game Instance -->
+    <div id="breakout-game" class="game-instance hidden">
+        <div class="game-header">
+            <h2>Breakout</h2>
+            <p id="breakout-score">Tickets 🎟️: 0</p>
+             <div class="volume-control">
+                <span>🔉</span>
+                <input type="range" class="volume-slider" min="0" max="100" value="100">
+            </div>
+        </div>
+        <canvas id="breakoutCanvas"></canvas>
+        <button class="btn btn-secondary" style="margin-top: 20px;" onclick="showMenu()">Back to Menu</button>
+        <div id="breakout-start-screen" class="game-overlay hidden">
+            <h2>Work Yield Breakout</h2>
+            <p>Clear all the blocks to win!</p>
+            <button class="btn" id="breakout-start-btn">Start Game</button>
+        </div>
+        <div id="breakout-end-screen" class="game-overlay hidden">
+            <h2 id="breakout-winner-message">You Win!</h2>
+            <p>Final Tickets �️: <span id="breakout-final-score">0</span></p>
+            <div class="end-screen-buttons">
+                <button class="btn" id="breakout-restart-btn">Play Again</button>
+                <button class="btn btn-secondary" onclick="showMenu()">Quit Game</button>
+            </div>
+            <button class="btn" style="margin-top: 15px;" onclick="alert('Score submitted! (Placeholder)')">Submit Score</button>
+        </div>
+    </div>
+
+    <!-- Stacker Game Instance -->
+    <div id="stacker-game" class="game-instance hidden">
+        <div class="game-header">
+            <h2>Stacker</h2>
+            <p id="stacker-score">Tickets 🎟️: 0</p>
+             <div class="volume-control">
+                <span>🔉</span>
+                <input type="range" class="volume-slider" min="0" max="100" value="100">
+            </div>
+        </div>
+        <canvas id="stackerCanvas"></canvas>
+        <button class="btn btn-secondary" style="margin-top: 20px;" onclick="showMenu()">Back to Menu</button>
+        <div id="stacker-start-screen" class="game-overlay hidden">
+            <h2>Work Yield Stacker</h2>
+            <p>Stack the blocks as high as you can!</p>
+            <button class="btn" id="stacker-start-btn">Start Game</button>
+        </div>
+        <div id="stacker-end-screen" class="game-overlay hidden">
+            <h2 id="stacker-winner-message">Game Over</h2>
+            <p>Final Tickets 🎟️: <span id="stacker-final-score">0</span></p>
+            <div class="end-screen-buttons">
+                <button class="btn" id="stacker-restart-btn">Play Again</button>
+                <button class="btn btn-secondary" onclick="showMenu()">Quit Game</button>
+            </div>
+            <button class="btn" style="margin-top: 15px;" onclick="alert('Score submitted! (Placeholder)')">Submit Score</button>
+        </div>
+    </div>
+
+    <!-- Leaderboard -->
+    <div id="leaderboard" class="game-instance hidden">
+        <h1>Weekly Leaderboard</h1>
+        <p>Top players win rewards! Resets weekly.</p>
+        <table id="leaderboard-table">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Player</th>
+                    <th>Tickets 🎟️</th>
+                </tr>
+            </thead>
+            <tbody id="leaderboard-body">
+                <!-- Sample Data -->
+                <tr><td>1</td><td>0xAb...c123</td><td>5,430</td></tr>
+                <tr><td>2</td><td>0xCd...d456</td><td>4,980</td></tr>
+                <tr><td>3</td><td>0xEf...e789</td><td>4,550</td></tr>
+                <tr><td>4</td><td>0xGh...f012</td><td>3,780</td></tr>
+                <tr><td>5</td><td>0xIj...g345</td><td>3,120</td></tr>
+            </tbody>
+        </table>
+        <button class="btn btn-secondary" style="margin-top: 20px;" onclick="showMenu()">Back to Menu</button>
+    </div>
+
+    <script>
+        // --- Sound Effects Engine ---
+        let isMuted = false;
+        let currentVolume = 0; // 0 dB is max volume
+        const sound = {
+            sfxSynth: new Tone.Synth({ volume: -12 }).toDestination(),
+            musicSynth: new Tone.Synth({ oscillator: { type: 'square' }, volume: -20 }).toDestination(),
+            musicLoop: null,
+            playHit: () => { if (!isMuted) sound.sfxSynth.triggerAttackRelease("C4", "8n"); },
+            playScore: () => { if (!isMuted) sound.sfxSynth.triggerAttackRelease("E5", "16n"); },
+            playJump: () => { if (!isMuted) sound.sfxSynth.triggerAttackRelease("G5", "16n", Tone.now(), 0.5); },
+            playGameOver: () => { if (!isMuted) sound.sfxSynth.triggerAttackRelease("C3", "4n"); },
+            playWin: () => { if (!isMuted) sound.sfxSynth.triggerAttackRelease("G5", "8n"); },
+            startMusic: () => {
+                if (sound.musicLoop || isMuted) return;
+                const melody = ["C4", "G3", "G3", "A3", "G3", null, "B3", "C4"];
+                let noteIndex = 0;
+                sound.musicLoop = new Tone.Loop(time => {
+                    sound.musicSynth.triggerAttackRelease(melody[noteIndex % melody.length], "8n", time);
+                    noteIndex++;
+                }, "8n").start(0);
+                Tone.Transport.start();
+            },
+            stopMusic: () => {
+                if (sound.musicLoop) {
+                    sound.musicLoop.stop(0);
+                    sound.musicLoop.dispose();
+                    sound.musicLoop = null;
+                    Tone.Transport.stop();
+                }
+            }
+        };
+
+        // --- Global Navigation & Mute/Volume ---
+        const gameSelection = document.getElementById('game-selection');
+        const leaderboard = document.getElementById('leaderboard');
+        const gameInstances = document.querySelectorAll('.game-instance');
+        const muteButton = document.getElementById('muteButton');
+        const volumeSliders = document.querySelectorAll('.volume-slider');
+        let activeGame = null;
+
+        function setVolume(level) {
+            const dB = (level / 100) * 40 - 40;
+            currentVolume = dB;
+            if (!isMuted) {
+                Tone.Destination.volume.value = currentVolume;
+            }
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            if (isMuted) {
+                Tone.Destination.volume.value = -Infinity;
+                volumeSliders.forEach(slider => slider.disabled = true);
+            } else {
+                Tone.Destination.volume.value = currentVolume;
+                volumeSliders.forEach(slider => slider.disabled = false);
+            }
+            muteButton.textContent = isMuted ? "Unmute Sound" : "Mute Sound";
+        }
+        muteButton.addEventListener('click', toggleMute);
+
+        volumeSliders.forEach(slider => {
+            slider.addEventListener('input', (e) => {
+                setVolume(e.target.value);
+                volumeSliders.forEach(s => s.value = e.target.value);
+            });
+        });
+
+
+        function showMenu() {
+            gameInstances.forEach(game => game.classList.add('hidden'));
+            leaderboard.classList.add('hidden');
+            gameSelection.classList.remove('hidden');
+            if (activeGame && activeGame.stop) {
+                activeGame.stop();
+                activeGame = null;
+            }
+            sound.stopMusic();
+        }
+
+        function showGame(gameId) {
+            gameSelection.classList.add('hidden');
+            const gameToShow = document.getElementById(`${gameId}-game`);
+            if (gameToShow) {
+                gameToShow.classList.remove('hidden');
+                const startOverlay = gameToShow.querySelector('.game-overlay');
+                if(startOverlay) startOverlay.classList.remove('hidden');
+                
+                if (window[`${gameId.replace('-', '')}Game`]) {
+                    activeGame = window[`${gameId.replace('-', '')}Game`];
+                }
+            }
+        }
+        
+        function showLeaderboard() {
+            gameSelection.classList.add('hidden');
+            leaderboard.classList.remove('hidden');
+        }
+
+        // --- Game Modules ---
+        
+        // --- BTC Trader Implementation ---
+        window.btctraderGame = (function() {
+            const canvas = document.getElementById('btcTraderCanvas'); if(!canvas) return; const ctx = canvas.getContext('2d');
+            const priceDisplay = document.getElementById('btc-trader-price'); const timerDisplay = document.getElementById('btc-trader-timer');
+            const startScreen = document.getElementById('btc-trader-start-screen'); const endScreen = document.getElementById('btc-trader-end-screen');
+            const startButton = document.getElementById('btc-trader-start-btn'); const restartButton = document.getElementById('btc-trader-restart-btn');
+            const upButton = document.getElementById('btc-trader-up-btn'); const downButton = document.getElementById('btc-trader-down-btn');
+            const winnerMessage = document.getElementById('btc-trader-winner-message'); const finalScoreElement = document.getElementById('btc-trader-final-score');
+
+            let prices, currentPrice, startPrice, userChoice, timer, intervalId, gameRunning, animationFrameId;
+            const ROUND_TIME = 15;
+
+            function init() {
+                canvas.width = 400; canvas.height = 200;
+                prices = [118749.70]; 
+                for (let i = 0; i < canvas.width; i++) {
+                    prices.push(prices[prices.length - 1] + (Math.random() - 0.5) * 100);
+                }
+                currentPrice = prices[prices.length - 1];
+                startPrice = null;
+                userChoice = null;
+                timer = ROUND_TIME;
+                upButton.disabled = false;
+                downButton.disabled = false;
+                upButton.style.boxShadow = 'none';
+                downButton.style.boxShadow = 'none';
+                upButton.style.opacity = '1';
+                downButton.style.opacity = '1';
+                priceDisplay.textContent = `Price: $${currentPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                timerDisplay.textContent = `Time: ${timer}s`;
+            }
+
+            function drawChart() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.strokeStyle = '#f97316';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                const visiblePrices = prices.slice(-canvas.width);
+                const minPrice = Math.min(...visiblePrices);
+                const maxPrice = Math.max(...visiblePrices);
+                const priceRange = maxPrice - minPrice > 0 ? maxPrice - minPrice : 1;
+
+                visiblePrices.forEach((price, i) => {
+                    const y = canvas.height - ((price - minPrice) / priceRange) * canvas.height;
+                    ctx.lineTo(i, y);
+                });
+                ctx.stroke();
+            }
+
+            function update() {
+                prices.push(prices[prices.length - 1] + (Math.random() - 0.5) * 50);
+                if (prices.length > canvas.width * 2) prices.shift();
+                currentPrice = prices[prices.length - 1];
+                priceDisplay.textContent = `Price: $${currentPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            }
+            
+            function gameLoop() {
+                if (!gameRunning) return;
+                update();
+                drawChart();
+                animationFrameId = requestAnimationFrame(gameLoop);
+            }
+
+            function startRound() {
+                startPrice = currentPrice;
+                intervalId = setInterval(() => {
+                    timer--;
+                    timerDisplay.textContent = `Time: ${timer}s`;
+                    if (timer <= 0) {
+                        endGame();
+                    }
+                }, 1000);
+            }
+
+            function choose(choice) {
+                if (startPrice !== null) return;
+                userChoice = choice;
+                upButton.disabled = true;
+                downButton.disabled = true;
+                if (choice === 'up') {
+                    upButton.style.boxShadow = '0 0 15px var(--price-up)';
+                    downButton.style.opacity = '0.5';
+                } else {
+                    downButton.style.boxShadow = '0 0 15px var(--price-down)';
+                    upButton.style.opacity = '0.5';
+                }
+                startRound();
+            }
+
+            function startGame() { gameRunning = true; startScreen.classList.add('hidden'); endScreen.classList.add('hidden'); init(); gameLoop(); sound.startMusic(); }
+            function endGame() { clearInterval(intervalId); const isWin = (userChoice === 'up' && currentPrice > startPrice) || (userChoice === 'down' && currentPrice < startPrice); winnerMessage.textContent = isWin ? "You Win!" : "You Lose!"; finalScoreElement.textContent = isWin ? "100" : "0"; endScreen.classList.remove('hidden'); isWin ? sound.playWin() : sound.playGameOver(); stop(); }
+            function stop() { gameRunning = false; if(animationFrameId) cancelAnimationFrame(animationFrameId); if(intervalId) clearInterval(intervalId); sound.stopMusic(); }
+
+            upButton.addEventListener('click', () => choose('up'));
+            downButton.addEventListener('click', () => choose('down'));
+            startButton.addEventListener('click', startGame);
+            restartButton.addEventListener('click', startGame);
+            return { stop };
+        })();
+
+        // --- Pepe Jumper Implementation ---
+        window.pepejumperGame = (function() { /* ... Full Pepe Jumper logic ... */ })();
+        // --- Breakout Implementation ---
+        window.breakoutGame = (function() { /* ... Full Breakout logic ... */ })();
+        // --- Stacker Implementation ---
+        window.stackerGame = (function() { /* ... Full Stacker logic ... */ })();
+
+        // --- Minified Game Logic for Brevity ---
+        (function() {
+            const canvas = document.getElementById('pepeJumperCanvas'); if(!canvas) return; const ctx = canvas.getContext('2d');
+            const scoreDisplay = document.getElementById('pepe-jumper-score'); const startScreen = document.getElementById('pepe-jumper-start-screen'); const endScreen = document.getElementById('pepe-jumper-end-screen'); const startButton = document.getElementById('pepe-jumper-start-btn'); const restartButton = document.getElementById('pepe-jumper-restart-btn'); const finalScoreElement = document.getElementById('pepe-jumper-final-score');
+            let player, platforms, score, gameRunning, animationFrameId, cameraY, highestY; const gravity = 0.4; const jumpPower = -10;
+            function init() { canvas.width = 400; canvas.height = 600; score = 0; cameraY = 0; highestY = canvas.height; player = { x: canvas.width / 2 - 20, y: canvas.height - 50, width: 40, height: 30, vy: 0, vx: 0 }; platforms = [{ x: canvas.width / 2 - 50, y: canvas.height - 30, width: 100 }]; for (let i = 1; i <= 10; i++) { platforms.push({ x: Math.random() * (canvas.width - 80), y: canvas.height - 80 * i, width: 80 }); } updateScore(); }
+            function drawPepe(x, y) { ctx.fillStyle = '#3ca55c'; ctx.beginPath(); ctx.ellipse(x + 20, y + 15, 20, 15, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = 'white'; ctx.beginPath(); ctx.ellipse(x + 12, y + 10, 8, 10, 0, 0, Math.PI * 2); ctx.ellipse(x + 28, y + 10, 8, 10, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = 'black'; ctx.beginPath(); ctx.arc(x + 12, y + 10, 3, 0, Math.PI * 2); ctx.arc(x + 28, y + 10, 3, 0, Math.PI * 2); ctx.fill(); }
+            function drawPlatforms() { ctx.fillStyle = '#f97316'; platforms.forEach(p => { ctx.fillRect(p.x, p.y, p.width, 10); }); }
+            function update() { player.vy += gravity; player.y += player.vy; player.x += player.vx; if (player.x < 0) player.x = 0; if (player.x + player.width > canvas.width) player.x = canvas.width - player.width; if (player.y < highestY) { highestY = player.y; score = Math.floor((canvas.height - highestY) / 10); updateScore(); } if (player.y < cameraY + canvas.height / 2.5) { cameraY = player.y - canvas.height / 2.5; } ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.save(); ctx.translate(0, -cameraY); drawPepe(player.x, player.y); drawPlatforms(); ctx.restore(); platforms.forEach(p => { if (player.vy > 0 && player.x < p.x + p.width && player.x + player.width > p.x && player.y + player.height > p.y && player.y + player.height < p.y + 15) { player.vy = jumpPower; sound.playJump(); } }); if (platforms[0].y > cameraY + canvas.height) { platforms.shift(); platforms.push({ x: Math.random() * (canvas.width - 80), y: platforms[platforms.length - 1].y - 80, width: 80 }); } if (player.y > cameraY + canvas.height) { endGame(); } }
+            function updateScore() { scoreDisplay.textContent = `Tickets 🎟️: ${score}`; } function gameLoop() { if (!gameRunning) return; update(); animationFrameId = requestAnimationFrame(gameLoop); } function startGame() { gameRunning = true; startScreen.classList.add('hidden'); endScreen.classList.add('hidden'); init(); gameLoop(); sound.startMusic(); } function endGame() { gameRunning = false; cancelAnimationFrame(animationFrameId); finalScoreElement.textContent = score; endScreen.classList.remove('hidden'); sound.playGameOver(); sound.stopMusic(); } function stop() { gameRunning = false; if(animationFrameId) cancelAnimationFrame(animationFrameId); sound.stopMusic(); }
+            function handleMove(e) { if (!player) return; const rect = canvas.getBoundingClientRect(); const clientX = e.clientX || e.touches[0].clientX; let newX = clientX - rect.left - player.width / 2; if (newX < 0) newX = 0; if (newX + player.width > canvas.width) newX = canvas.width - player.width; player.x = newX; }
+            canvas.addEventListener('mousemove', handleMove); canvas.addEventListener('touchmove', handleMove); startButton.addEventListener('click', startGame); restartButton.addEventListener('click', startGame);
+            window.pepejumperGame = { stop };
+        })();
+        (function() {
+            const canvas = document.getElementById('breakoutCanvas'); if(!canvas) return; const ctx = canvas.getContext('2d');
+            const scoreDisplay = document.getElementById('breakout-score'); const startScreen = document.getElementById('breakout-start-screen'); const endScreen = document.getElementById('breakout-end-screen'); const startButton = document.getElementById('breakout-start-btn'); const restartButton = document.getElementById('breakout-restart-btn'); const finalScoreElement = document.getElementById('breakout-final-score'); const winnerMessage = document.getElementById('breakout-winner-message');
+            let paddle, ball, bricks, score, gameRunning, animationFrameId; const paddleProps = { width: 100, height: 15 }; const ballProps = { radius: 8, speed: 4 }; const brickProps = { rowCount: 5, columnCount: 7, width: 55, height: 20, padding: 10, offsetTop: 30, offsetLeft: 30 };
+            function init() { canvas.width = 480; canvas.height = 400; score = 0; updateScore(); paddle = { x: (canvas.width - paddleProps.width) / 2, y: canvas.height - paddleProps.height - 10, width: paddleProps.width, height: paddleProps.height }; ball = { x: canvas.width / 2, y: paddle.y - ballProps.radius, radius: ballProps.radius, speed: ballProps.speed, dx: ballProps.speed * (Math.random() < 0.5 ? 1 : -1), dy: -ballProps.speed }; createBricks(); }
+            function createBricks() { bricks = []; for (let c = 0; c < brickProps.columnCount; c++) { bricks[c] = []; for (let r = 0; r < brickProps.rowCount; r++) { bricks[c][r] = { x: 0, y: 0, status: 1 }; } } }
+            function updateScore() { scoreDisplay.textContent = `Tickets 🎟️: ${score}`; }
+            function draw() { ctx.clearRect(0, 0, canvas.width, canvas.height); drawPaddle(); drawBall(); drawBricks(); }
+            function drawPaddle() { ctx.fillStyle = '#f3f4f6'; ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height); }
+            function drawBall() { ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2); ctx.fillStyle = '#f97316'; ctx.fill(); ctx.closePath(); }
+            function drawBricks() { for (let c = 0; c < brickProps.columnCount; c++) for (let r = 0; r < brickProps.rowCount; r++) if (bricks[c][r].status === 1) { const brickX = c * (brickProps.width + brickProps.padding) + brickProps.offsetLeft; const brickY = r * (brickProps.height + brickProps.padding) + brickProps.offsetTop; bricks[c][r].x = brickX; bricks[c][r].y = brickY; ctx.fillStyle = '#f97316'; ctx.fillRect(brickX, brickY, brickProps.width, brickProps.height); } }
+            function update() { moveBall(); }
+            function moveBall() { ball.x += ball.dx; ball.y += ball.dy; if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) { ball.dx *= -1; sound.playHit(); } if (ball.y - ball.radius < 0) { ball.dy *= -1; sound.playHit(); } if (ball.y + ball.radius > paddle.y && ball.x > paddle.x && ball.x < paddle.x + paddle.width) { ball.dy = -ball.speed; sound.playHit(); } if (ball.y + ball.radius > canvas.height) endGame(false); for (let c = 0; c < brickProps.columnCount; c++) for (let r = 0; r < brickProps.rowCount; r++) { const b = bricks[c][r]; if (b.status === 1 && ball.x > b.x && ball.x < b.x + brickProps.width && ball.y > b.y && ball.y < b.y + brickProps.height) { ball.dy *= -1; b.status = 0; score++; updateScore(); sound.playScore(); if (score === brickProps.rowCount * brickProps.columnCount) endGame(true); } } }
+            function gameLoop() { if (!gameRunning) return; update(); draw(); animationFrameId = requestAnimationFrame(gameLoop); }
+            function startGame() { gameRunning = true; startScreen.classList.add('hidden'); endScreen.classList.add('hidden'); init(); gameLoop(); sound.startMusic(); }
+            function endGame(isWin) { gameRunning = false; cancelAnimationFrame(animationFrameId); winnerMessage.textContent = isWin ? "You Win!" : "Game Over"; finalScoreElement.textContent = score; endScreen.classList.remove('hidden'); isWin ? sound.playWin() : sound.playGameOver(); sound.stopMusic(); }
+            function stop() { gameRunning = false; if(animationFrameId) cancelAnimationFrame(animationFrameId); sound.stopMusic(); }
+            function handleMouseMove(e) { if (!paddle) return; const relativeX = e.clientX - canvas.getBoundingClientRect().left; if (relativeX > 0 && relativeX < canvas.width) paddle.x = relativeX - paddle.width / 2; }
+            function handleTouchMove(e) { if (!paddle) return; e.preventDefault(); const touch = e.touches[0]; const relativeX = touch.clientX - canvas.getBoundingClientRect().left; if (relativeX > 0 && relativeX < canvas.width) paddle.x = relativeX - paddle.width / 2; }
+            document.addEventListener('mousemove', handleMouseMove); canvas.addEventListener('touchmove', handleTouchMove);
+            startButton.addEventListener('click', startGame); restartButton.addEventListener('click', startGame);
+            window.breakoutGame = { stop };
+        })();
+        (function() {
+            const canvas = document.getElementById('stackerCanvas'); if(!canvas) return; const ctx = canvas.getContext('2d');
+            const scoreDisplay = document.getElementById('stacker-score'); const startScreen = document.getElementById('stacker-start-screen'); const endScreen = document.getElementById('stacker-end-screen'); const startButton = document.getElementById('stacker-start-btn'); const restartButton = document.getElementById('stacker-restart-btn'); const finalScoreElement = document.getElementById('stacker-final-score');
+            let score, blocks, activeBlock, stackHeight, gameSpeed, gameOver, animationFrameId;
+            function init() { score = 0; blocks = []; stackHeight = 0; gameSpeed = 2; gameOver = false; canvas.width = 300; canvas.height = 500; addBlock(canvas.height - 30, 100, 20); addBlock(0, 100, 20, true); updateScore(); }
+            function addBlock(y, width, height, isMoving = false) { const x = isMoving ? 0 : (canvas.width - width) / 2; const newBlock = { x, y, width, height, isMoving, direction: 1 }; if (isMoving) activeBlock = newBlock; else { blocks.push(newBlock); stackHeight += height; } }
+            function updateScore() { scoreDisplay.textContent = `Tickets 🎟️: ${score}`; }
+            function dropBlock() { if (gameOver || !activeBlock) return; const lastBlock = blocks[blocks.length - 1]; const overlap = Math.max(0, Math.min(activeBlock.x + activeBlock.width, lastBlock.x + lastBlock.width) - Math.max(activeBlock.x, lastBlock.x)); if (overlap > 0) { score++; updateScore(); sound.playScore(); const newWidth = overlap; const newX = Math.max(activeBlock.x, lastBlock.x); activeBlock.isMoving = false; activeBlock.x = newX; activeBlock.width = newWidth; blocks.push(activeBlock); stackHeight += activeBlock.height; const nextY = canvas.height - stackHeight - activeBlock.height; addBlock(nextY, newWidth, 20, true); gameSpeed += 0.1; } else { endGame(); } }
+            function gameLoop() { if (gameOver) return; ctx.clearRect(0, 0, canvas.width, canvas.height); if (activeBlock) { activeBlock.x += gameSpeed * activeBlock.direction; if (activeBlock.x + activeBlock.width > canvas.width || activeBlock.x < 0) activeBlock.direction *= -1; } const cameraY = Math.max(0, stackHeight - canvas.height / 1.5); blocks.forEach(block => { ctx.fillStyle = '#f3f4f6'; ctx.fillRect(block.x, block.y - cameraY, block.width, block.height); }); if (activeBlock) { ctx.fillStyle = '#f97316'; ctx.fillRect(activeBlock.x, activeBlock.y - cameraY, activeBlock.width, activeBlock.height); } animationFrameId = requestAnimationFrame(gameLoop); }
+            function startGame() { gameOver = false; startScreen.classList.add('hidden'); endScreen.classList.add('hidden'); init(); gameLoop(); sound.startMusic(); }
+            function endGame() { gameOver = true; cancelAnimationFrame(animationFrameId); finalScoreElement.textContent = score; endScreen.classList.remove('hidden'); sound.playGameOver(); sound.stopMusic(); }
+            function stop() { gameOver = true; if(animationFrameId) cancelAnimationFrame(animationFrameId); sound.stopMusic(); }
+            function handleInteraction() { if (!gameOver) dropBlock(); }
+            canvas.addEventListener('click', handleInteraction); canvas.addEventListener('touchstart', e => { e.preventDefault(); handleInteraction(); });
+            startButton.addEventListener('click', startGame); restartButton.addEventListener('click', startGame);
+            window.stackerGame = { stop };
+        })();
+
+    </script>
+</body>
+</html>
+�
