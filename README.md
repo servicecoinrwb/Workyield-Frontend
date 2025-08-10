@@ -66,16 +66,7 @@ The **WorkYield Token (WYT)** is a digital asset whose supply and value are link
 3. **Smart Contract**
    - Deployed WorkYieldTokenV2 contract handles logic, minting, fee distribution, and redemption.
 
----
-
-## 🚀 Setup and Installation
-
-1. **Clone this repo**
-
-```bash
-git clone https://github.com/your-username/workyield-dashboard.git
-cd workyield-dashboard
-
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 Welcome to the Work Yield Arcade!
