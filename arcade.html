@@ -127,6 +127,32 @@
         #leaderboard-table th { font-weight: 600; }
         #leaderboard-table tr:last-child td { border-bottom: none; }
         #leaderboard-table td:last-child { text-align: right; font-weight: bold; color: var(--brand-orange); }
+
+        /* Pretty details/summary styling for How It Works */
+        #howToPlay {
+          border: 1px solid rgba(255,255,255,0.06);
+          border-radius: 12px;
+          background: rgba(31,41,55,0.35);
+        }
+        #howToPlay[open] summary { border-bottom: 1px solid rgba(255,255,255,0.06); }
+        #howToPlay summary { list-style: none; }
+        #howToPlay summary::-webkit-details-marker { display: none; }
+        #howToPlay summary:hover { color: var(--brand-orange); }
+
+        /* Caret flip animation */
+        #howToPlay summary::after {
+          content: '▸';
+          float: right;
+          transition: transform .2s ease;
+        }
+        #howToPlay[open] summary::after { transform: rotate(90deg); }
+
+        const how = document.getElementById('howToPlay');
+        if (localStorage.getItem('wy_arcade_how_open') === '1') how.open = true;
+        how?.addEventListener('toggle', () => {
+          localStorage.setItem('wy_arcade_how_open', how.open ? '1' : '0');
+        });
+
     </style>
 </head>
 <body>
