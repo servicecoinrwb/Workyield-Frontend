@@ -143,17 +143,38 @@
     </header>
 
     <!-- Main Game Selection Menu -->
-    <div id="game-selection">
-        <h1>Work Yield Arcade</h1>
-        <p>Choose a game to play!</p>
-        <button class="btn" onclick="showGame('btc-trader')">BTC Trader</button>
-        <button class="btn" onclick="showGame('pepe-jumper')">Pepe Jumper</button>
-        <button class="btn" onclick="showGame('breakout')">Breakout</button>
-        <button class="btn" onclick="showGame('stacker')">Yield Stacker</button>
-        <button class="btn btn-secondary" onclick="showLeaderboard()">Leaderboard</button>
-        <button class="btn btn-secondary" id="muteButton">Mute Sound</button>
-    </div>
+<div id="game-selection">
+    <h1>Work Yield Arcade</h1>
+    <p>Choose a game to play!</p>
 
+    <!-- How It Works Dropdown -->
+    <details id="howToPlay" style="width:100%;max-width:700px;margin:10px 0;">
+      <summary style="cursor:pointer; font-weight:600; padding:12px 16px; border-radius:8px; background:#1f2937;">
+        How It Works ▼
+      </summary>
+      <div style="padding:16px; margin-top:8px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; background: var(--card-dark);">
+        <h3 style="margin-top:0;">Welcome to the Work Yield Arcade!</h3>
+        <p>Thanks for taking a break from stacking yield to touch some grass and play some games. Here's everything you need to know to compete for weekly prizes.</p>
+        <ol>
+          <li><strong>Play & Get a High Score 🚀</strong> – Choose any game from the menu and rack up points. Your score becomes “Tickets” 🎟️ at the end.</li>
+          <li><strong>Connect Your Wallet 🔗</strong> – Click <em>Connect Wallet</em> (top right) to submit to the weekly leaderboard.</li>
+          <li><strong>Submit Your Score ✅</strong> – After a game ends, hit <em>Submit Score</em>. Our server verifies it and posts on-chain. You can submit a new score every 12 hours to add to your weekly total.</li>
+          <li><strong>Climb the Leaderboard 🏆</strong> – The board shows total tickets for the current week.</li>
+          <li><strong>Win Weekly Rewards 🎉</strong> – Top 3 get token rewards at week’s end; then it resets for a new week.</li>
+        </ol>
+        <p><strong>Good luck, and have fun!</strong></p>
+      </div>
+    </details>
+
+    <!-- Game Buttons -->
+    <button class="btn" onclick="showGame('btc-trader')">BTC Trader</button>
+    <button class="btn" onclick="showGame('pepe-jumper')">Pepe Jumper</button>
+    <button class="btn" onclick="showGame('breakout')">Breakout</button>
+    <button class="btn" onclick="showGame('stacker')">Yield Stacker</button>
+    <button class="btn btn-secondary" onclick="showLeaderboard()">Leaderboard</button>
+    <button class="btn btn-secondary" id="muteButton">Mute Sound</button>
+</div>
+    
     <!-- BTC Trader Game Instance -->
     <div id="btc-trader-game" class="game-instance hidden">
         <div class="game-header">
