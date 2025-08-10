@@ -180,9 +180,9 @@
         </div>
         <div id="btc-trader-end-screen" class="game-overlay hidden">
             <h2 id="btc-trader-winner-message">You Win!</h2>
-            <p>You won <span id="btc-trader-final-score">100</span> Tickets �️!</p>
-            <button class="btn" id="btc-trader-submit-btn">Submit Score</button>
+            <p>You won <span id="btc-trader-final-score">100</span> Tickets 🎟️!</p>
             <div class="end-screen-buttons">
+                <button class="btn" id="btc-trader-submit-btn">Submit Score</button>
                 <button class="btn" id="btc-trader-restart-btn">Play Again</button>
                 <button class="btn btn-secondary" onclick="showMenu()">Quit Game</button>
             </div>
@@ -210,9 +210,9 @@
         </div>
         <div id="pepe-jumper-end-screen" class="game-overlay hidden">
             <h2>Game Over</h2>
-            <p>Final Tickets 🎟️: <span id="pepe-jumper-final-score">0</span></p>
-            <button class="btn" id="pepe-jumper-submit-btn">Submit Score</button>
+            <p>Final Tickets �️: <span id="pepe-jumper-final-score">0</span></p>
             <div class="end-screen-buttons">
+                <button class="btn" id="pepe-jumper-submit-btn">Submit Score</button>
                 <button class="btn" id="pepe-jumper-restart-btn">Play Again</button>
                 <button class="btn btn-secondary" onclick="showMenu()">Quit Game</button>
             </div>
@@ -241,8 +241,8 @@
         <div id="breakout-end-screen" class="game-overlay hidden">
             <h2 id="breakout-winner-message">You Win!</h2>
             <p>Final Tickets 🎟️: <span id="breakout-final-score">0</span></p>
-            <button class="btn" id="breakout-submit-btn">Submit Score</button>
             <div class="end-screen-buttons">
+                <button class="btn" id="breakout-submit-btn">Submit Score</button>
                 <button class="btn" id="breakout-restart-btn">Play Again</button>
                 <button class="btn btn-secondary" onclick="showMenu()">Quit Game</button>
             </div>
@@ -271,8 +271,8 @@
         <div id="stacker-end-screen" class="game-overlay hidden">
             <h2 id="stacker-winner-message">Game Over</h2>
             <p>Final Tickets 🎟️: <span id="stacker-final-score">0</span></p>
-            <button class="btn" id="stacker-submit-btn">Submit Score</button>
             <div class="end-screen-buttons">
+                <button class="btn" id="stacker-submit-btn">Submit Score</button>
                 <button class="btn" id="stacker-restart-btn">Play Again</button>
                 <button class="btn btn-secondary" onclick="showMenu()">Quit Game</button>
             </div>
@@ -340,10 +340,6 @@
         const connectButton = document.getElementById('connectButton');
         let activeGame = null;
         let userAddress = null;
-
-        // --- NEW: Leaderboard Contract Configuration ---
-        const ARCADE_REWARDS_ADDRESS = "0x721D18eC27B912e190BC8782DDEdB169BEeFaa95"; // Your deployed contract address
-        const ARCADE_REWARDS_ABI = [{"inputs":[{"internalType":"address","name":"_initialAdmin","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newCooldown","type":"uint256"}],"name":"CooldownSet","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"seasonId","type":"uint256"},{"indexed":true,"internalType":"address","name":"admin","type":"address"}],"name":"NewSeasonStarted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"tokenAddress","type":"address"}],"name":"RewardTokenSet","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"seasonId","type":"uint256"},{"indexed":true,"internalType":"address","name":"admin","type":"address"},{"indexed":false,"internalType":"uint256","name":"totalAmount","type":"uint256"}],"name":"RewardsDistributed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"bytes32","name":"previousAdminRole","type":"bytes32"},{"indexed":true,"internalType":"bytes32","name":"newAdminRole","type":"bytes32"}],"name":"RoleAdminChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"address","name":"account","type":"address"},{"indexed":true,"internalType":"address","name":"sender","type":"address"}],"name":"RoleGranted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"address","name":"account","type":"address"},{"indexed":true,"internalType":"address","name":"sender","type":"address"}],"name":"RoleRevoked","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"seasonId","type":"uint256"},{"indexed":true,"internalType":"address","name":"player","type":"address"},{"indexed":false,"internalType":"uint256","name":"score","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"totalScore","type":"uint256"}],"name":"ScoreSubmitted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"newServerAddress","type":"address"}],"name":"ServerAddressSet","type":"event"},{"inputs":[],"name":"ADMIN_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DEFAULT_ADMIN_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"SERVER_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"currentSeasonId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address[]","name":"_winners","type":"address[]"},{"internalType":"uint256[]","name":"_amounts","type":"uint256[]"}],"name":"distributeRewards","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_token","type":"address"},{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"emergencyWithdraw","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_seasonId","type":"uint256"},{"internalType":"address","name":"_player","type":"address"}],"name":"getPlayerScore","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"}],"name":"getRoleAdmin","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_seasonId","type":"uint256"}],"name":"getSeasonPlayers","outputs":[{"internalType":"address[]","name":"","type":"address[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"grantRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"hasRole","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"address","name":"","type":"address"}],"name":"lastSubmissionTimestamp","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"renounceRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"revokeRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"rewardToken","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"uint256","name":"","type":"uint256"}],"name":"seasonPlayers","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"address","name":"","type":"address"}],"name":"seasonTotalScores","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"serverAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_tokenAddress","type":"address"}],"name":"setRewardToken","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_newServerAddress","type":"address"}],"name":"setServerAddress","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_newCooldown","type":"uint256"}],"name":"setSubmissionCooldown","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"startNewSeason","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"submissionCooldown","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_player","type":"address"},{"internalType":"uint256","name":"_score","type":"uint256"}],"name":"submitScore","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"}];
 
         async function connectWallet() {
             if (typeof window.ethereum === 'undefined') {
