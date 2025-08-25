@@ -1,97 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Work Yield - Tokenize Your Yield</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Work Yield - Tokenize Your Yield</title>
 
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css" />
 </head>
-<body class="min-h-screen pt-28 md:pt-36 lg:pt-40">
-  <nav class="bg-secondary fixed top-0 left-0 right-0 z-50 h-28">  <!-- fixed + constant height -->
-  <div class="container mx-auto max-w-7xl h-full px-4 flex items-center">
-    <img src="./images/workyield-logo.png"
-         alt="Work Yield Logo"
-         class="h-full w-auto block select-none" />
-  </div>
-</nav>
+<body class="min-h-screen">
 
-    <main class="container mx-auto max-w-7xl p-4 md:p-8">
-        <section class="text-center my-16 md:my-24">
-            <h2 class="text-5xl md:text-7xl font-bold leading-tight">
-                Invest in Tangible Work. <br/>
-                <span class="text-accent">Earn Real Yield.</span>
-            </h2>
-            <p class="text-secondary text-xl mt-6 max-w-3xl mx-auto">
-                Work Yield is a decentralized protocol that tokenizes the value of real-world projects. Buy, hold, and trade WYT, a token backed by productive work, not speculation.
-            </p>
-            <!-- UPDATED CALL-TO-ACTION BUTTONS -->
-            <div class="mt-8 flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-4">
-               <a href="./app.html" class="btn btn-primary text-lg px-8 py-4">Launch Dashboard</a>
-               <a href="https://servicecoinrwb.github.io/WorkYieldLendingVault/index.html" class="btn btn-primary text-lg px-8 py-4">Launch Lending App</a>
-               <a href="./arcade.html" class="btn btn-primary text-lg px-8 py-4">Enter Arcade</a>
-            </div>
-        </section>
+  <!-- NAV (kept minimal; no logo here so it doesn't duplicate) -->
+  <nav class="bg-secondary sticky top-0 z-50">
+    <div class="container mx-auto max-w-7xl p-4"></div>
+  </nav>
 
-        <section class="my-16 md:my-24">
-            <h2 class="text-center">How It Works</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12 text-center">
-                <div class="bg-secondary p-8 rounded-lg">
-                    <h3 class="text-2xl font-bold mb-2">1. Mint Orders</h3>
-                    <p class="text-secondary">Projects are submitted as "Work Orders," and WYT tokens are minted against their projected future revenue.</p>
-                </div>
-                <div class="bg-secondary p-8 rounded-lg">
-                    <h3 class="text-2xl font-bold mb-2">2. Back with Capital</h3>
-                    <p class="text-secondary">Users buy the newly minted WYT with pUSD, providing the capital that funds the work orders.</p>
-                </div>
-                <div class="bg-secondary p-8 rounded-lg">
-                    <h3 class="text-2xl font-bold mb-2">3. Earn Yield</h3>
-                    <p class="text-secondary">As work orders are completed, they pay back revenue to the contract, increasing the pUSD balance and the value of all WYT.</p>
-                </div>
-            </div>
-        </section>
-        
-        <!-- LENDING SECTION -->
-        <section class="my-16 md:my-24">
-            <h2 class="text-center">Unlock More Value with the Lending Vault</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12 text-center">
-                <div class="bg-secondary p-8 rounded-lg">
-                    <h3 class="text-2xl font-bold mb-2">Borrow Against Your Assets</h3>
-                    <p class="text-secondary">Already hold WYT? Deposit your tokens as collateral and borrow pUSD against their value without having to sell. Get instant liquidity while your original investment continues to appreciate.</p>
-                </div>
-                <div class="bg-secondary p-8 rounded-lg">
-                    <h3 class="text-2xl font-bold mb-2">Fund the Vault</h3>
-                    <p class="text-secondary">Protocol revenue, including redemption fees from the main platform and interest from borrowers, is used to fund the lending vault, creating a self-sustaining financial ecosystem.</p>
-                </div>
-            </div>
-        </section>
+  <main class="container mx-auto max-w-7xl p-4 md:p-8">
 
-        <!-- NEW ARCADE SECTION -->
-        <section class="my-16 md:my-24">
-            <h2 class="text-center">Compete for Rewards in the Arcade</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12 text-center">
-                <div class="bg-secondary p-8 rounded-lg">
-                    <h3 class="text-2xl font-bold mb-2">Play Fun, Retro Games</h3>
-                    <p class="text-secondary">Take a break and play classic arcade games like Breakout, Stacker, and more, all with a unique Work Yield theme. New games are added regularly!</p>
-                </div>
-                <div class="bg-secondary p-8 rounded-lg">
-                    <h3 class="text-2xl font-bold mb-2">Earn Tickets & Win Prizes</h3>
-                    <p class="text-secondary">Your high scores are converted into tickets. At the end of each week, the top players on the leaderboard win real token rewards. Compete, climb the ranks, and get rewarded!</p>
-                </div>
-            </div>
-        </section>
+    <!-- HERO LOGO (centered & large) -->
+    <section class="flex justify-center items-center mt-6 md:mt-10">
+      <!-- Adjust the width values if you want it bigger/smaller -->
+      <img
+        src="./images/workyield-logo.png"
+        alt="Work Yield Logo"
+        class="w-[260px] md:w-[420px] lg:w-[520px] h-auto drop-shadow-xl select-none"
+      />
+    </section>
 
-    </main>
+    <!-- Headline -->
+    <section class="text-center my-10 md:my-14">
+      <h2 class="text-5xl md:text-7xl font-bold leading-tight">
+        Invest in Tangible Work. <br />
+        <span class="text-accent">Earn Real Yield.</span>
+      </h2>
+      <p class="text-secondary text-xl mt-6 max-w-3xl mx-auto">
+        Work Yield is a decentralized protocol that tokenizes the value of real-world projects. Buy, hold, and trade WYT, a token backed by productive work, not speculation.
+      </p>
 
-    <footer class="footer">
-        <p>Powered by 
-            <a href="https://service.money/" target="_blank" rel="noopener noreferrer" class="footer-link">
-                Service Coin
-            </a>
-        </p>
-    </footer>
+      <!-- CTA Buttons -->
+      <div class="mt-8 flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-4">
+        <a href="./app.html" class="btn btn-primary text-lg px-8 py-4">Launch Dashboard</a>
+        <a href="https://servicecoinrwb.github.io/WorkYieldLendingVault/index.html" class="btn btn-primary text-lg px-8 py-4">Launch Lending App</a>
+        <a href="./arcade.html" class="btn btn-primary text-lg px-8 py-4">Enter Arcade</a>
+      </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="my-16 md:my-24">
+      <h2 class="text-center">How It Works</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12 text-center">
+        <div class="bg-secondary p-8 rounded-lg">
+          <h3 class="text-2xl font-bold mb-2">1. Mint Orders</h3>
+          <p class="text-secondary">Projects are submitted as "Work Orders," and WYT tokens are minted against their projected future revenue.</p>
+        </div>
+        <div class="bg-secondary p-8 rounded-lg">
+          <h3 class="text-2xl font-bold mb-2">2. Back with Capital</h3>
+          <p class="text-secondary">Users buy the newly minted WYT with pUSD, providing the capital that funds the work orders.</p>
+        </div>
+        <div class="bg-secondary p-8 rounded-lg">
+          <h3 class="text-2xl font-bold mb-2">3. Earn Yield</h3>
+          <p class="text-secondary">As work orders are completed, they pay back revenue to the contract, increasing the pUSD balance and the value of all WYT.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Lending -->
+    <section class="my-16 md:my-24">
+      <h2 class="text-center">Unlock More Value with the Lending Vault</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12 text-center">
+        <div class="bg-secondary p-8 rounded-lg">
+          <h3 class="text-2xl font-bold mb-2">Borrow Against Your Assets</h3>
+          <p class="text-secondary">Already hold WYT? Deposit your tokens as collateral and borrow pUSD against their value without having to sell. Get instant liquidity while your original investment continues to appreciate.</p>
+        </div>
+        <div class="bg-secondary p-8 rounded-lg">
+          <h3 class="text-2xl font-bold mb-2">Fund the Vault</h3>
+          <p class="text-secondary">Protocol revenue, including redemption fees from the main platform and interest from borrowers, is used to fund the lending vault, creating a self-sustaining financial ecosystem.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Arcade -->
+    <section class="my-16 md:my-24">
+      <h2 class="text-center">Compete for Rewards in the Arcade</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12 text-center">
+        <div class="bg-secondary p-8 rounded-lg">
+          <h3 class="text-2xl font-bold mb-2">Play Fun, Retro Games</h3>
+          <p class="text-secondary">Take a break and play classic arcade games like Breakout, Stacker, and more, all with a unique Work Yield theme. New games are added regularly!</p>
+        </div>
+        <div class="bg-secondary p-8 rounded-lg">
+          <h3 class="text-2xl font-bold mb-2">Earn Tickets & Win Prizes</h3>
+          <p class="text-secondary">Your high scores are converted into tickets. At the end of each week, the top players on the leaderboard win real token rewards. Compete, climb the ranks, and get rewarded!</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p>Powered by
+      <a href="https://service.money/" target="_blank" rel="noopener noreferrer" class="footer-link">
+        Service Coin
+      </a>
+    </p>
+  </footer>
 </body>
 </html>
