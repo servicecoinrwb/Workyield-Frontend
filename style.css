@@ -242,3 +242,19 @@ th {
 .wo-content-panel.hidden {
     display: none !important;
 }
+
+/* --- Remove focus box around the header logo --- */
+.logo-wrap,
+.logo-wrap:focus,
+.logo-wrap:focus-visible,
+.logo,
+.logo:focus,
+.logo:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
+
+/* Old browsers & mobile tap highlight */
+a img { border: 0; }
+.logo-wrap { -webkit-tap-highlight-color: transparent; }
