@@ -11,10 +11,14 @@
   --bg-secondary: #1f2937;    /* A slightly lighter container background */
   --accent: #f97316;          /* The primary orange accent color */
   --text-primary: #f3f4f6;    /* Off-white for main text */
-  --text-secondary: #9ca3af;   /* A dimmer gray for labels and secondary text */
+  --text-secondary: #9ca3af;  /* A dimmer gray for labels and secondary text */
   --border-color: #374151;    /* Subtle border color */
   --danger: #ef4444;          /* Red for destructive actions */
   --radius: 0.5rem;           /* Standard border radius */
+
+  /* Header sizing used for fixed header spacing */
+  --header-h-mobile: 116px;   /* matches logo + padding */
+  --header-h-desktop: 152px;
 }
 
 /* General body styles */
@@ -24,13 +28,17 @@ body {
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Space for fixed header (updated below via media query) */
+  padding-top: var(--header-h-mobile);
+}
+
+@media (min-width: 768px) {
+  body { padding-top: var(--header-h-desktop); }
 }
 
 /* Heading styles */
-h1 {
-  font-weight: 700;
-  letter-spacing: -0.025em;
-}
+h1 { font-weight: 700; letter-spacing: -0.025em; }
 h2 {
   color: var(--text-secondary);
   text-transform: uppercase;
@@ -53,7 +61,6 @@ input[type="text"] {
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   width: 100%;
 }
-
 input:focus {
   outline: none;
   border-color: var(--accent);
@@ -69,21 +76,13 @@ table {
   border-radius: var(--radius);
   overflow: hidden;
 }
-
 th, td {
   padding: 1rem 1.25rem;
   text-align: left;
   border-bottom: 1px solid var(--border-color);
 }
-
-tbody tr:last-child td {
-  border-bottom: none;
-}
-
-thead {
-  background-color: rgba(0, 0, 0, 0.15);
-}
-
+tbody tr:last-child td { border-bottom: none; }
+thead { background-color: rgba(0, 0, 0, 0.15); }
 th {
   color: var(--text-secondary);
   text-transform: uppercase;
@@ -94,156 +93,136 @@ th {
 
 /* Tab Styles */
 .tab-btn {
-    padding: 0.5rem 1rem;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    transition: all 0.2s ease-in-out;
+  padding: 0.5rem 1rem;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: all 0.2s ease-in-out;
 }
-
 .tab-btn.active {
-    color: var(--accent);
-    border-bottom-color: var(--accent);
+  color: var(--accent);
+  border-bottom-color: var(--accent);
 }
 
 /* General Button Styles */
 .btn {
-    border-radius: var(--radius);
-    font-weight: 600;
-    padding: 0.75rem 1.5rem;
-    border: none;
-    cursor: pointer;
-    transition: transform 0.15s ease, background-color 0.2s ease, filter 0.2s ease;
+  border-radius: var(--radius);
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.2s ease, filter 0.2s ease;
 }
 .btn:hover:not(:disabled) {
-    filter: brightness(1.1);
-    transform: translateY(-2px);
+  filter: brightness(1.1);
+  transform: translateY(-2px);
 }
 .btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background-color: var(--border-color) !important;
-    transform: none;
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: var(--border-color) !important;
+  transform: none;
 }
-
-.btn-primary {
-    background-color: var(--accent);
-    color: white;
-}
-
-.bg-red-600 {
-    background-color: var(--danger) !important;
-}
+.btn-primary { background-color: var(--accent); color: white; }
+.bg-red-600 { background-color: var(--danger) !important; }
 
 /* Footer Styles */
 .footer {
-    text-align: center;
-    padding: 2rem;
-    margin-top: 2rem;
-    border-top: 1px solid var(--border-color);
-    color: var(--text-secondary);
+  text-align: center;
+  padding: 2rem;
+  margin-top: 2rem;
+  border-top: 1px solid var(--border-color);
+  color: var(--text-secondary);
 }
-
 .footer-link {
-    color: var(--text-primary);
-    font-weight: 600;
-    text-decoration: none;
-    transition: color 0.2s ease-in-out;
+  color: var(--text-primary);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease-in-out;
 }
-
-.footer-link:hover {
-    color: var(--accent);
-}
+.footer-link:hover { color: var(--accent); }
 
 /* Skeleton Loader Styles */
 .skeleton {
-    background-color: var(--border-color);
-    border-radius: var(--radius);
-    position: relative;
-    overflow: hidden;
+  background-color: var(--border-color);
+  border-radius: var(--radius);
+  position: relative;
+  overflow: hidden;
 }
-
 .skeleton::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    transform: translateX(-100%);
-    background-image: linear-gradient(
-        90deg,
-        rgba(255, 255, 255, 0) 0,
-        rgba(255, 255, 255, 0.1) 20%,
-        rgba(255, 255, 255, 0.2) 60%,
-        rgba(255, 255, 255, 0)
-    );
-    animation: shimmer 2s infinite;
+  content: '';
+  position: absolute; inset: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0.1) 20%,
+    rgba(255, 255, 255, 0.2) 60%,
+    rgba(255, 255, 255, 0)
+  );
+  animation: shimmer 2s infinite;
 }
+@keyframes shimmer { 100% { transform: translateX(100%); } }
 
-@keyframes shimmer {
-    100% {
-        transform: translateX(100%);
-    }
-}
-.text-accent {
-    color: var(--accent);
-}
-
-/* Add these styles to the end of style.css */
+.text-accent { color: var(--accent); }
 
 /* --- Work Order Tabs & Search --- */
-.wo-search-container {
-    margin-bottom: 1rem;
-}
-
+.wo-search-container { margin-bottom: 1rem; }
 #workOrderSearchInput {
-    width: 100%;
-    padding: 0.5rem 0.75rem;
-    background-color: #2d3748; /* Corresponds to Tailwind's gray-800 */
-    border: 1px solid #4a5568;  /* Corresponds to Tailwind's gray-700 */
-    border-radius: 0.375rem; /* Corresponds to Tailwind's rounded-md */
-    color: white;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background-color: #2d3748; /* gray-800 */
+  border: 1px solid #4a5568;  /* gray-700 */
+  border-radius: 0.375rem;     /* rounded-md */
+  color: white;
 }
-
-#workOrderSearchInput::placeholder {
-    color: #a0aec0; /* Corresponds to Tailwind's gray-500 */
-}
-
+#workOrderSearchInput::placeholder { color: #a0aec0; /* gray-500 */ }
 .wo-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    border-bottom: 2px solid #4a5568; /* gray-700 */
-    margin-bottom: 1rem;
+  display: flex; flex-wrap: wrap;
+  border-bottom: 2px solid #4a5568; /* gray-700 */
+  margin-bottom: 1rem;
 }
-
 .wo-tab-btn {
-    padding: 0.5rem 1rem;
-    border: none;
-    background-color: transparent;
-    color: #a0aec0; /* gray-500 */
-    cursor: pointer;
-    font-weight: 600;
-    border-bottom: 2px solid transparent;
-    transform: translateY(2px);
-    transition: all 0.2s ease-in-out;
+  padding: 0.5rem 1rem;
+  border: none; background-color: transparent;
+  color: #a0aec0; /* gray-500 */
+  cursor: pointer; font-weight: 600;
+  border-bottom: 2px solid transparent;
+  transform: translateY(2px);
+  transition: all 0.2s ease-in-out;
+}
+.wo-tab-btn:hover { color: #cbd5e0; /* gray-400 */ }
+.wo-tab-btn.active { color: #ffffff; border-bottom-color: #3b82f6; /* blue-500 */ }
+.wo-content-panel.hidden { display: none !important; }
+
+/* =========================================================
+   FIXED HEADER & LOGO (prevents logo shifting on scroll)
+   ========================================================= */
+header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 12px 20px;
+  box-sizing: border-box;
 }
 
-.wo-tab-btn:hover {
-    color: #cbd5e0; /* gray-400 */
+/* Logo sizing and stability */
+.logo {
+  height: 96px;    /* h-24 */
+  width: auto;
+  display: block;
+  -webkit-user-drag: none;
+  user-select: none;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.55));
+}
+@media (min-width: 768px) {
+  .logo { height: 128px; } /* h-32 */
 }
 
-.wo-tab-btn.active {
-    color: #ffffff;
-    border-bottom-color: #3b82f6; /* blue-500 */
-}
-
-.wo-content-panel.hidden {
-    display: none !important;
-}
-
-/* --- Remove focus box around the header logo --- */
+/* Remove focus/box outline around logo link/image */
 .logo-wrap,
 .logo-wrap:focus,
 .logo-wrap:focus-visible,
@@ -254,7 +233,6 @@ th {
   box-shadow: none !important;
   border: 0 !important;
 }
-
 /* Old browsers & mobile tap highlight */
 a img { border: 0; }
 .logo-wrap { -webkit-tap-highlight-color: transparent; }
