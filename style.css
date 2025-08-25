@@ -211,19 +211,24 @@ a img{ border:0; }
 /* =========================================================
    HERO LOGO (big centered logo on the index page)
    ========================================================= */
-.hero-logo{
-  display:block;
-  margin-inline:auto;         /* center */
-  width:clamp(220px, 42vw, 640px);  /* responsive max width */
-  height:auto;
-  object-fit:contain;
-  filter:drop-shadow(0 6px 22px rgba(0,0,0,.45));
-  pointer-events:none;
-  user-select:none;
+.hero-logo {
+  display: block;
+  margin-inline: auto;
+  margin-top: -20px; /* Pull logo higher on the page */
+  width: clamp(280px, 55vw, 780px); /* Wider logo with a max width */
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 22px rgba(0,0,0,.45));
+  pointer-events: none;
+  user-select: none;
 }
 
-/* Optional: reduce space above headline when using hero logo */
-.hero-tight{ margin-top:1rem; }
-@media (min-width:768px){
-  .hero-tight{ margin-top:1.5rem; }
+/* Optional: tighten spacing below logo to headline */
+.hero-tight {
+  margin-top: 0.5rem;
+}
+@media (min-width: 768px) {
+  .hero-tight {
+    margin-top: 1rem;
+  }
 }
