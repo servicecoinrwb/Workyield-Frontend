@@ -4,55 +4,55 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-:root {
-  --bg-primary: #111827;
-  --bg-secondary: #1f2937;
-  --accent: #f97316;
-  --text-primary: #f3f4f6;
-  --text-secondary: #9ca3af;
-  --border-color: #374151;
-  --danger: #ef4444;
-  --radius: 0.5rem;
+:root{
+  --bg-primary:#111827;
+  --bg-secondary:#1f2937;
+  --accent:#f97316;
+  --text-primary:#f3f4f6;
+  --text-secondary:#9ca3af;
+  --border-color:#374151;
+  --danger:#ef4444;
+  --radius:.5rem;
 
-  /* header spacing for pages using <header> */
-  --header-h-mobile: 116px;
-  --header-h-desktop: 152px;
+  /* header spacing (used only when body.has-fixed-header) */
+  --header-h-mobile:116px;
+  --header-h-desktop:152px;
 }
 
 /* Base */
 body{
-  font-family: 'Inter', sans-serif;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  /* Provides top room on pages that use a fixed <header> (e.g. arcade/app) */
-  padding-top: var(--header-h-mobile);
+  font-family:'Inter',sans-serif;
+  background-color:var(--bg-primary);
+  color:var(--text-primary);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
 }
-@media (min-width: 768px){
-  body{ padding-top: var(--header-h-desktop); }
+
+/* Opt-in spacing only on pages with a fixed <header> */
+body.has-fixed-header{ padding-top:var(--header-h-mobile); }
+@media (min-width:768px){
+  body.has-fixed-header{ padding-top:var(--header-h-desktop); }
 }
 
 /* Headings */
-h1{ font-weight:700; letter-spacing:-0.025em; }
+h1{ font-weight:700; letter-spacing:-.025em; }
 h2{
   color:var(--text-secondary);
   text-transform:uppercase;
-  font-size:0.875rem;
+  font-size:.875rem;
   font-weight:600;
-  letter-spacing:0.05em;
-  padding-bottom:0.5rem;
+  letter-spacing:.05em;
+  padding-bottom:.5rem;
   border-bottom:1px solid var(--border-color);
   margin-bottom:1.5rem !important;
 }
 
 /* Inputs */
-input[type="number"], input[type="text"]{
+input[type="number"],input[type="text"]{
   background-color:var(--bg-secondary);
   border:1px solid var(--border-color);
   border-radius:var(--radius);
-  padding:0.75rem 1rem;
+  padding:.75rem 1rem;
   color:var(--text-primary);
   transition:border-color .2s, box-shadow .2s;
   width:100%;
@@ -166,7 +166,7 @@ th{
 .wo-content-panel.hidden{ display:none!important; }
 
 /* =========================================================
-   FIXED HEADER & LOGO (works on arcade/app pages using <header>)
+   FIXED HEADER (for pages using <header>)
    ========================================================= */
 header{
   position:fixed;
@@ -178,23 +178,23 @@ header{
   box-sizing:border-box;
 }
 
-/* Safe defaults for images (prevents giant logos if a class is missing) */
+/* Safe defaults for images */
 img{ max-width:100%; height:auto; }
 
-/* Logo sizing & stability */
+/* Header logo sizing (small logo in top bar) */
 .logo{
-  height:80px;            /* mobile size */
+  height:80px;           /* mobile */
   width:auto;
   display:block;
-  object-fit:contain;      /* never stretch */
+  object-fit:contain;
   -webkit-user-drag:none; user-select:none;
   filter:drop-shadow(0 2px 6px rgba(0,0,0,.55));
 }
 @media (min-width:768px){
-  .logo{ height:112px; }   /* desktop size */
+  .logo{ height:112px; }  /* desktop */
 }
 
-/* Remove focus/box outline around logo link/image */
+/* Remove focus/box outline around logo */
 .logo-wrap,
 .logo-wrap:focus,
 .logo-wrap:focus-visible,
@@ -207,3 +207,23 @@ img{ max-width:100%; height:auto; }
 }
 a img{ border:0; }
 .logo-wrap{ -webkit-tap-highlight-color:transparent; }
+
+/* =========================================================
+   HERO LOGO (big centered logo on the index page)
+   ========================================================= */
+.hero-logo{
+  display:block;
+  margin-inline:auto;         /* center */
+  width:clamp(220px, 42vw, 640px);  /* responsive max width */
+  height:auto;
+  object-fit:contain;
+  filter:drop-shadow(0 6px 22px rgba(0,0,0,.45));
+  pointer-events:none;
+  user-select:none;
+}
+
+/* Optional: reduce space above headline when using hero logo */
+.hero-tight{ margin-top:1rem; }
+@media (min-width:768px){
+  .hero-tight{ margin-top:1.5rem; }
+}
